@@ -1,0 +1,62 @@
+[
+  {
+    "baseline": "2 months",
+    "start": "2017-04-01",
+    "reported": 45956.536412379006,
+    "ci": [
+      18644.9786191511,
+      65138.85290239765
+    ],
+    "naive": 23533.947887697956,
+    "true": 171448.36305107432,
+    "inside": false,
+    "naive_inside": false,
+    "pct_of_truth": 26.80488491960031,
+    "extrapolation": "73% of reporting days are hotter than any day in the baseline period"
+  },
+  {
+    "baseline": "4 months",
+    "start": "2017-02-01",
+    "reported": 54050.82818307122,
+    "ci": [
+      29827.263773073064,
+      77390.78445351498
+    ],
+    "naive": 36727.15720773442,
+    "true": 171448.36305107432,
+    "inside": false,
+    "naive_inside": false,
+    "pct_of_truth": 31.526010059932464,
+    "extrapolation": "73% of reporting days are hotter than any day in the baseline period"
+  },
+  {
+    "baseline": "8 months",
+    "start": "2016-10-01",
+    "reported": 79789.00311241695,
+    "ci": [
+      50236.364747379026,
+      132764.11399584662
+    ],
+    "naive": 84129.17427513911,
+    "true": 171448.36305107432,
+    "inside": false,
+    "naive_inside": false,
+    "pct_of_truth": 46.53821225965737,
+    "extrapolation": "73% of reporting days are hotter than any day in the baseline period"
+  },
+  {
+    "baseline": "12 months",
+    "start": "2016-06-01",
+    "reported": 149307.51752047264,
+    "ci": [
+      133012.16686173648,
+      213313.04309419403
+    ],
+    "naive": 161364.02802641434,
+    "true": 171448.36305107432,
+    "inside": true,
+    "naive_inside": true,
+    "pct_of_truth": 87.08599770998924,
+    "extrapolation": "10% of reporting days are hotter than any day in the baseline period"
+  }
+]

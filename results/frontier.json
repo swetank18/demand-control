@@ -1,0 +1,57 @@
+[
+  {
+    "comfort_ceiling_c": 24.0,
+    "band_width_k": 2.0,
+    "uncontrolled_peak_kw": 497.14799990525063,
+    "uncontrolled_bill_inr": 1320301.7884132506,
+    "target_kw": 462.96907491176466,
+    "shave_pct": 6.874999999999998,
+    "bill_inr": 1196077.135735248,
+    "saving_inr": 124224.6526780026,
+    "comfort_violation_pct": 0.8680555555555556
+  },
+  {
+    "comfort_ceiling_c": 25.0,
+    "band_width_k": 3.0,
+    "uncontrolled_peak_kw": 497.14799990525063,
+    "uncontrolled_bill_inr": 1320301.7884132506,
+    "target_kw": 462.96907491176466,
+    "shave_pct": 6.874999999999998,
+    "bill_inr": 1170822.9350459622,
+    "saving_inr": 149478.85336728836,
+    "comfort_violation_pct": 0.625
+  },
+  {
+    "comfort_ceiling_c": 26.0,
+    "band_width_k": 4.0,
+    "uncontrolled_peak_kw": 497.14799990525063,
+    "uncontrolled_bill_inr": 1320301.7884132506,
+    "target_kw": 462.96907491176466,
+    "shave_pct": 6.874999999999998,
+    "bill_inr": 1148712.5009983873,
+    "saving_inr": 171589.28741486324,
+    "comfort_violation_pct": 0.5902777777777778
+  },
+  {
+    "comfort_ceiling_c": 27.0,
+    "band_width_k": 5.0,
+    "uncontrolled_peak_kw": 497.14799990525063,
+    "uncontrolled_bill_inr": 1320301.7884132506,
+    "target_kw": 445.87961241502165,
+    "shave_pct": 10.312500000000002,
+    "bill_inr": 1122039.457708035,
+    "saving_inr": 198262.3307052157,
+    "comfort_violation_pct": 0.4861111111111111
+  },
+  {
+    "comfort_ceiling_c": 28.0,
+    "band_width_k": 6.0,
+    "uncontrolled_peak_kw": 497.14799990525063,
+    "uncontrolled_bill_inr": 1320301.7884132506,
+    "target_kw": 445.87961241502165,
+    "shave_pct": 10.312500000000002,
+    "bill_inr": 1099990.4416321125,
+    "saving_inr": 220311.3467811381,
+    "comfort_violation_pct": 0.20833333333333334
+  }
+]

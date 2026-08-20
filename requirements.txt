@@ -1,0 +1,11 @@
+# Core. numpy/pandas/scipy/matplotlib/streamlit are assumed present system-wide;
+# create the venv with --system-site-packages to inherit them.
+numpy>=1.26
+pandas>=2.0
+scipy>=1.11          # scipy.optimize.milp, HiGHS backend
+matplotlib>=3.6
+lightgbm>=4.0        # quantile regression
+pyarrow>=14          # parquet
+streamlit>=1.30      # replay UI
+pytest>=7.0
+# highspy is not required (scipy vendors HiGHS) but is useful for direct solver work

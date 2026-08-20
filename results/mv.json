@@ -1,0 +1,26 @@
+{
+  "reported_saving_inr": 149307.51752047264,
+  "ci_low": 127369.44507380672,
+  "ci_high": 216238.66633217185,
+  "baseline_bill_inr": 1298160.942882649,
+  "actual_bill_inr": 1148853.4253621763,
+  "true_saving_inr": 171448.36305107432,
+  "inside_band": true,
+  "naive_saving_inr": 161364.02802641434,
+  "naive_inside_band": true,
+  "naive_ci": [
+    136352.83588701775,
+    286083.9630626229
+  ],
+  "baseline_cv_rmse": 0.13875348254079342,
+  "baseline_nmbe": -1.4755968845896116e-15,
+  "baseline_peak_coef": [
+    69.52990103762181,
+    8.171979450544804,
+    193.51298259569788
+  ],
+  "extrapolation_warning": "10% of reporting days are hotter than any day in the baseline period",
+  "ashrae_pass": true,
+  "n_bootstrap": 400,
+  "notes": "Baseline is a daily CDD/HDD/weekday regression fitted on the pre-period, applied to the reporting period, and shaped by the pre-period's own 15-minute load profile so the counterfactual keeps the building's historical peakiness. The band is a residual bootstrap: it covers baseline-model error, not tariff or metering error. 'naive' is the same method shaped by the controlled period instead, which is what an Option C implementation does when nobody accounts for demand charges."
+}

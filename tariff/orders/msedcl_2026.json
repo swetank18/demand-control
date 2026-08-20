@@ -1,0 +1,24 @@
+{
+  "state": "Maharashtra",
+  "category": "HT-II commercial (HT supply)",
+  "order_ref": "MERC MYT Order Case No. 226 of 2024, MSEDCL schedule FY 2025-26 (hand-encoded, second state used only to demonstrate tariff portability)",
+  "energy_rate": 8.10,
+  "tod_windows": [
+    {"name": "solar",  "start": "09:00", "end": "17:00", "multiplier": 0.80},
+    {"name": "normal", "start": "05:00", "end": "09:00", "multiplier": 1.00},
+    {"name": "peak",   "start": "17:00", "end": "23:00", "multiplier": 1.20},
+    {"name": "night",  "start": "23:00", "end": "05:00", "multiplier": 0.90}
+  ],
+  "demand_charge_per_kva": 494.0,
+  "billing_interval_minutes": 30,
+  "contract_demand_kva": 250.0,
+  "billing_demand_floor_pct": 75.0,
+  "fixed_charge": 0.0,
+  "electricity_duty_pct": 5.0,
+  "power_factor": {
+    "target": 0.90, "penalty_pct_per_point": 1.0,
+    "rebate_threshold": 0.95, "rebate_pct_per_point": 0.5, "max_rebate_pct": 5.0
+  },
+  "currency": "INR",
+  "notes": "Encoded to prove the portability claim: same code, different JSON. Note the solar window sits in the middle of the working day here, which inverts the shifting strategy relative to Tamil Nadu."
+}

@@ -1,0 +1,27 @@
+{
+  "state": "Tamil Nadu",
+  "category": "HT-I-A commercial / industrial (HT supply, >= 112 kVA)",
+  "order_ref": "TNERC Tariff Order T.P. No. 1 of 2023 as amended for FY 2025-26; ToD windows per Electricity (Rights of Consumers) Amendment Rules 2023",
+  "energy_rate": 6.35,
+  "tod_windows": [
+    {"name": "solar",  "start": "05:00", "end": "10:00", "multiplier": 0.80},
+    {"name": "normal", "start": "10:00", "end": "18:00", "multiplier": 1.00},
+    {"name": "peak",   "start": "18:00", "end": "22:00", "multiplier": 1.25},
+    {"name": "night",  "start": "22:00", "end": "05:00", "multiplier": 0.90}
+  ],
+  "demand_charge_per_kva": 608.0,
+  "billing_interval_minutes": 30,
+  "contract_demand_kva": 250.0,
+  "billing_demand_floor_pct": 90.0,
+  "fixed_charge": 0.0,
+  "electricity_duty_pct": 5.0,
+  "power_factor": {
+    "target": 0.90,
+    "penalty_pct_per_point": 1.0,
+    "rebate_threshold": 0.95,
+    "rebate_pct_per_point": 0.5,
+    "max_rebate_pct": 5.0
+  },
+  "currency": "INR",
+  "notes": "Rates hand-encoded from the published order and rounded to the paisa. Peak multiplier 1.25 and solar 0.80 satisfy the statutory floor of >=1.2x peak and <=0.8x solar for commercial and industrial consumers. Billing demand is the highest 30-minute kVA block of the month, floored at 90% of contract demand. VERIFY AGAINST THE CURRENT ORDER BEFORE QUOTING COMMERCIALLY."
+}

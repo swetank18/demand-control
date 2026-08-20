@@ -1,0 +1,15 @@
+{
+  "site": "Fox",
+  "site_note": "Hottest site in BDG2 (mean 25.1 C, peak 48.3 C). Chosen as the closest available climate analogue to an Indian metro cooling load. It is not India, and the load shapes are American; see the limitations section of the README.",
+  "selection_rule": "Fox buildings with NO district chilled-water meter (so the electricity meter actually contains the cooling we intend to control), >97% coverage in 2017, median load 40-800 kW, and a positive load-vs-outdoor-temperature correlation.",
+  "buildings": [
+    {"id": "Fox_office_Gaylord", "role": "primary", "label": "Office tower",
+     "why": "Sharpest demand-charge exposure on the site: p99/median = 2.9, weekday peak at 14:00, night/day = 0.44. All-electric cooling (corr with outdoor temp = 0.54, 1.85x lift from mild to hot days). 13,759 sqm."},
+    {"id": "Fox_assembly_Dixie", "role": "campus", "label": "Assembly hall",
+     "why": "Event-driven and violently peaky (p99/median = 4.4, night/day = 0.21). This is the 'one bad Tuesday' building."},
+    {"id": "Fox_education_Etta", "role": "campus", "label": "University block",
+     "why": "Cleanest weather response on the site (corr = 0.79) with a flat round-the-clock profile (night/day = 0.87). Hardest building to save money on, which is why it is in the set."},
+    {"id": "Fox_public_Denny", "role": "campus", "label": "Public services block",
+     "why": "Strongest weather response of all (corr = 0.84) and runs late (night/day = 0.78). Its peak is offset from the office, which is what makes campus coordination worth anything."}
+  ]
+}

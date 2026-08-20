@@ -1,0 +1,19 @@
+# Raw third-party data. Fetch instructions are in the README.
+data/raw/
+data/cache/
+
+# Trained artefacts. Reproduced by `reproduce.sh`; the model cards are tracked.
+models/**
+!models/**/model_card.md
+!models/**/meta.json
+
+# Bulky run output. The JSON/CSV/Markdown summaries and figures are tracked,
+# because the deck quotes them and a reader must be able to check a number
+# without re-running the study.
+results/*.parquet
+results/*.log
+
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
