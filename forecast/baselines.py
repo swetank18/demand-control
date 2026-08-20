@@ -392,11 +392,13 @@ class LightGBMQuantile(Baseline):
         import lightgbm as lgb
 
         Xtr, ytr = train[FEATURE_COLS], train["y"].to_numpy()
-        cb, vs = [], []
-        if valid is not None:
-            vs = [lgb.Dataset(valid[FEATURE_COLS], valid["y"].to_numpy())]
-            cb = [lgb.early_stopping(50, verbose=False)]
+        cb = [lgb.early_stopping(50, verbose=False)] if valid is not None else []
         for q in self.quantiles:
+            # Fresh Datasets per quantile. LightGBM frees the raw data after the
+            # first booster is built and then refuses to re-bind the validation
+            # set, so a shared Dataset across the five fits dies on the second.
+            vs = ([lgb.Dataset(valid[FEATURE_COLS], valid["y"].to_numpy())]
+                  if valid is not None else [])
             m = lgb.train({**self.params, "alpha": q}, lgb.Dataset(Xtr, ytr),
                           num_boost_round=self.n_estimators, valid_sets=vs, callbacks=cb)
             self.models[q] = m

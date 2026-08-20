@@ -48,6 +48,7 @@ def build_context(
     pv_kwp: float = 150.0,
     with_battery: bool = False,
     comfort: Comfort | None = None,
+    ev: EVFleet | None = None,
     stress=None,
 ) -> dict:
     df = pd.read_parquet(cache / f"{building}.parquet")
@@ -61,7 +62,7 @@ def build_context(
     tariff = Tariff.load(tariff_path)
     params = BuildingParams.from_manifest(
         cache / "manifest.json", building,
-        water_heater=WaterHeater(), ev=EVFleet(), pv=PV(kwp=pv_kwp),
+        water_heater=WaterHeater(), ev=ev or EVFleet(), pv=PV(kwp=pv_kwp),
         battery=Battery() if with_battery else None,
         **({"comfort": comfort} if comfort else {}),
     )
