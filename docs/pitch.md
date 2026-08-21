@@ -165,12 +165,40 @@ Two things to volunteer here before a judge finds them:
 
 1. **Seasonal naive already gets to zero breaches.** On a building with a
    timetable, last week's shape is a strong forecast. Our advantage over it is
-   not the breach count — it is 15 kW more headroom, a lower peak, and a bill
-   ₹816 lower on the month. The place seasonal naive fails is the cold-start
-   study and the stress scenarios, not the calm month.
+   not the breach count — it is 15 kW more headroom, a lower peak, a bill ₹816
+   lower, and a pinball loss 2.6× better on the same month. Do not overclaim
+   here: on a calm month against a building with a timetable, last week's shape
+   is a genuinely good forecast, and the cold-start study on slide 8 has it
+   beating our *transferred* model outright. It is the reference we would run at
+   a new site for a fortnight. What it does not have is margin when the month
+   stops being calm — see the heatwave row below.
 2. **Persistence claims the second-most headroom in the table and breaches 87
    times.** Headroom without calibration is not a benefit; it is an overdraft.
    That row is why coverage, not accuracy, is the operative metric.
+
+### The same table under a heatwave — and it goes against us
+
++6 °C and +25% base load for three days, everything else fixed:
+
+| Forecaster | Breaches | Interval width kW |
+| --- | --- | --- |
+| Static margin (no forecast) | 15 | 223.4 |
+| Persistence | 104 | 314.7 |
+| **Seasonal naive** | **0** | 72.2 |
+| Climatology | 3 | 86.5 |
+| **LightGBM quantile (ours)** | **2** | 39.6 |
+| Perfect foresight | 2 | 0.0 |
+
+Say it before a judge finds it: **seasonal naive takes zero breaches here and we
+take two — and so does a perfect forecast of the unstressed month.** Under a
+shock that is in nobody's inputs, what defends the ceiling is interval width, and
+theirs is 1.8× ours. Sharpness buys headroom on an ordinary month; it is what
+costs you on a day the model could not have known about.
+
+And the caveat that matters: this table measures *margin*, not *adaptation*. The
+tensors are computed offline, so no forecaster here can react to the heatwave.
+The adaptive layer that would react is the one measured on slide 5 — 0.832 → 0.890
+across a real distribution shift.
 
 ## 7. The frontier — what forecast quality is worth, in rupees
 

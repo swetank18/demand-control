@@ -162,11 +162,23 @@ def model_payload(building: str) -> dict:
         block = abl.get("none") or next(iter(abl.values()))
         keep = ("key", "forecaster", "pinball_mean", "coverage_90", "calibration_error",
                 "ceiling_breaches", "peak_kva", "bill_inr", "usable_headroom_kw",
-                "comfort_violation_pct", "worst_breach_kw", "first_breach_at",
+                "comfort_violation_pct", "sharpness_90", "worst_breach_kw", "first_breach_at",
                 "bill_vs_ours", "breaches_vs_ours", "headroom_vs_ours_kw")
-        rows = [{k: r.get(k) for k in keep} for r in block["rows"]]
-        rows.sort(key=lambda r: ABLATION_ORDER.index(r["key"]) if r["key"] in ABLATION_ORDER else 99)
-        out["ablation"] = {"meta": block["meta"], "rows": rows}
+
+        def trim(rows: list[dict]) -> list[dict]:
+            out_rows = [{k: r.get(k) for k in keep} for r in rows]
+            out_rows.sort(key=lambda r: ABLATION_ORDER.index(r["key"])
+                          if r["key"] in ABLATION_ORDER else 99)
+            return out_rows
+
+        # every stress the study was run under, so the interface can show the
+        # heatwave column too -- it is the one that goes against us, and hiding
+        # it would be the same mistake round 1 made in the other direction
+        out["ablation"] = {
+            "meta": block["meta"],
+            "rows": trim(block["rows"]),
+            "stress_rows": {k: trim(v["rows"]) for k, v in abl.items()},
+        }
 
     if frontier:
         out["frontier"] = {k: frontier[k] for k in

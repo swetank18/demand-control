@@ -77,11 +77,53 @@ Replacing the forecaster with a constant costs **+11 breaches, ₹12,885 and
 113 kW of usable headroom**. Two rows deserve to be read out rather than skipped:
 
 - **Seasonal naive already reaches zero breaches** on this calm month. Our
-  advantage over it here is 15 kW of headroom, a lower peak and ₹816. Where it
-  actually fails is the cold-start study and the stress scenarios.
+  advantage over it here is 15 kW of headroom, a lower peak, ₹816 and a pinball
+  loss 2.6× better. Stated carefully: on a calm month against a building with a
+  timetable, last week's shape is a genuinely good forecast, and in the
+  cold-start study below it beats our *transferred* model. It is the right
+  day-one reference at a new site. What it lacks is margin when the month stops
+  being calm.
 - **Persistence claims the second-most headroom in the table and breaches 87
   times.** Headroom without calibration is an overdraft, not a benefit, and that
   row is why coverage rather than accuracy is the operative metric.
+
+### Under a heatwave, and it does not flatter us
+
+`eval/ablation.py --stress none heatwave`. Same eight forecasters, same fixed
+optimiser, +6 °C and +25% base load for three days.
+
+| Forecaster feeding the optimiser | Breaches | Peak kVA | Bill ₹ | Interval width kW |
+| --- | --- | --- | --- | --- |
+| Static margin (no forecast) | 15 | 506.2 | 1,194,198 | 223.4 |
+| Persistence | 104 | 556.8 | 1,233,458 | 314.7 |
+| **Seasonal naive** | **0** | 487.4 | 1,183,179 | 72.2 |
+| Climatology | 3 | 497.1 | 1,189,003 | 86.5 |
+| Linear quantile | 3 | 501.6 | 1,192,089 | 132.5 |
+| **LightGBM quantile (ours)** | **2** | 501.6 | 1,191,414 | 39.6 |
+| Neural quantile | 2 | 502.1 | 1,191,609 | 33.5 |
+| Perfect foresight | 2 | 497.2 | 1,188,476 | 0.0 |
+
+**Read this one carefully, because it is against us.** Seasonal naive takes zero
+breaches where we take two — and so does a *perfect* forecast of the unstressed
+month. The mechanism is visible in the last column: under a shock that is in
+nobody's inputs, what protects the ceiling is interval **width**, and seasonal
+naive's intervals are 1.8× wider than ours. Sharpness is what buys headroom on
+an ordinary month and it is what costs you on a day the model could not have
+known about.
+
+Two things follow, and we would rather say both than have them found:
+
+1. **This experiment measures margin, not adaptation.** The forecast tensors are
+   computed offline on the unstressed month, so no forecaster here can react to
+   the heatwave at all. The adaptive conformal layer's actual response to a
+   regime shift is measured separately, and it is the April→June result: split
+   conformal alone falls to 0.832 coverage, adaptive restores 0.890 by widening
+   online. That is the mechanism that would fire on a real heatwave and it is
+   switched off by construction in this table.
+2. **The honest summary of the whole ablation is narrower than "our model
+   wins".** It is: remove the forecast entirely and you lose 11 breaches and
+   113 kW of headroom; keep a forecast and the differences between good ones are
+   real but modest on a calm month, and can invert under an unmodelled shock.
 
 ### The exchange rate between forecast quality and money
 

@@ -219,6 +219,12 @@ tests/     bill to the rupee, RC against closed form, controller invariants
 docs/      limitations, written before the results
 ```
 
+## One document for someone with five minutes
+
+`docs/system_overview.md` — what the dashboard shows, what is actually learned,
+what is deliberately not learned, where every number comes from, and a file map.
+Start there if you are reading this repo for the first time.
+
 ## Honesty
 
 `docs/limitations.md` was written before the results were generated. Read it
