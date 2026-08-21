@@ -200,6 +200,23 @@ tensors are computed offline, so no forecaster here can react to the heatwave.
 The adaptive layer that would react is the one measured on slide 5 — 0.832 → 0.890
 across a real distribution shift.
 
+### And on a second building, where it partly does not hold
+
+| Building | Ceiling | Breaches: ours / no model / persistence | Headroom gained | Bill vs no model |
+| --- | --- | --- | --- | --- |
+| Office tower | 467 kW | 0 / 11 / 87 | +113.2 kW | ₹12,885 better |
+| Assembly hall | 213 kW | 1 / 0 / 255 | +42.9 kW | ₹1,041 **worse** |
+
+Volunteer this one too. On the event-driven hall — the hardest building in the
+set to forecast — the no-model constant holds the ceiling and we take one breach.
+The ceiling was bisected with our own forecaster, so we sit at its tightest point
+and anything more conservative clears it by doing less. What holds on both
+buildings is capacity recovered and the collapse under persistence.
+
+**The claim the evidence supports:** a forecast buys capacity, a badly calibrated
+one destroys the ceiling, and whether a good forecast also buys rupees depends on
+how predictable the building is.
+
 ## 7. The frontier — what forecast quality is worth, in rupees
 
 Take the table above and plot it: forecast quality on the x-axis, downstream

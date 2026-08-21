@@ -27,6 +27,8 @@ APP = Path("/home/swetank/hackit/ampcast")
 
 #: The ablation rows, in the order they are argued on stage: what a site does
 #: today with no model, three references, ours, the neural benchmark, the bound.
+OURS = "lightgbm_quantile"
+
 ABLATION_ORDER = [
     "static_margin", "persistence", "seasonal_naive", "climatology",
     "linear_quantile", "lightgbm_quantile", "neural_quantile", "perfect_foresight",
@@ -224,6 +226,38 @@ def model_payload(building: str) -> dict:
             "tier3": impact.get("tier3_financial"),
             "tier4": impact.get("tier4_scale"),
         }
+
+    # Does the ablation hold on a building that is not the primary one? Same
+    # experiment, same eight forecasters, a different meter and a different
+    # demand ceiling. One building is an anecdote; this is the difference between
+    # "our model helped here" and "removing the forecast breaks the controller".
+    labels = json.loads((ROOT / "data/cache/manifest.json").read_text())["buildings"]
+    cross = []
+    for f in sorted(RESULTS.glob("ablation_*.json")):
+        b = f.name[len("ablation_"):-len(".json")]
+        block = json.loads(f.read_text())
+        block = block.get("none") or next(iter(block.values()))
+        rows = {r["key"]: r for r in block["rows"]}
+        if OURS not in rows or "static_margin" not in rows:
+            continue
+        ours_r, const_r = rows[OURS], rows["static_margin"]
+        cross.append({
+            "building": b,
+            "label": labels.get(b, {}).get("label", b),
+            "demand_target_kw": block["meta"]["demand_target_kw"],
+            "ours_pinball": ours_r["pinball_mean"],
+            "ours_coverage": ours_r["coverage_90"],
+            "ours_breaches": ours_r["ceiling_breaches"],
+            "ours_bill_inr": ours_r["bill_inr"],
+            "ours_headroom_kw": ours_r["usable_headroom_kw"],
+            "no_model_breaches": const_r["ceiling_breaches"],
+            "no_model_bill_inr": const_r["bill_inr"],
+            "no_model_headroom_kw": const_r["usable_headroom_kw"],
+            "seasonal_naive_breaches": rows.get("seasonal_naive", {}).get("ceiling_breaches"),
+            "persistence_breaches": rows.get("persistence", {}).get("ceiling_breaches"),
+        })
+    if len(cross) > 1:
+        out["cross_building"] = cross
 
     card = MODELS / building / "model_card.md"
     if card.exists():
