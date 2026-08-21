@@ -125,30 +125,35 @@ Two things follow, and we would rather say both than have them found:
    113 kW of headroom; keep a forecast and the differences between good ones are
    real but modest on a calm month, and can invert under an unmodelled shock.
 
-### Does the ablation hold on another building? Partly, and we say which part
+### Does the ablation hold on other buildings? Only partly, and we say which part
 
-Same eight forecasters, same optimiser, same protocol, on the event-driven
-assembly hall — the hardest building in the set to forecast (median MAPE 0.69).
-Its ceiling, 213 kW, was found by the same bisection.
+Same eight forecasters, same optimiser, same protocol, on three buildings. Each
+ceiling was found by the same bisection.
 
 | Building | Ceiling | Our pinball | Breaches: ours / no model / persistence | Headroom gained | Bill vs no model |
 | --- | --- | --- | --- | --- | --- |
 | Office tower (Gaylord) | 467 kW | 2.397 | 0 / 11 / 87 | +113.2 kW | ₹12,885 better |
-| Assembly hall (Dixie) | 213 kW | 4.927 | 1 / 0 / 255 | +42.9 kW | ₹1,041 **worse** |
+| Assembly hall (Dixie) | 213 kW | 4.927 | 1 / 0 / 255 | +42.9 kW | ₹1,041 worse |
+| Public services (Denny) | 261 kW | 2.576 | 0 / 0 / 25 | +13.5 kW | ₹1,394 worse |
 
-**The office result does not reproduce on the hall, and that is the finding.**
-Two structural reasons, neither of them luck. The demand ceiling is found by
-bisecting with *our* forecaster, so we sit at the tightest point it can hold and
-any more conservative controller clears it by scheduling less. And on a load this
-erratic, a wide constant margin is a defensible forecast — the same mechanism as
-the heatwave row above.
+**Only the office tower reproduces the headline.** It is the building where the
+ceiling actually binds and the load is predictable. On the two campus buildings a
+forecast-free constant already holds the ceiling this month and we finish a few
+hundred rupees behind it. Part of that is structural rather than bad luck: the
+ceiling is bisected with *our* forecaster, so we sit at the tightest point it can
+hold and any more conservative controller clears it by scheduling less.
 
-What does survive on both buildings: the forecast hands back 113 kW and 43 kW of
-usable capacity against the no-model constant, and persistence is catastrophic on
-both (87 and 255 breaches). The claim the evidence supports is therefore narrower
-than "our model always wins": **a forecast buys capacity, and a badly calibrated
-one destroys the ceiling. Whether a good forecast also buys rupees depends on how
-predictable the building is.**
+What holds on all three:
+
+- the forecast hands back **113, 43 and 14 kW** of usable capacity against the
+  no-model constant, at the same fixed ceiling;
+- a badly calibrated forecast is worse than none anywhere — persistence takes
+  **87, 255 and 25** breaches.
+
+So the claim the evidence supports is narrower than "our model wins": **a
+forecast buys capacity, a badly calibrated one is worse than no forecast at all,
+and whether a good forecast also buys rupees depends on whether the ceiling
+binds.**
 
 ### The exchange rate between forecast quality and money
 

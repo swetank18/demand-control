@@ -200,22 +200,26 @@ tensors are computed offline, so no forecaster here can react to the heatwave.
 The adaptive layer that would react is the one measured on slide 5 — 0.832 → 0.890
 across a real distribution shift.
 
-### And on a second building, where it partly does not hold
+### And on two more buildings, where it partly does not hold
 
-| Building | Ceiling | Breaches: ours / no model / persistence | Headroom gained | Bill vs no model |
-| --- | --- | --- | --- | --- |
-| Office tower | 467 kW | 0 / 11 / 87 | +113.2 kW | ₹12,885 better |
-| Assembly hall | 213 kW | 1 / 0 / 255 | +42.9 kW | ₹1,041 **worse** |
+| Building | Ceiling | Our pinball | Breaches: ours / no model / persistence | Headroom gained | Bill vs no model |
+| --- | --- | --- | --- | --- | --- |
+| Office tower (Gaylord) | 467 kW | 2.397 | 0 / 11 / 87 | +113.2 kW | ₹12,885 better |
+| Assembly hall (Dixie) | 213 kW | 4.927 | 1 / 0 / 255 | +42.9 kW | ₹1,041 worse |
+| Public services (Denny) | 261 kW | 2.576 | 0 / 0 / 25 | +13.5 kW | ₹1,394 worse |
 
-Volunteer this one too. On the event-driven hall — the hardest building in the
-set to forecast — the no-model constant holds the ceiling and we take one breach.
-The ceiling was bisected with our own forecaster, so we sit at its tightest point
-and anything more conservative clears it by doing less. What holds on both
-buildings is capacity recovered and the collapse under persistence.
+Volunteer this. **Only the office tower reproduces the headline** — it is the one
+where the ceiling binds and the load is predictable. On the campus buildings the
+no-model constant already holds the ceiling and we finish a few hundred rupees
+behind, partly because the ceiling was bisected with our own forecaster so we sit
+at its tightest point.
 
-**The claim the evidence supports:** a forecast buys capacity, a badly calibrated
-one destroys the ceiling, and whether a good forecast also buys rupees depends on
-how predictable the building is.
+What holds everywhere: 113, 43 and 14 kW of capacity recovered, and persistence
+destroying the ceiling on all three (87, 255, 25 breaches).
+
+**The claim to make, and only this one:** a forecast buys capacity, a badly
+calibrated one is worse than no forecast at all, and whether a good forecast also
+buys rupees depends on whether the ceiling binds.
 
 ## 7. The frontier — what forecast quality is worth, in rupees
 
