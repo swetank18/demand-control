@@ -1,0 +1,340 @@
+{
+  "building": "Fox_office_Gaylord",
+  "window": [
+    "2017-06-01",
+    "2017-06-30 23:45"
+  ],
+  "demand_target_kw": 467.2414405359504,
+  "assumptions": {
+    "transformer_upgrade_inr_per_kva": {
+      "value": 3500.0,
+      "why": "indicative turnkey cost of distribution transformer capacity in India, including civil and switchgear works. Order of magnitude only; a real society would price it from a quotation."
+    },
+    "discount_rate": {
+      "value": 0.1,
+      "why": "nominal discount rate for present-valuing a deferred capital outlay."
+    },
+    "ev_load_growth_pct_per_year": {
+      "value": 30.0,
+      "why": "compound annual growth in on-site EV charging energy. India's EV stock has been growing faster than this; 30% is deliberately conservative because a higher rate makes the deferral look better, not worse."
+    },
+    "billing_months_per_year": {
+      "value": 12.0,
+      "why": "the demand charge is a monthly maximum, so a month of saving annualises by twelve. This assumes June is a representative month, which it is not: it is the hottest, so this figure is an upper bound and is labelled as one."
+    },
+    "buildings_per_feeder": {
+      "value": 8.0,
+      "why": "commercial buildings of this size on one 11 kV distribution feeder. Stated as an assumption, not a survey."
+    },
+    "feeders_per_discom": {
+      "value": 5000.0,
+      "why": "order of magnitude for a mid-sized state distribution utility."
+    }
+  },
+  "status_quo": {
+    "peak_kva": 523.3136841107902,
+    "peak_kw": 497.14799990525063,
+    "bill_inr": 1320301.7884132506,
+    "energy_charge": 954406.7318798953,
+    "demand_charge": 318174.71993936045,
+    "ceiling_breaches": 11,
+    "comfort_violation_pct": 0.0
+  },
+  "static_margin_study": {
+    "sweep": [
+      {
+        "percentile": 0.5,
+        "allowance_kw": 101.73538675704661,
+        "breaches": 13,
+        "peak_kva": 526.9094476502195,
+        "bill_inr": 1178540.8900189209,
+        "comfort_violation_pct": 2.083333333333333,
+        "usable_headroom_kw": 390.03630650285436,
+        "usable_headroom_p10_kw": 365.5060537789038,
+        "headroom_negative_pct": 0.0
+      },
+      {
+        "percentile": 0.7,
+        "allowance_kw": 150.3134953392718,
+        "breaches": 13,
+        "peak_kva": 526.5236765376204,
+        "bill_inr": 1177518.3198088068,
+        "comfort_violation_pct": 2.013888888888889,
+        "usable_headroom_kw": 341.4581979206292,
+        "usable_headroom_p10_kw": 316.9279451966786,
+        "headroom_negative_pct": 0.0
+      },
+      {
+        "percentile": 0.8,
+        "allowance_kw": 195.32,
+        "breaches": 5,
+        "peak_kva": 506.7308392044525,
+        "bill_inr": 1164719.035318621,
+        "comfort_violation_pct": 1.9791666666666665,
+        "usable_headroom_kw": 296.45169325990094,
+        "usable_headroom_p10_kw": 271.9214405359504,
+        "headroom_negative_pct": 0.0
+      },
+      {
+        "percentile": 0.9,
+        "allowance_kw": 225.52472273347874,
+        "breaches": 12,
+        "peak_kva": 502.8506617459682,
+        "bill_inr": 1162180.4381329322,
+        "comfort_violation_pct": 2.013888888888889,
+        "usable_headroom_kw": 266.2469705264223,
+        "usable_headroom_p10_kw": 241.71671780247166,
+        "headroom_negative_pct": 0.0
+      },
+      {
+        "percentile": 0.95,
+        "allowance_kw": 238.76619136960602,
+        "breaches": 16,
+        "peak_kva": 505.85098412831104,
+        "bill_inr": 1164121.256725198,
+        "comfort_violation_pct": 1.9791666666666665,
+        "usable_headroom_kw": 253.005501890295,
+        "usable_headroom_p10_kw": 228.47524916634438,
+        "headroom_negative_pct": 0.0
+      },
+      {
+        "percentile": 0.98,
+        "allowance_kw": 251.67915179112418,
+        "breaches": 10,
+        "peak_kva": 503.97218143004915,
+        "bill_inr": 1163283.9292065955,
+        "comfort_violation_pct": 2.1527777777777777,
+        "usable_headroom_kw": 240.0925414687768,
+        "usable_headroom_p10_kw": 215.56228874482622,
+        "headroom_negative_pct": 0.0
+      },
+      {
+        "percentile": 1.0,
+        "allowance_kw": 293.70561450526395,
+        "breaches": 0,
+        "peak_kva": 486.0802225106707,
+        "bill_inr": 1155408.258564835,
+        "comfort_violation_pct": 2.2916666666666665,
+        "usable_headroom_kw": 198.066078754637,
+        "usable_headroom_p10_kw": 173.53582603068645,
+        "headroom_negative_pct": 0.0
+      }
+    ],
+    "ours": {
+      "ceiling_breaches": 0,
+      "usable_headroom_kw": 354.0938211029002,
+      "bill_inr": 1149605.4416837704,
+      "peak_kva": 481.943399011003
+    },
+    "matched": {
+      "percentile": 1.0,
+      "allowance_kw": 293.70561450526395,
+      "breaches": 0,
+      "peak_kva": 486.0802225106707,
+      "bill_inr": 1155408.258564835,
+      "comfort_violation_pct": 2.2916666666666665,
+      "usable_headroom_kw": 198.066078754637,
+      "usable_headroom_p10_kw": 173.53582603068645,
+      "headroom_negative_pct": 0.0
+    },
+    "recovered_headroom_kw": 156.02774234826322,
+    "recovered_headroom_pct": 78.77560020842812,
+    "bill_gap_inr": 5802.816881064558,
+    "statement": "A forecast-free static margin tuned to breach no more often than we do (p100, 0 breaches) leaves 198.1 kW usable. We leave 354.1 kW at 0 breaches. The forecast recovers 156.0 kW (+79%) of capacity at equal safety."
+  },
+  "ev_headroom": {
+    "sweep": [
+      {
+        "ev_kwh_per_day": 220.0,
+        "ev_max_kw": 60.0,
+        "uncoordinated_breaches": 11,
+        "uncoordinated_peak_kva": 523.3136841107902,
+        "uncoordinated_bill_inr": 1320301.7884132506,
+        "uncoordinated_comfort_pct": 0.0,
+        "rule_based_breaches": 31,
+        "rule_based_peak_kva": 528.198833732275,
+        "rule_based_bill_inr": 1287527.834978188,
+        "rule_based_comfort_pct": 0.0,
+        "ours_breaches": 0,
+        "ours_peak_kva": 481.943399011003,
+        "ours_bill_inr": 1149605.4416837704,
+        "ours_comfort_pct": 0.5902777777777778
+      },
+      {
+        "ev_kwh_per_day": 500.0,
+        "ev_max_kw": 83.33333333333333,
+        "uncoordinated_breaches": 74,
+        "uncoordinated_peak_kva": 590.9533575581265,
+        "uncoordinated_bill_inr": 1401813.9798692309,
+        "uncoordinated_comfort_pct": 0.0,
+        "rule_based_breaches": 71,
+        "rule_based_peak_kva": 559.9721829937912,
+        "rule_based_bill_inr": 1346632.6057047213,
+        "rule_based_comfort_pct": 0.0,
+        "ours_breaches": 2,
+        "ours_peak_kva": 495.8200516291654,
+        "ours_bill_inr": 1198651.2897579803,
+        "ours_comfort_pct": 0.5208333333333333
+      },
+      {
+        "ev_kwh_per_day": 800.0,
+        "ev_max_kw": 133.33333333333334,
+        "uncoordinated_breaches": 153,
+        "uncoordinated_peak_kva": 643.5849365054949,
+        "uncoordinated_bill_inr": 1476352.629869231,
+        "uncoordinated_comfort_pct": 0.0,
+        "rule_based_breaches": 171,
+        "rule_based_peak_kva": 594.0150572025582,
+        "rule_based_bill_inr": 1409959.1457688643,
+        "rule_based_comfort_pct": 0.0,
+        "ours_breaches": 7,
+        "ours_peak_kva": 498.2957378857662,
+        "ours_bill_inr": 1245473.3195133745,
+        "ours_comfort_pct": 0.3472222222222222
+      },
+      {
+        "ev_kwh_per_day": 1100.0,
+        "ev_max_kw": 183.33333333333334,
+        "uncoordinated_breaches": 232,
+        "uncoordinated_peak_kva": 696.2165154528633,
+        "uncoordinated_bill_inr": 1550891.279869231,
+        "uncoordinated_comfort_pct": 0.0,
+        "rule_based_breaches": 257,
+        "rule_based_peak_kva": 628.0579314113254,
+        "rule_based_bill_inr": 1473285.6858330073,
+        "rule_based_comfort_pct": 0.0,
+        "ours_breaches": 32,
+        "ours_peak_kva": 504.8235590553101,
+        "ours_bill_inr": 1295482.8190014279,
+        "ours_comfort_pct": 0.1388888888888889
+      },
+      {
+        "ev_kwh_per_day": 1400.0,
+        "ev_max_kw": 233.33333333333334,
+        "uncoordinated_breaches": 266,
+        "uncoordinated_peak_kva": 748.8480944002317,
+        "uncoordinated_bill_inr": 1625429.929869231,
+        "uncoordinated_comfort_pct": 0.0,
+        "rule_based_breaches": 344,
+        "rule_based_peak_kva": 665.860688413472,
+        "rule_based_bill_inr": 1538898.234635525,
+        "rule_based_comfort_pct": 0.0,
+        "ours_breaches": 91,
+        "ours_peak_kva": 538.9913936589637,
+        "ours_bill_inr": 1359614.2504877103,
+        "ours_comfort_pct": 0.20833333333333334
+      },
+      {
+        "ev_kwh_per_day": 1700.0,
+        "ev_max_kw": 283.3333333333333,
+        "uncoordinated_breaches": 266,
+        "uncoordinated_peak_kva": 801.4796733476002,
+        "uncoordinated_bill_inr": 1699968.579869231,
+        "uncoordinated_comfort_pct": 0.0,
+        "rule_based_breaches": 364,
+        "rule_based_peak_kva": 711.7079910782634,
+        "rule_based_bill_inr": 1609401.8672009301,
+        "rule_based_comfort_pct": 0.0,
+        "ours_breaches": 150,
+        "ours_peak_kva": 573.270426947445,
+        "ours_bill_inr": 1420341.4769192564,
+        "ours_comfort_pct": 0.9722222222222222
+      },
+      {
+        "ev_kwh_per_day": 2000.0,
+        "ev_max_kw": 333.3333333333333,
+        "uncoordinated_breaches": 266,
+        "uncoordinated_peak_kva": 854.1112522949686,
+        "uncoordinated_bill_inr": 1774507.2298692309,
+        "uncoordinated_comfort_pct": 0.0,
+        "rule_based_breaches": 371,
+        "rule_based_peak_kva": 757.5552937430547,
+        "rule_based_bill_inr": 1679905.4997663363,
+        "rule_based_comfort_pct": 0.0,
+        "ours_breaches": 213,
+        "ours_peak_kva": 608.1727832207365,
+        "ours_bill_inr": 1481888.2576225628,
+        "ours_comfort_pct": 2.2222222222222223
+      },
+      {
+        "ev_kwh_per_day": 2400.0,
+        "ev_max_kw": 400.0,
+        "uncoordinated_breaches": 266,
+        "uncoordinated_peak_kva": 924.2866908914598,
+        "uncoordinated_bill_inr": 1873892.0965358978,
+        "uncoordinated_comfort_pct": 0.0,
+        "rule_based_breaches": 377,
+        "rule_based_peak_kva": 820.2514318212867,
+        "rule_based_bill_inr": 1774862.7151115178,
+        "rule_based_comfort_pct": 0.0,
+        "ours_breaches": 307,
+        "ours_peak_kva": 654.268239727405,
+        "ours_bill_inr": 1564380.0895948622,
+        "ours_comfort_pct": 4.722222222222222
+      }
+    ],
+    "first_breach_kwh_per_day": {
+      "uncoordinated": 220.0,
+      "rule_based": 220.0,
+      "ours": 500.0
+    },
+    "deferral_years": 3.129163012105088,
+    "deferral_statement": "Uncoordinated charging breaches the ceiling at 220 kWh/day of EV load; ours holds to 500 kWh/day. At 30% annual growth in EV charging that gap is 3.1 years before the connection has to be upgraded."
+  },
+  "tier1_technical": {
+    "uncontrolled_peak_kva": 523.3136841107902,
+    "our_peak_kva": 481.943399011003,
+    "peak_reduction_kva": 41.37028509978717,
+    "peak_reduction_pct": 7.905446839228594,
+    "uncontrolled_breaches": 11,
+    "our_breaches": 0,
+    "our_comfort_violation_pct": 0.5902777777777778,
+    "achievable_saving_inr": 171517.22690747422,
+    "captured_saving_inr": 170696.3467294802,
+    "pct_of_achievable_captured": 99.52140074044173
+  },
+  "tier3_financial": {
+    "formula_demand": "peak kVA reduction x INR/kVA/month",
+    "demand_charge_saving_inr_per_month": 25153.133340670596,
+    "demand_charge_rate_inr_per_kva": 608.0,
+    "energy_charge_saving_inr_per_month": 138612.58417981863,
+    "total_bill_saving_inr_per_month": 170696.3467294802,
+    "total_bill_saving_pct": 12.928585587589367,
+    "annualised_upper_bound_inr": 2048356.1607537623,
+    "annualised_caveat": "the demand charge is a monthly maximum, so a month of saving annualises by twelve. This assumes June is a representative month, which it is not: it is the hottest, so this figure is an upper bound and is labelled as one.",
+    "avoided_capital": {
+      "formula": "contract kVA x INR/kVA, present-valued over the deferral",
+      "upgrade_cost_inr": 1767500.0,
+      "deferral_years": 3.129163012105088,
+      "npv_of_deferral_inr": 455798.6573053518,
+      "assumptions": {
+        "transformer_upgrade_inr_per_kva": {
+          "value": 3500.0,
+          "why": "indicative turnkey cost of distribution transformer capacity in India, including civil and switchgear works. Order of magnitude only; a real society would price it from a quotation."
+        },
+        "discount_rate": {
+          "value": 0.1,
+          "why": "nominal discount rate for present-valuing a deferred capital outlay."
+        }
+      }
+    }
+  },
+  "tier4_scale": {
+    "arithmetic": "saving per building per month x buildings per feeder x feeders per discom",
+    "per_building_inr_per_month": 170696.3467294802,
+    "per_feeder_inr_per_month": 1365570.7738358416,
+    "per_discom_inr_per_month": 6827853869.179208,
+    "per_discom_inr_per_year_upper_bound": 81934246430.1505,
+    "assumptions": {
+      "buildings_per_feeder": {
+        "value": 8.0,
+        "why": "commercial buildings of this size on one 11 kV distribution feeder. Stated as an assumption, not a survey."
+      },
+      "feeders_per_discom": {
+        "value": 5000.0,
+        "why": "order of magnitude for a mid-sized state distribution utility."
+      }
+    },
+    "note": "This is arithmetic, not a market size. It assumes every building on every feeder is like this one, has a demand charge, and is instrumented. The point of the multiplication is the shape of the number, not its precision."
+  }
+}

@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import textwrap
 from pathlib import Path
 
 import matplotlib
@@ -55,19 +56,41 @@ STYLE = {
 DEFAULT = dict(color="#2f6690", s=90, marker="o", zorder=4, edgecolor="k", linewidth=0.5)
 
 PANELS = [
-    ("pinball_mean", "ceiling_breaches",
-     "Pinball loss on the month (kW)", "Ceiling breaches (30-min blocks)",
-     "A. Forecast quality buys transformer safety"),
-    ("pinball_mean", "bill_inr",
-     "Pinball loss on the month (kW)", "Monthly bill (INR)",
-     "B. Forecast quality buys money"),
-    ("calibration_error", "ceiling_breaches",
-     "Calibration error (mean |nominal - empirical|)", "Ceiling breaches (30-min blocks)",
-     "C. Calibration, isolated from sharpness"),
-    ("pinball_mean", "usable_headroom_kw",
-     "Pinball loss on the month (kW)", "Usable headroom (kW)",
-     "D. ...and it buys back capacity"),
+    dict(x="pinball_mean", y="ceiling_breaches",
+         xlab="Pinball loss on the month (kW)", ylab="Ceiling breaches (30-min blocks)",
+         title="A. Forecast quality buys transformer safety",
+         ylog=True, drop=()),
+    dict(x="pinball_mean", y="bill_inr",
+         xlab="Pinball loss on the month (kW)", ylab="Monthly bill (INR)",
+         title="B. Forecast quality buys money",
+         ylog=False, drop=()),
+    # Perfect foresight is dropped here, not hidden: every quantile equals the
+    # actual, so its "calibration error" is 0.5 by arithmetic and plotting it
+    # would put a meaningless point at the far right of the axis.
+    dict(x="calibration_error", y="ceiling_breaches",
+         xlab="Calibration error (mean |nominal - empirical|)",
+         ylab="Ceiling breaches (30-min blocks)",
+         title="C. Calibration, isolated from sharpness",
+         ylog=True, drop=(CEILING,)),
+    dict(x="pinball_mean", y="usable_headroom_kw",
+         xlab="Pinball loss on the month (kW)", ylab="Usable headroom (kW)",
+         title="D. Capacity claimed — but only safety makes it real",
+         ylog=False, drop=()),
 ]
+
+#: Panel D does not come out monotonic and that is the finding, not a defect.
+#: Persistence claims more headroom than climatology because its q95 simply
+#: tracks the last observed value, so it hands the optimiser capacity that is not
+#: there -- and then breaches 87 times using it. Headroom is only a benefit at
+#: equal safety, which is what the static-margin study in eval/impact.py measures
+#: and what this panel deliberately does not.
+PANEL_D_NOTE = (
+    "Panel D is not monotonic, and that is the finding. Headroom without safety is not "
+    "a benefit: persistence claims more capacity than climatology because its q95 simply "
+    "follows the last observed value, and it then breaches the ceiling 87 times spending "
+    "capacity that was never there. The like-for-like comparison is the static-margin "
+    "study in eval/impact.py, which matches breach counts first and compares headroom second."
+)
 
 
 def load(building: str, stress: str = "none") -> pd.DataFrame:
@@ -91,32 +114,88 @@ def monotonicity(df: pd.DataFrame, x: str, y: str) -> dict:
             "monotonic": bool(abs(rho) > 0.6 and p < 0.10)}
 
 
+#: Vertical offsets, in points, cycled by plotting order. Four lanes rather than
+#: two because on panels A and C every competent forecaster lands on the same y
+#: (zero breaches) within a few kW of the next, and two lanes still overprint.
+LABEL_LANES = (8, -16, 20, -28)
+
+
+def _place(ax, x, y, text, i: int, n: int) -> None:
+    """Annotate without collisions, by cycling the offset around the point.
+
+    Not a general label-repel algorithm -- there are eight points and a deck to
+    build. Cycling the vertical offset by index, and flipping the last two to the
+    left so they do not run off the axis, is enough to separate the cluster of
+    good forecasters that otherwise print on top of one another.
+    """
+    dx, dy = 9, LABEL_LANES[i % len(LABEL_LANES)]
+    ha = "left"
+    if i >= n - 2:                       # rightmost points would run off the axis
+        dx, ha = -9, "right"
+    # points sitting on the floor of the axis (zero breaches, and there are five
+    # of them) have no room below, so those lanes are folded upward
+    frac = ax.transAxes.inverted().transform(ax.transData.transform((x, y)))[1]
+    if frac < 0.18 and dy < 0:
+        dy = -dy + 14            # into lanes of its own, not on top of 8 and 20
+    ax.annotate(text, (x, y), textcoords="offset points", xytext=(dx, dy),
+                fontsize=8.4, color="#0f172a", ha=ha,
+                bbox=dict(boxstyle="round,pad=0.18", fc="white", ec="none", alpha=0.72))
+
+
 def figure(df: pd.DataFrame, meta: dict, out: Path) -> dict:
-    fig, axes = plt.subplots(2, 2, figsize=(13.5, 9.5))
+    fig, axes = plt.subplots(2, 2, figsize=(14.5, 11.0))
     stats = {}
 
-    for ax, (xk, yk, xlab, ylab, title) in zip(axes.ravel(), PANELS):
-        d = df.dropna(subset=[xk, yk]).sort_values(xk)
+    for ax, spec in zip(axes.ravel(), PANELS):
+        xk, yk = spec["x"], spec["y"]
+        d = df[~df.key.isin(spec["drop"])].dropna(subset=[xk, yk]).sort_values(xk)
+
+        # the trend line runs through the forecasters only; the static margin is
+        # not on the same axis of variation and would bend the line by itself
         curve = d[~d.key.isin([NOMODEL])]
-        ax.plot(curve[xk], curve[yk], color="#94a3b8", lw=1.4, ls="-", zorder=2, alpha=0.9)
+        ax.plot(curve[xk], curve[yk], color="#cbd5e1", lw=1.3, zorder=2)
 
-        for _, r in d.iterrows():
+        n = len(d)
+        for i, (_, r) in enumerate(d.reset_index(drop=True).iterrows()):
             ax.scatter(r[xk], r[yk], **STYLE.get(r["key"], DEFAULT))
-            ax.annotate(r["forecaster"].replace(" (ours)", ""), (r[xk], r[yk]),
-                        textcoords="offset points", xytext=(8, 6), fontsize=8.2,
-                        color="#0f172a")
+            _place(ax, r[xk], r[yk], r["forecaster"].replace(" (ours)", ""), i, n)
 
-        s = monotonicity(df, xk, yk)
+        if spec["ylog"]:
+            # breaches run 0 to 87; a linear axis collapses everything below ten
+            ax.set_yscale("symlog", linthresh=1.0)
+            ax.set_ylim(-0.35, max(120, d[yk].max() * 1.6))
+            ax.set_yticks([0, 1, 10, 100])
+            ax.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+
+        if not spec["ylog"]:
+            ylo, yhi = float(d[yk].min()), float(d[yk].max())
+            ypad = 0.10 * (yhi - ylo or 1.0)
+            ax.set_ylim(ylo - ypad, yhi + ypad)
+
+        lo, hi = float(d[xk].min()), float(d[xk].max())
+        pad = 0.14 * (hi - lo or 1.0)
+        ax.set_xlim(lo - pad, hi + pad * 1.6)
+
+        s = monotonicity(df[~df.key.isin(spec["drop"])], xk, yk)
         stats[f"{xk}__{yk}"] = s
-        if s.get("rho") is not None:
-            ax.text(0.98, 0.04, f"Spearman rho = {s['rho']:+.2f}  (p = {s['p']:.3f}, n = {s['n']})",
-                    transform=ax.transAxes, ha="right", va="bottom", fontsize=9,
-                    bbox=dict(boxstyle="round,pad=0.35", fc="#f8fafc", ec="#cbd5e1"))
+        ax.set_xlabel(spec["xlab"])
+        ax.set_ylabel(spec["ylab"])
+        ax.set_title(spec["title"], loc="left", fontsize=11.5, weight="bold", pad=22)
+        ax.grid(alpha=0.26)
 
-        ax.set_xlabel(xlab)
-        ax.set_ylabel(ylab)
-        ax.set_title(title, loc="left", fontsize=11.5, weight="bold")
-        ax.grid(alpha=0.28)
+        # The statistic sits above the axes rather than inside them. Anywhere
+        # inside collides with a point label on at least one of the four panels,
+        # and a legend box parked on top of the data is how a plot stops being read.
+        if s.get("rho") is not None:
+            verdict = "monotonic" if s.get("monotonic") else "not monotonic"
+            ax.text(0.0, 1.012,
+                    f"Spearman rho = {s['rho']:+.2f}    p = {s['p']:.3f}    n = {s['n']}    ({verdict})",
+                    transform=ax.transAxes, ha="left", va="bottom", fontsize=8.8,
+                    color="#475569")
+
+    fig.text(0.5, 0.017, textwrap.fill(PANEL_D_NOTE, 132), ha="center", va="bottom",
+             fontsize=8.6, color="#7f1d1d", linespacing=1.45,
+             bbox=dict(boxstyle="round,pad=0.5", fc="#fef2f2", ec="#fecaca"))
 
     fig.suptitle(
         f"What forecast quality is worth downstream — {meta['building']}, "
@@ -124,7 +203,7 @@ def figure(df: pd.DataFrame, meta: dict, out: Path) -> dict:
         f"Same optimiser, same simulator, same {meta['demand_target_kw']:.0f} kW target on "
         f"every point. Only the forecaster changes.",
         fontsize=12.5, y=0.995)
-    fig.tight_layout(rect=(0, 0, 1, 0.955))
+    fig.tight_layout(rect=(0.005, 0.075, 0.995, 0.952))
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=140)
     plt.close(fig)
@@ -169,6 +248,7 @@ def main() -> None:
 
     payload = {"building": args.building, "stress": args.stress, "meta": meta,
                "monotonicity": stats, "exchange_rate": rates,
+               "panel_d_note": PANEL_D_NOTE,
                "figure": str(args.out.relative_to(ROOT))}
     (RESULTS / "model_frontier.json").write_text(json.dumps(payload, indent=2))
 

@@ -30,10 +30,15 @@ Written before the results, so it cannot be tuned to flatter them.
   American too, and this matters in a specific direction: these buildings peak
   around 14:00, inside the tariff's normal window, not inside the 18:00-22:00
   peak window. So the time-of-day arbitrage available here is *weaker* than it
-  would be for an Indian office, and essentially all of our saving comes from the
-  demand charge. That is the lever the project argues for, so the result is
-  conservative rather than flattering, but the reader should know the ToD column
-  is understated.
+  would be for an Indian office, and the ToD column is understated. What the
+  saving actually decomposes into, measured by the bill engine in
+  `results/impact.json`: ₹138,613 a month of energy charge and ₹25,153 of demand
+  charge, the rest duty. The energy share is *not* ToD arbitrage — it is the
+  controller using the whole comfort band where the baseline thermostat holds a
+  fixed 24 °C setpoint, and it would appear under any competent scheduler. The
+  demand-charge line is the smaller number and it is the one the forecast is
+  load-bearing for: it is what the ceiling protects, and it is the line that goes
+  wrong in the ablation when the model is removed.
 - **Hourly source data upsampled to 15 minutes.** BDG2 is hourly; Indian demand
   charges are set on 30-minute blocks. We interpolate with a shape-preserving
   PCHIP. Interpolation *smooths* real sub-hourly variability, so measured peaks

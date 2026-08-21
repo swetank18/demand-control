@@ -22,6 +22,15 @@ from tariff.bill import compute_bill, price_series, window_series
 from tariff.schema import Tariff
 
 RESULTS = ROOT / "results"
+MODELS = ROOT / "models"
+APP = Path("/home/swetank/hackit/ampcast")
+
+#: The ablation rows, in the order they are argued on stage: what a site does
+#: today with no model, three references, ours, the neural benchmark, the bound.
+ABLATION_ORDER = [
+    "static_margin", "persistence", "seasonal_naive", "climatology",
+    "linear_quantile", "lightgbm_quantile", "neural_quantile", "perfect_foresight",
+]
 
 SCENARIOS = {
     "none": ("Normal month", "June 2017 as it actually happened, no injected failure."),
@@ -86,13 +95,195 @@ def series_payload(h: pd.DataFrame, tariff: Tariff) -> dict:
     }
 
 
+def band_payload(band: pd.DataFrame, rule: str) -> dict:
+    """The forecast fan the controller was looking at, on the chart's own grid.
+
+    Section 8's first interface addition: the q05-q95 ribbon with the realised
+    load tracking through it. Resampled to the billing block so it lands on the
+    same x-grid as the load trace and the client never has to interpolate — the
+    quantiles by their block mean, the rolling hit rate by its last value, since
+    it is already a 24-hour average and averaging it again would flatten it.
+    """
+    q = band[["q05", "q50", "q95", "actual"]].resample(rule).mean()
+    hit = band[["q95_hit_rate_24h", "coverage_90_24h"]].resample(rule).last()
+    both = q.join(hit).dropna(subset=["q95"])
+    return {
+        "t": [int(ts.timestamp()) for ts in both.index],
+        "q05": [round(float(v), 1) for v in both.q05],
+        "q50": [round(float(v), 1) for v in both.q50],
+        "q95": [round(float(v), 1) for v in both.q95],
+        "actual": [round(float(v), 1) for v in both.actual],
+        "q95_hit_24h": [None if pd.isna(v) else round(float(v), 4) for v in both.q95_hit_rate_24h],
+        "coverage_24h": [None if pd.isna(v) else round(float(v), 4) for v in both.coverage_90_24h],
+    }
+
+
+def model_payload(building: str) -> dict:
+    """Everything the model has to show for itself, as data.
+
+    The round-1 feedback was that no model was visible. The fix is not a
+    paragraph claiming there is one: it is the benchmark, the ablation, the
+    frontier, the cold-start test, the interpretability study and the impact
+    arithmetic, shipped from the files that produced them so the interface and
+    the results directory cannot drift apart. Anything missing is reported as
+    missing rather than faked, so a half-run pipeline shows a gap, not a lie.
+    """
+    def load(name: str):
+        f = RESULTS / name
+        return json.loads(f.read_text()) if f.exists() else None
+
+    bench = load(f"forecast_benchmark_{building}.json")
+    abl = load(f"ablation_{building}.json")
+    frontier = load("model_frontier.json")
+    cold = load("cold_start.json")
+    interp = load("interpretability.json")
+    impact = load("impact.json")
+
+    out: dict = {"building": building}
+
+    if bench:
+        out["split"] = bench["split"]
+        out["benchmark"] = [
+            {"key": k, "name": m["name"], "definition": m["definition"],
+             **{c: m["scores"].get(c) for c in (
+                 "pinball_mean", "crps", "winkler_90", "mae_median", "coverage_90",
+                 "below_q95", "sharpness_90", "calibration_error")},
+             "fit_seconds": m.get("fit_seconds")}
+            for k, m in bench["models"].items()
+        ]
+        if "rolling" in bench:
+            r = bench["rolling"]
+            out["rolling"] = {
+                "folds": r["folds"],
+                "summary": r["summary"],
+            }
+
+    if abl:
+        block = abl.get("none") or next(iter(abl.values()))
+        keep = ("key", "forecaster", "pinball_mean", "coverage_90", "calibration_error",
+                "ceiling_breaches", "peak_kva", "bill_inr", "usable_headroom_kw",
+                "comfort_violation_pct", "worst_breach_kw", "first_breach_at",
+                "bill_vs_ours", "breaches_vs_ours", "headroom_vs_ours_kw")
+        rows = [{k: r.get(k) for k in keep} for r in block["rows"]]
+        rows.sort(key=lambda r: ABLATION_ORDER.index(r["key"]) if r["key"] in ABLATION_ORDER else 99)
+        out["ablation"] = {"meta": block["meta"], "rows": rows}
+
+    if frontier:
+        out["frontier"] = {k: frontier[k] for k in
+                           ("monotonicity", "exchange_rate", "panel_d_note") if k in frontier}
+
+    if cold:
+        out["cold_start"] = {k: cold[k] for k in
+                             ("target", "trained_on", "warmup_days", "scale_kw", "rows", "summary")
+                             if k in cold}
+
+    if interp:
+        fa = interp.get("feature_ablation", {})
+        wc = interp.get("worst_case")
+        if wc and isinstance(wc.get("series", {}).get("t", [None])[0], str):
+            # the study writes timestamps; the web app speaks epoch seconds
+            # everywhere, and the conversion belongs at this boundary rather than
+            # in the client
+            wc = {**wc, "series": {**wc["series"],
+                                   "t": [int(pd.Timestamp(t).timestamp()) for t in wc["series"]["t"]]}}
+        out["interpretability"] = {
+            "shap": {q: {"top": v["top"][:12],
+                         "mean_abs_shap": dict(list(v["mean_abs_shap"].items())[:12])}
+                     for q, v in interp.get("shap", {}).get("shap", {}).items()},
+            "feature_groups": [{k: g.get(k) for k in
+                                ("group", "dropped", "pinball_mean", "degradation",
+                                 "degradation_pct", "coverage_90")}
+                               for g in fa.get("groups", [])],
+            "feature_full": fa.get("full", {}).get("pinball_mean"),
+            "settings": fa.get("settings"),
+            "worst_case": wc,
+        }
+
+    if impact:
+        sm = impact.get("static_margin_study", {})
+        out["impact"] = {
+            "status_quo": impact.get("status_quo"),
+            "assumptions": impact.get("assumptions"),
+            "static_margin": {k: sm.get(k) for k in
+                              ("sweep", "matched", "ours", "recovered_headroom_kw",
+                               "recovered_headroom_pct", "bill_gap_inr", "statement")},
+            "ev_headroom": impact.get("ev_headroom"),
+            "tier1": impact.get("tier1_technical"),
+            "tier3": impact.get("tier3_financial"),
+            "tier4": impact.get("tier4_scale"),
+        }
+
+    card = MODELS / building / "model_card.md"
+    if card.exists():
+        out["model_card"] = card.read_text()
+
+    out["missing"] = [n for n, v in (("benchmark", bench), ("ablation", abl),
+                                     ("frontier", frontier), ("cold_start", cold),
+                                     ("interpretability", interp), ("impact", impact))
+                      if v is None]
+    return out
+
+
+def export_ablation(building: str, tariff: Tariff, out: Path) -> list[dict]:
+    """The ablation as something you can play, not only read.
+
+    Section 8's demo moment: swap the forecaster on stage and watch the ceiling
+    go. These are the same runs as the table in ``results/ablation.md`` -- written
+    by ``eval/ablation.py`` while it built that table -- so the timeline on screen
+    and the row underneath it cannot disagree.
+    """
+    src = RESULTS / "ablation"
+    if not src.exists():
+        print("  ablation/    -  no per-row timelines; run eval/ablation.py to write them")
+        return []
+
+    payload = json.loads((RESULTS / f"ablation_{building}.json").read_text())
+    block = payload.get("none") or next(iter(payload.values()))
+    rows = {r["key"]: r for r in block["rows"]}
+    rule = f"{tariff.billing_interval_minutes}min"
+    (out / "public/data/ablation").mkdir(parents=True, exist_ok=True)
+
+    index = []
+    for key in ABLATION_ORDER:
+        h = src / f"history_{building}_none_{key}.parquet"
+        if not h.exists() or key not in rows:
+            continue
+        hist = pd.read_parquet(h)
+        hist.index = pd.to_datetime(hist.index)
+        entry = {
+            "key": key,
+            "label": rows[key]["forecaster"],
+            "metrics": {k: rows[key].get(k) for k in
+                        ("pinball_mean", "coverage_90", "ceiling_breaches", "peak_kva",
+                         "bill_inr", "usable_headroom_kw", "comfort_violation_pct",
+                         "first_breach_at", "worst_breach_kw")},
+            "series": series_payload(hist, tariff),
+        }
+        b = src / f"band_{building}_none_{key}.parquet"
+        if b.exists():
+            band = pd.read_parquet(b)
+            band.index = pd.to_datetime(band.index)
+            entry["band"] = band_payload(band, rule)
+        (out / "public/data/ablation" / f"{key}.json").write_text(json.dumps(entry))
+        index.append({"key": key, "label": entry["label"],
+                      "breaches": entry["metrics"]["ceiling_breaches"],
+                      "bill_inr": entry["metrics"]["bill_inr"],
+                      "has_band": "band" in entry})
+    n = sum(f.stat().st_size for f in (out / "public/data/ablation").glob("*.json"))
+    print(f"  ablation/*.json  {n/1024:8.1f} KB  ({len(index)} forecasters)")
+    return index
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--building", default="Fox_office_Gaylord")
-    ap.add_argument("--out", type=Path, default=Path("/home/swetank/hackit/ampcast/seed"))
+    ap.add_argument("--out", type=Path, default=APP,
+                    help="root of the Next.js app; the bundle and the series land "
+                         "in the two places it actually reads them from")
     args = ap.parse_args()
     out = args.out
-    (out / "series").mkdir(parents=True, exist_ok=True)
+    (out / "public/data/series").mkdir(parents=True, exist_ok=True)
+    (out / "src/lib").mkdir(parents=True, exist_ok=True)
 
     man = json.loads((ROOT / "data/cache/manifest.json").read_text())
     bp = man["buildings"][args.building]
@@ -116,7 +307,7 @@ def main() -> None:
         h.index = pd.to_datetime(h.index)
         bill = compute_bill(h["grid_kw"], tariff, 0.95)
         sid = f"{r['stress']}__{key}"
-        (out / "series" / f"{sid}.json").write_text(json.dumps(series_payload(h, tariff)))
+        (out / "public/data/series" / f"{sid}.json").write_text(json.dumps(series_payload(h, tariff)))
         index.append(sid)
         runs.append({
             "id": sid, "scenario": r["stress"], "controller": key, "controller_label": name,
@@ -178,11 +369,18 @@ def main() -> None:
         "mv_baseline_length": mv,
         "window": {"start": "2017-06-01T00:00:00", "end": "2017-06-30T23:45:00"},
     }
-    (out / "bundle.json").write_text(json.dumps(bundle, indent=1))
 
-    n = sum(f.stat().st_size for f in (out / "series").glob("*.json"))
+    # ---- the model layer --------------------------------------------------
+    bundle["model"] = model_payload(args.building)
+    bundle["ablation_index"] = export_ablation(args.building, tariff, out)
+
+    (out / "src/lib/bundle.json").write_text(json.dumps(bundle, indent=1))
+
+    n = sum(f.stat().st_size for f in (out / "public/data/series").glob("*.json"))
     print(f"  bundle.json      {len(json.dumps(bundle))/1024:8.1f} KB  ({len(runs)} runs)")
     print(f"  series/*.json    {n/1024:8.1f} KB  ({len(index)} series)")
+    if bundle["model"].get("missing"):
+        print(f"  model            missing: {', '.join(bundle['model']['missing'])}")
     print(f"  -> {out}")
 
 

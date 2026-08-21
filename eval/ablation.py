@@ -80,6 +80,26 @@ def usable_headroom_kw(fc: TensorForecast, n: int, target_kw: float, horizon: in
     }
 
 
+def band(tensor: pd.DataFrame, index: pd.DatetimeIndex, horizon: int = 4) -> pd.DataFrame:
+    """The forecast the controller was looking at one hour before each interval.
+
+    Section 8's first interface addition. A judge watching the actual line stay
+    inside the q05-q95 fan learns more about calibration in five seconds than the
+    reliability diagram teaches in a minute, and unlike the diagram it is a live
+    property of the run being played. Fixed lead rather than fixed origin, so the
+    band is one continuous ribbon across the month.
+    """
+    t = tensor[tensor["horizon"] == horizon].set_index("target_time").reindex(index)
+    out = t[["q05", "q50", "q95", "actual"]].astype(float)
+    out.index.name = "time"
+    # rolling hit rate of the bound the ceiling constraint is actually built on
+    hit = (out["actual"] <= out["q95"]).astype(float)
+    out["q95_hit_rate_24h"] = hit.rolling(96, min_periods=24).mean()
+    inside = ((out["actual"] >= out["q05"]) & (out["actual"] <= out["q95"])).astype(float)
+    out["coverage_90_24h"] = inside.rolling(96, min_periods=24).mean()
+    return out
+
+
 def forecast_scores(tensor: pd.DataFrame, window: tuple[str, str]) -> dict:
     """Score the tensor over exactly the ablation window, so the left-hand
     columns describe the forecasts the optimiser actually consumed."""
@@ -95,6 +115,7 @@ def run(
     building: str, start: str, end: str, keys: list[str] | None = None,
     demand_target_kw: float | None = None, stress_name: str = "none",
     pv_kwp: float = 150.0, cfg: MPCConfig | None = None, seed: int = 0,
+    save_history: Path | None = None,
 ) -> dict:
     keys = keys or [k for k in ORDER if (MODELS / building / "tensors" / f"{k}.parquet").exists()]
     missing = [k for k in keys if not (MODELS / building / "tensors" / f"{k}.parquet").exists()]
@@ -136,6 +157,15 @@ def run(
             **usable_headroom_kw(fc, len(index), demand_target_kw),
         }
         row["solve_ms_mean"] = r.metrics.get("solve_ms_mean")
+        if save_history is not None:
+            # The timeline of each ablation row, kept so the interface can replay
+            # the ablation as a demo: swap the forecaster on stage and watch the
+            # ceiling go. Same runs as the table, so the two cannot disagree.
+            (save_history / "ablation").mkdir(parents=True, exist_ok=True)
+            r.history.to_parquet(
+                save_history / "ablation" / f"history_{building}_{stress_name}_{key}.parquet")
+            band(tensor, index).to_parquet(
+                save_history / "ablation" / f"band_{building}_{stress_name}_{key}.parquet")
         rows.append(row)
         print(f"   {row['forecaster']:<28} pinball {row['pinball_mean']:7.3f}  "
               f"cov {row['coverage_90']:.3f}  breaches {row['ceiling_breaches']:3d}  "
@@ -235,13 +265,16 @@ def main() -> None:
     ap.add_argument("--demand-target-kw", type=float, default=None)
     ap.add_argument("--pv-kwp", type=float, default=150.0)
     ap.add_argument("--out", type=Path, default=RESULTS)
+    ap.add_argument("--no-history", action="store_true",
+                    help="skip the per-row timelines the interface replays")
     args = ap.parse_args()
 
     args.out.mkdir(parents=True, exist_ok=True)
     payload, md = {}, []
     for stress in args.stress:
         res = run(args.building, args.start, args.end, args.keys,
-                  args.demand_target_kw, stress, args.pv_kwp)
+                  args.demand_target_kw, stress, args.pv_kwp,
+                  save_history=None if args.no_history else args.out)
         payload[stress] = res
         md.append(to_markdown(res))
     (args.out / f"ablation_{args.building}.json").write_text(json.dumps(payload, indent=2, default=float))

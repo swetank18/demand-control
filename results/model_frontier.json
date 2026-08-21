@@ -1,0 +1,74 @@
+{
+  "building": "Fox_office_Gaylord",
+  "stress": "none",
+  "meta": {
+    "building": "Fox_office_Gaylord",
+    "window": [
+      "2017-06-01",
+      "2017-06-30 23:45"
+    ],
+    "stress": "none",
+    "demand_target_kw": 467.2414405359504,
+    "pv_kwp": 150.0,
+    "tariff": "TNERC Tariff Order T.P. No. 1 of 2023 as amended for FY 2025-26; ToD windows per Electricity (Rights of Consumers) Amendment Rules 2023",
+    "contract_demand_kva": 505.0,
+    "held_fixed": [
+      "demand target",
+      "MILP horizon and settings",
+      "RC parameters",
+      "comfort budget",
+      "PV array and solar quantiles",
+      "tariff",
+      "seed"
+    ],
+    "varied": "the base-load quantile forecast only"
+  },
+  "monotonicity": {
+    "pinball_mean__ceiling_breaches": {
+      "n": 6,
+      "rho": 0.6761234037828133,
+      "p": 0.1403573866189944,
+      "monotonic": false
+    },
+    "pinball_mean__bill_inr": {
+      "n": 6,
+      "rho": 0.8857142857142858,
+      "p": 0.01884548104956266,
+      "monotonic": true
+    },
+    "calibration_error__ceiling_breaches": {
+      "n": 6,
+      "rho": 0.8451542547285166,
+      "p": 0.034109423167409635,
+      "monotonic": true
+    },
+    "pinball_mean__usable_headroom_kw": {
+      "n": 6,
+      "rho": -0.6,
+      "p": 0.20799999999999982,
+      "monotonic": false
+    }
+  },
+  "exchange_rate": {
+    "bill_inr": {
+      "per_unit_pinball": 2227.952317549866,
+      "intercept": 1139564.2488237072,
+      "r2": 0.9528849617041426,
+      "n": 6
+    },
+    "ceiling_breaches": {
+      "per_unit_pinball": 3.544376823883,
+      "intercept": -18.826625513045474,
+      "r2": 0.8892065626786144,
+      "n": 6
+    },
+    "usable_headroom_kw": {
+      "per_unit_pinball": -0.4326796862072513,
+      "intercept": 343.8815077443307,
+      "r2": 0.05988167781191045,
+      "n": 6
+    }
+  },
+  "panel_d_note": "Panel D is not monotonic, and that is the finding. Headroom without safety is not a benefit: persistence claims more capacity than climatology because its q95 simply follows the last observed value, and it then breaches the ceiling 87 times spending capacity that was never there. The like-for-like comparison is the static-margin study in eval/impact.py, which matches breach counts first and compares headroom second.",
+  "figure": "results/figures/06_model_frontier.png"
+}

@@ -1,0 +1,97 @@
+{
+  "target": "Fox_public_Denny",
+  "trained_on": [
+    "Fox_office_Gaylord",
+    "Fox_assembly_Dixie",
+    "Fox_education_Etta"
+  ],
+  "warmup_days": 14,
+  "scale_kw": 109.34706203864178,
+  "split": {
+    "train_start": "2016-01-01 00:00",
+    "train_end": "2017-03-31 23:45",
+    "valid_start": "2017-04-01 00:00",
+    "valid_end": "2017-05-31 23:45",
+    "test_start": "2017-06-01 00:00",
+    "test_end": "2017-06-30 23:45"
+  },
+  "rows": {
+    "cold": {
+      "label": "Cold start (trained on the other three, never on this one)",
+      "n": 184320,
+      "pinball_mean": 3.545837068114929,
+      "pinball_by_q": {
+        "0.05": 1.2200708972726722,
+        "0.25": 3.9700213769731767,
+        "0.5": 6.348731986981666,
+        "0.75": 4.84513367448318,
+        "0.95": 1.3452274048639516
+      },
+      "crps": 7.654245427073517,
+      "winkler_90": 51.30596604273246,
+      "coverage_90": 0.89052734375,
+      "below_q95": 0.9397515190972222,
+      "calibration_error": 0.0038986545138888816,
+      "pit_deviation": 0.010498046874999948,
+      "sharpness_90": 40.793558281023806,
+      "mae_median": 12.697463973963332,
+      "rmse_median": 15.868909613592157,
+      "mape_median": 0.10550929701465994
+    },
+    "warm": {
+      "label": "Trained on this building (the ceiling for this comparison)",
+      "n": 184320,
+      "pinball_mean": 2.5759449478668706,
+      "pinball_by_q": {
+        "0.05": 1.1712533102924354,
+        "0.25": 3.1483136767781192,
+        "0.5": 4.055913707171213,
+        "0.75": 3.4004532553850306,
+        "0.95": 1.1037907897075543
+      },
+      "crps": 5.429910793059022,
+      "winkler_90": 45.50088199999978,
+      "coverage_90": 0.8968804253472222,
+      "below_q95": 0.9392415364583333,
+      "calibration_error": 0.004883897569444451,
+      "pit_deviation": 0.018402777777777726,
+      "sharpness_90": 36.756822407195386,
+      "mae_median": 8.111827414342425,
+      "rmse_median": 10.671498713125633,
+      "mape_median": 0.07042715753914798
+    },
+    "seasonal_naive": {
+      "label": "Seasonal naive (needs one week of history and no model at all)",
+      "n": 184320,
+      "pinball_mean": 3.036928769380606,
+      "pinball_by_q": {
+        "0.05": 1.4209132520632184,
+        "0.25": 3.927449887800404,
+        "0.5": 4.701815279569146,
+        "0.75": 3.7684187146633183,
+        "0.95": 1.3660467128069418
+      },
+      "crps": 6.37144050386728,
+      "winkler_90": 55.739199297403175,
+      "coverage_90": 0.878125,
+      "below_q95": 0.9385416666666667,
+      "calibration_error": 0.010486111111111081,
+      "pit_deviation": 0.023263888888888848,
+      "sharpness_90": 40.21118134546687,
+      "mae_median": 9.403630559138293,
+      "rmse_median": 12.595303444912986,
+      "mape_median": 0.08052525279924608
+    }
+  },
+  "training_scales_kw": {
+    "Fox_office_Gaylord": 103.54432015976053,
+    "Fox_assembly_Dixie": 22.180805467550623,
+    "Fox_education_Etta": 151.52862567868465
+  },
+  "summary": {
+    "cold_vs_warm_pinball_gap": 0.9698921202480584,
+    "cold_vs_warm_pinball_pct": 37.6518962896013,
+    "cold_beats_seasonal_naive": false,
+    "statement": "Held out entirely, the model scores 3.546 pinball on Fox_public_Denny against 2.576 for the same model trained on that building \u2014 +38%. It loses to seasonal naive (3.037), which is what the site could do on day one with no model. Coverage on the unseen building is 0.891 against a nominal 0.90."
+  }
+}

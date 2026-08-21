@@ -42,6 +42,53 @@ Where risk goes and where expectation goes:
 | Energy cost | q50 | costing energy at q95 would overstate the bill and distort the trade-off |
 | Thermal comfort | q50, with slack | comfort is soft by design; the operator sets the budget and violations are reported, not hidden |
 
+## Is the model load bearing? Take it out and see
+
+The honest test of a forecaster inside a control system is not its MAE. It is
+what happens downstream when you remove it. So the optimiser, the simulator, the
+tariff, the physics, the comfort budget, the PV array and the seed are pinned,
+and only the file the base-load quantiles come from is changed
+(`eval/ablation.py`, table in `results/ablation.md`):
+
+| Forecaster feeding the optimiser | Pinball | Breaches | Peak kVA | Bill ₹ | Usable headroom kW |
+| --- | --- | --- | --- | --- | --- |
+| Static margin (no forecast) | 20.307 | 11 | 503.4 | 1,162,491 | 240.9 |
+| Persistence | 27.582 | 87 | 556.8 | 1,203,766 | 342.9 |
+| Seasonal naive | 6.213 | 0 | 482.8 | 1,150,421 | 339.2 |
+| Climatology | 7.314 | 1 | 494.8 | 1,157,695 | 328.8 |
+| Linear quantile | 10.758 | 0 | 490.5 | 1,155,519 | 314.1 |
+| **LightGBM quantile (ours)** | **2.397** | **0** | **481.9** | **1,149,605** | **354.1** |
+| Neural quantile | 2.435 | 0 | 477.5 | 1,146,700 | 359.7 |
+| Perfect foresight | 0.000 | 0 | 480.9 | 1,148,785 | 376.0 |
+
+Replace the forecaster with a constant and the same controller takes **11 more
+ceiling breaches**, pays **₹12,885 more** and has **113 kW less usable
+headroom**. Nothing else moved.
+
+Two things in that table are against us and are reported anyway. Seasonal naive
+already reaches zero breaches on a calm month — our margin over it here is
+headroom and peak, not safety. And persistence claims the second-most headroom in
+the table while breaching 87 times, which is the cleanest possible demonstration
+that headroom without calibration is an overdraft rather than a benefit.
+
+**And against no model at all.** Sweeping a forecast-free static derating with
+everything else fixed, the setting that is as safe as we are (zero breaches)
+leaves 198.1 kW usable against our 354.1 kW: the forecast recovers **156 kW,
++79% of usable capacity at equal safety** (`eval/impact.py`).
+
+**What that quality is worth.** Fitted across the family of forecasters,
+**₹2,228 per unit of pinball loss per month** (R² 0.95) and **3.5 ceiling
+breaches per unit** (R² 0.89) — `results/model_frontier.json`. Headroom against
+pinball is *not* monotonic, and that is reported as the finding it is.
+
+The rest of the evidence layer: `eval/forecast_eval.py` (six baselines plus a
+neural quantile net, held-out and walk-forward), `eval/cold_start.py` (a building
+held out of training entirely), `eval/interpret.py` (SHAP, feature-group
+ablation, the evening we got wrong), `eval/model_cards.py`, and `eval/impact.py`
+(static-margin study, EV headroom sweep, four tiers with every assumption
+printed). Summary in `docs/results_summary.md`; all of it regenerates with
+`./reproduce.sh`.
+
 ## Two hard rules
 
 - **No language model touches a money decision.** The optimiser is a
@@ -79,15 +126,32 @@ Where risk goes and where expectation goes:
 ## Quickstart
 
 ```bash
-python -m venv --system-site-packages .venv && .venv/bin/pip install lightgbm highspy scikit-learn
+python -m venv --system-site-packages .venv
+.venv/bin/pip install -r demand-control/requirements.txt
 cd demand-control
 
-python data/prepare.py                 # BDG2 -> 15-min building files  (~2 s)
-python forecast/train.py               # quantile LightGBM + calibration (~4 min)
-python forecast/calibrate.py           # reliability diagrams -> results/
-python eval/find_target.py             # tightest holdable demand target
+./reproduce.sh                         # everything, ~2 h  (ROLLING=0 halves it)
+streamlit run ui/app.py                # or the Next.js app in ../ampcast
+```
+
+`reproduce.sh` is the contract: no number reaches a slide unless a script
+produced it, and running it from a clean checkout regenerates every figure in
+`results/`. The stages, if you want them one at a time:
+
+```bash
+python data/prepare.py                 # BDG2 -> 15-min building files   (~2 s)
+python -m pytest tests/ -q             # leakage, scoring rules, bill to the rupee
+python forecast/train.py               # quantile LightGBM + conformal   (~4 min)
+python forecast/calibrate.py           # reliability, PIT, coverage by horizon
+python eval/forecast_eval.py --rolling # six baselines + the neural net
+python eval/cold_start.py              # a building never seen in training
+python eval/find_target.py             # tightest holdable demand ceiling
+python eval/ablation.py                # THE ablation: eight forecasters, one optimiser
+python eval/model_frontier.py          # what forecast quality is worth
+python eval/interpret.py               # SHAP, feature groups, the worst evening
+python eval/impact.py                  # static-margin study, EV sweep, four tiers
 python eval/table.py --stress none heatwave sensor_dropout outage
-streamlit run ui/app.py
+python eval/model_cards.py && python eval/figures.py && python eval/export_web.py
 ```
 
 Raw BDG2 files are not vendored. To fetch them:
@@ -146,7 +210,10 @@ tariff/    schema, deterministic compiler, bill engine, encoded orders (TN, MH)
 forecast/  features, quantile LightGBM + adaptive conformal, calibration report
 control/   chance-constrained MILP, rule-based and thermostat baselines
 sim/       RC thermal model, water heater, EV, battery, PV, stress injector
-eval/      closed-loop runner, demand-target search, results table
+eval/      closed-loop runner, target search, benchmark, ablation, frontier,
+           cold start, interpretability, impact, model cards, web export
+models/    trained boosters, conformal state, forecast tensors, model cards
+results/   every number in the deck, and the figures made from them
 ui/        one-screen Streamlit replay
 tests/     bill to the rupee, RC against closed form, controller invariants
 docs/      limitations, written before the results

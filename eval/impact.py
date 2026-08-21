@@ -112,13 +112,21 @@ def static_margin_study(
     index = ctx["exog"].index
     n = len(index)
 
+    # ConstantMargin's own quantiles are the marginal training distribution, which
+    # is one particular derating (its q95). The sweep needs the *allowance* to move,
+    # so the risk column is set to the p-th percentile of the training load and the
+    # rest of the set is capped at it to stay monotone. p = 0.95 reproduces
+    # ConstantMargin exactly, which is the row that appears in the ablation table.
+    marginal = ConstantMargin().fit(train, None).levels
+
     rows = []
     for p in percentiles:
-        cm = ConstantMargin(percentile=p).fit(train, None)
-        pred = cm.predict(pd.DataFrame(index=range(n)))
+        allowance = float(np.quantile(train["y"], p))
+        levels = {q: min(v, allowance) for q, v in marginal.items()}
+        levels[0.95] = allowance
         tensor = pd.DataFrame({
             "origin": np.repeat(index, 1), "target_time": index, "horizon": 1,
-            **{f"q{int(q * 100):02d}": pred[q] for q in sorted(pred)},
+            **{f"q{int(q * 100):02d}": np.full(n, levels[q]) for q in sorted(levels)},
             "actual": ctx["exog"]["base_kw"].to_numpy(),
         })
         # a constant is horizon-free, so replicate it across the planning horizon
@@ -132,7 +140,7 @@ def static_margin_study(
         r = run_controller(ctx, ctrl, label=f"static p{int(p * 100)}")
         rows.append({
             "percentile": p,
-            "allowance_kw": float(cm.levels[0.95]),
+            "allowance_kw": allowance,
             "breaches": r.metrics["ceiling_breaches"],
             "peak_kva": r.metrics["peak_kva"],
             "bill_inr": r.metrics["bill_inr"],

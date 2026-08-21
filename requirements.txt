@@ -8,4 +8,6 @@ lightgbm>=4.0        # quantile regression
 pyarrow>=14          # parquet
 streamlit>=1.30      # replay UI
 pytest>=7.0
+shap>=0.44           # eval/interpret.py, tree explainer on the boosters
+torch>=2.0           # the neural quantile benchmark in forecast/baselines.py
 # highspy is not required (scipy vendors HiGHS) but is useful for direct solver work
