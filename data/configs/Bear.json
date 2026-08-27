@@ -1,0 +1,15 @@
+{
+  "site": "Bear",
+  "site_note": "comparative panel, Bear",
+  "buildings": [
+    {
+      "id": "Bear_education_Leonel",
+      "role": "primary",
+      "label": "Bear Education",
+      "site": "Bear",
+      "usage": "Education",
+      "country": "USA",
+      "why": "sharpest demand-charge exposure among 34 Education building(s) passing the rule at Bear: p99/median = 3.2, median 92 kW, load-temp corr 0.49"
+    }
+  ]
+}

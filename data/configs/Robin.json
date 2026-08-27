@@ -1,0 +1,24 @@
+{
+  "site": "Robin",
+  "site_note": "comparative panel, Robin",
+  "buildings": [
+    {
+      "id": "Robin_education_Kiera",
+      "role": "primary",
+      "label": "Robin Education",
+      "site": "Robin",
+      "usage": "Education",
+      "country": "UK",
+      "why": "sharpest demand-charge exposure among 17 Education building(s) passing the rule at Robin: p99/median = 2.1, median 72 kW, load-temp corr 0.20"
+    },
+    {
+      "id": "Robin_office_Wai",
+      "role": "primary",
+      "label": "Robin Office",
+      "site": "Robin",
+      "usage": "Office",
+      "country": "UK",
+      "why": "sharpest demand-charge exposure among 7 Office building(s) passing the rule at Robin: p99/median = 2.6, median 153 kW, load-temp corr 0.14"
+    }
+  ]
+}

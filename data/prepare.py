@@ -104,7 +104,8 @@ def _to_15min(s: pd.Series) -> pd.Series:
     return out.clip(lower=0.0)
 
 
-def prepare(config_path: Path, years: tuple[int, ...] = (2016, 2017)) -> None:
+def prepare(config_path: Path, years: tuple[int, ...] = (2016, 2017),
+            manifest_name: str = "manifest.json") -> None:
     cfg = json.loads(config_path.read_text())
     site = cfg["site"]
     ids = [b["id"] for b in cfg["buildings"]]
@@ -221,13 +222,28 @@ def prepare(config_path: Path, years: tuple[int, ...] = (2016, 2017)) -> None:
             f"contract {params['contract_demand_kva']:.0f} kVA"
         )
 
-    (CACHE / "manifest.json").write_text(json.dumps(manifest, indent=2))
-    print(f"\nwrote {len(manifest['buildings'])} buildings -> {CACHE}")
+    # Merge rather than clobber: prepare runs one site at a time, so a
+    # multi-site panel would otherwise leave only the site that ran last.
+    path = CACHE / manifest_name
+    if path.exists():
+        prev = json.loads(path.read_text())
+        merged = dict(prev.get("buildings", {}))
+        merged.update(manifest["buildings"])
+        manifest["buildings"] = merged
+        manifest["sites"] = sorted(
+            {s for s in prev.get("sites", [prev.get("site")]) if s} | {site})
+    else:
+        manifest["sites"] = [site]
+    path.write_text(json.dumps(manifest, indent=2))
+    print(f"\nwrote {len(manifest['buildings'])} buildings -> {path}")
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", type=Path, default=ROOT / "buildings.json")
     ap.add_argument("--years", type=int, nargs="+", default=[2016, 2017])
+    ap.add_argument("--manifest", default="manifest.json",
+                    help="manifest filename inside data/cache. The comparative "
+                         "panel uses its own, so it never touches the main one.")
     args = ap.parse_args()
-    prepare(args.config, tuple(args.years))
+    prepare(args.config, tuple(args.years), args.manifest)

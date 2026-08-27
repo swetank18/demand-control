@@ -1,0 +1,193 @@
+{
+  "_": "Build the comparative panel: the same rule, applied across climates and countries.",
+  "selection_rule": "identical to data/buildings.json: no district chilled-water meter, >97% coverage in the split window, median load 40-800 kW, positive load-vs-outdoor-temperature correlation. Tie-break inside a (site, usage) cell: highest p99/median.",
+  "climate_usage": "Education",
+  "arms": {
+    "climate": [
+      {
+        "id": "Fox_education_Kris",
+        "role": "primary",
+        "label": "Fox Education",
+        "site": "Fox",
+        "usage": "Education",
+        "country": "USA",
+        "why": "sharpest demand-charge exposure among 4 Education building(s) passing the rule at Fox: p99/median = 2.4, median 95 kW, load-temp corr 0.61"
+      },
+      {
+        "id": "Bull_education_Dakota",
+        "role": "primary",
+        "label": "Bull Education",
+        "site": "Bull",
+        "usage": "Education",
+        "country": "USA",
+        "why": "sharpest demand-charge exposure among 3 Education building(s) passing the rule at Bull: p99/median = 2.0, median 52 kW, load-temp corr 0.34"
+      },
+      {
+        "id": "Rat_education_Lonnie",
+        "role": "primary",
+        "label": "Rat Education",
+        "site": "Rat",
+        "usage": "Education",
+        "country": "USA",
+        "why": "sharpest demand-charge exposure among 61 Education building(s) passing the rule at Rat: p99/median = 3.4, median 47 kW, load-temp corr 0.49"
+      },
+      {
+        "id": "Hog_education_Robert",
+        "role": "primary",
+        "label": "Hog Education",
+        "site": "Hog",
+        "usage": "Education",
+        "country": "USA",
+        "why": "sharpest demand-charge exposure among 3 Education building(s) passing the rule at Hog: p99/median = 2.2, median 505 kW, load-temp corr 0.49"
+      },
+      {
+        "id": "Bear_education_Leonel",
+        "role": "primary",
+        "label": "Bear Education",
+        "site": "Bear",
+        "usage": "Education",
+        "country": "USA",
+        "why": "sharpest demand-charge exposure among 34 Education building(s) passing the rule at Bear: p99/median = 3.2, median 92 kW, load-temp corr 0.49"
+      },
+      {
+        "id": "Robin_education_Kiera",
+        "role": "primary",
+        "label": "Robin Education",
+        "site": "Robin",
+        "usage": "Education",
+        "country": "UK",
+        "why": "sharpest demand-charge exposure among 17 Education building(s) passing the rule at Robin: p99/median = 2.1, median 72 kW, load-temp corr 0.20"
+      },
+      {
+        "id": "Wolf_education_Eulalia",
+        "role": "primary",
+        "label": "Wolf Education",
+        "site": "Wolf",
+        "usage": "Education",
+        "country": "Ireland",
+        "why": "sharpest demand-charge exposure among 11 Education building(s) passing the rule at Wolf: p99/median = 3.0, median 53 kW, load-temp corr 0.18"
+      }
+    ],
+    "office": [
+      {
+        "id": "Fox_office_Gaylord",
+        "role": "primary",
+        "label": "Fox Office",
+        "site": "Fox",
+        "usage": "Office",
+        "country": "USA",
+        "why": "sharpest demand-charge exposure among 4 Office building(s) passing the rule at Fox: p99/median = 2.9, median 131 kW, load-temp corr 0.50"
+      },
+      {
+        "id": "Rat_office_Jill",
+        "role": "primary",
+        "label": "Rat Office",
+        "site": "Rat",
+        "usage": "Office",
+        "country": "USA",
+        "why": "sharpest demand-charge exposure among 11 Office building(s) passing the rule at Rat: p99/median = 3.7, median 462 kW, load-temp corr 0.02"
+      },
+      {
+        "id": "Hog_office_Mari",
+        "role": "primary",
+        "label": "Hog Office",
+        "site": "Hog",
+        "usage": "Office",
+        "country": "USA",
+        "why": "sharpest demand-charge exposure among 10 Office building(s) passing the rule at Hog: p99/median = 4.1, median 40 kW, load-temp corr 0.52"
+      },
+      {
+        "id": "Robin_office_Wai",
+        "role": "primary",
+        "label": "Robin Office",
+        "site": "Robin",
+        "usage": "Office",
+        "country": "UK",
+        "why": "sharpest demand-charge exposure among 7 Office building(s) passing the rule at Robin: p99/median = 2.6, median 153 kW, load-temp corr 0.14"
+      },
+      {
+        "id": "Wolf_office_Nadia",
+        "role": "primary",
+        "label": "Wolf Office",
+        "site": "Wolf",
+        "usage": "Office",
+        "country": "Ireland",
+        "why": "sharpest demand-charge exposure among 3 Office building(s) passing the rule at Wolf: p99/median = 2.1, median 63 kW, load-temp corr 0.25"
+      }
+    ],
+    "demographic": [
+      {
+        "id": "Rat_education_Lonnie",
+        "role": "primary",
+        "label": "Rat Education",
+        "site": "Rat",
+        "usage": "Education",
+        "country": "USA",
+        "why": "sharpest demand-charge exposure among 61 Education building(s) passing the rule at Rat: p99/median = 3.4, median 47 kW, load-temp corr 0.49"
+      },
+      {
+        "id": "Rat_assembly_Viola",
+        "role": "primary",
+        "label": "Rat Entertainment/public assembly",
+        "site": "Rat",
+        "usage": "Entertainment/public assembly",
+        "country": "USA",
+        "why": "sharpest demand-charge exposure among 6 Entertainment/public assembly building(s) passing the rule at Rat: p99/median = 2.7, median 44 kW, load-temp corr 0.73"
+      },
+      {
+        "id": "Rat_health_Tanya",
+        "role": "primary",
+        "label": "Rat Healthcare",
+        "site": "Rat",
+        "usage": "Healthcare",
+        "country": "USA",
+        "why": "sharpest demand-charge exposure among 1 Healthcare building(s) passing the rule at Rat: p99/median = 2.0, median 52 kW, load-temp corr 0.56"
+      },
+      {
+        "id": "Rat_lodging_Christine",
+        "role": "primary",
+        "label": "Rat Lodging/residential",
+        "site": "Rat",
+        "usage": "Lodging/residential",
+        "country": "USA",
+        "why": "sharpest demand-charge exposure among 2 Lodging/residential building(s) passing the rule at Rat: p99/median = 2.3, median 55 kW, load-temp corr 0.76"
+      },
+      {
+        "id": "Rat_office_Jill",
+        "role": "primary",
+        "label": "Rat Office",
+        "site": "Rat",
+        "usage": "Office",
+        "country": "USA",
+        "why": "sharpest demand-charge exposure among 11 Office building(s) passing the rule at Rat: p99/median = 3.7, median 462 kW, load-temp corr 0.02"
+      },
+      {
+        "id": "Rat_public_Michelle",
+        "role": "primary",
+        "label": "Rat Public services",
+        "site": "Rat",
+        "usage": "Public services",
+        "country": "USA",
+        "why": "sharpest demand-charge exposure among 19 Public services building(s) passing the rule at Rat: p99/median = 3.0, median 53 kW, load-temp corr 0.04"
+      },
+      {
+        "id": "Rat_retail_Jeffrey",
+        "role": "primary",
+        "label": "Rat Retail",
+        "site": "Rat",
+        "usage": "Retail",
+        "country": "USA",
+        "why": "sharpest demand-charge exposure among 1 Retail building(s) passing the rule at Rat: p99/median = 3.0, median 61 kW, load-temp corr 0.66"
+      },
+      {
+        "id": "Rat_warehouse_Eloisa",
+        "role": "primary",
+        "label": "Rat Warehouse/storage",
+        "site": "Rat",
+        "usage": "Warehouse/storage",
+        "country": "USA",
+        "why": "sharpest demand-charge exposure among 2 Warehouse/storage building(s) passing the rule at Rat: p99/median = 2.2, median 124 kW, load-temp corr 0.13"
+      }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "site": "Fox",
+  "site_note": "comparative panel, Fox",
+  "buildings": [
+    {
+      "id": "Fox_education_Kris",
+      "role": "primary",
+      "label": "Fox Education",
+      "site": "Fox",
+      "usage": "Education",
+      "country": "USA",
+      "why": "sharpest demand-charge exposure among 4 Education building(s) passing the rule at Fox: p99/median = 2.4, median 95 kW, load-temp corr 0.61"
+    },
+    {
+      "id": "Fox_office_Gaylord",
+      "role": "primary",
+      "label": "Fox Office",
+      "site": "Fox",
+      "usage": "Office",
+      "country": "USA",
+      "why": "sharpest demand-charge exposure among 4 Office building(s) passing the rule at Fox: p99/median = 2.9, median 131 kW, load-temp corr 0.50"
+    }
+  ]
+}

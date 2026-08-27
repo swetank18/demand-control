@@ -1,0 +1,24 @@
+{
+  "site": "Hog",
+  "site_note": "comparative panel, Hog",
+  "buildings": [
+    {
+      "id": "Hog_education_Robert",
+      "role": "primary",
+      "label": "Hog Education",
+      "site": "Hog",
+      "usage": "Education",
+      "country": "USA",
+      "why": "sharpest demand-charge exposure among 3 Education building(s) passing the rule at Hog: p99/median = 2.2, median 505 kW, load-temp corr 0.49"
+    },
+    {
+      "id": "Hog_office_Mari",
+      "role": "primary",
+      "label": "Hog Office",
+      "site": "Hog",
+      "usage": "Office",
+      "country": "USA",
+      "why": "sharpest demand-charge exposure among 10 Office building(s) passing the rule at Hog: p99/median = 4.1, median 40 kW, load-temp corr 0.52"
+    }
+  ]
+}

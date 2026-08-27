@@ -1,0 +1,15 @@
+{
+  "site": "Bull",
+  "site_note": "comparative panel, Bull",
+  "buildings": [
+    {
+      "id": "Bull_education_Dakota",
+      "role": "primary",
+      "label": "Bull Education",
+      "site": "Bull",
+      "usage": "Education",
+      "country": "USA",
+      "why": "sharpest demand-charge exposure among 3 Education building(s) passing the rule at Bull: p99/median = 2.0, median 52 kW, load-temp corr 0.34"
+    }
+  ]
+}

@@ -25,13 +25,11 @@ HORIZON_STEPS = 64
 ORIGIN_LAGS = [1, 2, 4, 8, 96, 192, 672]
 ROLL_WINDOWS = [4, 96, 672]
 
-# Site is Tempe, Arizona. US federal holidays 2016-2017.
-US_HOLIDAYS = {
-    "2016-01-01", "2016-01-18", "2016-02-15", "2016-05-30", "2016-07-04",
-    "2016-09-05", "2016-10-10", "2016-11-11", "2016-11-24", "2016-12-26",
-    "2017-01-02", "2017-01-16", "2017-02-20", "2017-05-29", "2017-07-04",
-    "2017-09-04", "2017-10-09", "2017-11-10", "2017-11-23", "2017-12-25",
-}
+# Holidays are a function of country, not a constant. The original hard-coded
+# US set lives in forecast/calendars.py and is still what `country="US"` returns
+# for 2016-2017, so nothing already in results/ moves. See that module for why
+# India in particular cannot be a fixed list.
+from forecast.calendars import US_HOLIDAYS_2016_17 as US_HOLIDAYS, holiday_flag
 
 
 def _cyc(x: np.ndarray, period: float) -> tuple[np.ndarray, np.ndarray]:
@@ -45,11 +43,19 @@ def build_supervised(
     target_col: str = "base_kw",
     weather_noise_c: float = 0.0,
     seed: int = 0,
+    country: str = "US",
+    cdd_base_c: float = 18.0,
 ) -> pd.DataFrame:
     """Return a long frame of (origin, horizon) rows with features and target.
 
     Columns produced:
       origin, horizon, y  plus the feature block.
+
+    ``country`` selects the holiday calendar and defaults to US, which for
+    2016-2017 is the exact set this module used to hard-code. ``cdd_base_c`` is
+    the cooling-degree-day balance point; 18 C is the convention and the right
+    default, but it is a parameter rather than a literal because a study that
+    spans Phoenix and Dublin should be able to say so out loud.
     """
     df = df.sort_index()
     y = df[target_col].astype(float)
@@ -95,7 +101,7 @@ def build_supervised(
         if weather_noise_c > 0:
             t_fut = t_fut + rng.normal(0.0, weather_noise_c * np.sqrt(h / horizon_steps), size=len(t_fut))
         rows["t_out_fut"] = t_fut
-        rows["cdd_fut"] = np.maximum(0.0, t_fut - 18.0)
+        rows["cdd_fut"] = np.maximum(0.0, t_fut - cdd_base_c)
         rows["cloud_fut"] = cloud.reindex(rows["target_time"]).to_numpy()
 
         tt = pd.DatetimeIndex(rows["target_time"])
@@ -105,7 +111,7 @@ def build_supervised(
         s, c = _cyc(tt.dayofweek.to_numpy(), 7.0)
         rows["dow_sin"], rows["dow_cos"] = s, c
         rows["is_weekend"] = (tt.dayofweek >= 5).astype(int)
-        rows["is_holiday"] = tt.normalize().strftime("%Y-%m-%d").isin(US_HOLIDAYS).astype(int)
+        rows["is_holiday"] = holiday_flag(tt, country)
         rows["doy_sin"], rows["doy_cos"] = _cyc(tt.dayofyear.to_numpy(), 365.0)
         # a solar term: matters once a site has PV, harmless otherwise
         rows["solar_elev"] = np.maximum(0.0, np.sin(np.pi * (hod.to_numpy() - 6.0) / 12.0))

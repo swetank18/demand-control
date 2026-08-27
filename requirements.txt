@@ -10,4 +10,6 @@ streamlit>=1.30      # replay UI
 pytest>=7.0
 shap>=0.44           # eval/interpret.py, tree explainer on the boosters
 torch>=2.0           # the neural quantile benchmark in forecast/baselines.py
+holidays>=0.40       # per-country calendars for the comparative study; a fixed
+                     # list cannot express India's lunisolar holidays
 # highspy is not required (scipy vendors HiGHS) but is useful for direct solver work
