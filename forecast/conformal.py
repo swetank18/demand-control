@@ -130,3 +130,92 @@ def calibrate(
         return {q: arr[i] for i, q in enumerate(quantiles)}
 
     return _sort(pv), _sort(pt), test_ordered, record
+
+
+# ---------------------------------------------------------------------------
+# Conformalized quantile regression, and the machinery the audit needs.
+#
+# The per-quantile shift above is one-sided split conformal, fitted level by
+# level. That is the right object for the ceiling constraint, which reads a
+# single upper bound and does not care what the lower one is doing. CQR is the
+# two-sided cousin: one nonconformity score for the interval as a whole,
+#
+#     E_i = max(q_lo(x_i) - y_i,  y_i - q_hi(x_i))
+#
+# and one width Q added symmetrically to both ends. It is the version with the
+# theorem attached (Romano, Patterson and Candes, NeurIPS 2019), and it is what
+# a reviewer will ask for by name, so both are implemented and the audit
+# reports both. They answer different questions: CQR guarantees the *interval*,
+# the per-quantile shift guarantees *each bound*.
+# ---------------------------------------------------------------------------
+
+
+def fit_cqr_widths(
+    y: np.ndarray, lo: np.ndarray, hi: np.ndarray, horizon: np.ndarray, alpha: float = 0.10,
+) -> dict[str, float]:
+    """Per-horizon CQR width from a calibration block.
+
+    The empirical quantile is taken at ``ceil((n+1)(1-alpha))/n`` rather than
+    ``1-alpha``. That finite-sample correction is the whole theorem: with it,
+    coverage on an exchangeable test point is at least ``1-alpha`` for any n and
+    any underlying model, and without it the guarantee is asymptotic hand-waving.
+    """
+    y, lo, hi = np.asarray(y, float), np.asarray(lo, float), np.asarray(hi, float)
+    horizon = np.asarray(horizon, int)
+    scores = np.maximum(lo - y, y - hi)
+    out: dict[str, float] = {}
+    for h in np.unique(horizon):
+        s = scores[horizon == h]
+        n = len(s)
+        if n == 0:
+            out[str(int(h))] = 0.0
+            continue
+        # rank of the (1-alpha) conformal quantile, clipped when n is too small
+        # to certify the level at all -- in which case the honest answer is the
+        # largest score seen, not a silently smaller one
+        k = int(np.ceil((n + 1) * (1.0 - alpha)))
+        out[str(int(h))] = float(np.sort(s)[min(k, n) - 1])
+    return out
+
+
+def apply_cqr(
+    lo: np.ndarray, hi: np.ndarray, horizon: np.ndarray, widths: dict[str, float],
+) -> tuple[np.ndarray, np.ndarray]:
+    horizon = np.asarray(horizon, int)
+    w = np.array([widths.get(str(int(h)), 0.0) for h in horizon])
+    return np.asarray(lo, float) - w, np.asarray(hi, float) + w
+
+
+def rolling_coverage(hit: np.ndarray, window: int) -> np.ndarray:
+    """Trailing mean of a 0/1 hit series, NaN until the window is full.
+
+    Coverage is only meaningful over a window long enough to contain the thing
+    that breaks it. A 30-day window over 15-minute data is 2,880 points, which
+    is what the A2 acceptance test is stated in.
+    """
+    s = pd.Series(np.asarray(hit, float))
+    return s.rolling(window, min_periods=window).mean().to_numpy()
+
+
+def block_bootstrap_se(
+    hit: np.ndarray, block: np.ndarray, n_boot: int = 2000, seed: int = 0,
+) -> float:
+    """Standard error of a coverage rate, resampling whole blocks.
+
+    Coverage computed over 184,000 correlated rows has a naive standard error of
+    0.0007, which would declare any model on earth miscalibrated. Neighbouring
+    15-minute forecasts share almost all of their information, so the honest
+    unit of replication is the day, not the row. This resamples days.
+    """
+    hit = np.asarray(hit, float)
+    block = np.asarray(block)
+    keys, inv = np.unique(block, return_inverse=True)
+    n = np.bincount(inv, minlength=len(keys)).astype(float)
+    s = np.bincount(inv, weights=hit, minlength=len(keys))
+    # resample blocks, then recombine as a size-weighted mean rather than
+    # rebuilding the concatenated sample: same statistic, two orders of
+    # magnitude cheaper, and the audit calls this on 180,000 rows
+    rng = np.random.default_rng(seed)
+    pick = rng.integers(0, len(keys), size=(n_boot, len(keys)))
+    means = s[pick].sum(axis=1) / np.maximum(n[pick].sum(axis=1), 1e-12)
+    return float(means.std(ddof=1))

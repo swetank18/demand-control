@@ -72,3 +72,32 @@ ROLLING_FOLDS: tuple[tuple[str, str], ...] = (
 #: here having never seen a row of it. This is the "does it work on a building
 #: you have not seen" question, answered rather than asserted.
 COLD_START_BUILDING = "Fox_public_Denny"
+
+#: Twelve consecutive walk-forward folds, one per month, July 2016 through June
+#: 2017. Each fold trains on everything strictly before its evaluation month, so
+#: the concatenation of the twelve is a *genuinely out-of-sample year* rather
+#: than a replay of the training set. ``eval/conformal_audit.py`` needs exactly
+#: that: the A2 acceptance test is about rolling coverage over a year, and
+#: rolling coverage measured in-sample is measuring nothing.
+#:
+#: Distinct from ROLLING_FOLDS above, which is the forecast benchmark's
+#: expanding-window study and stops at May. Kept separate rather than extended,
+#: because changing ROLLING_FOLDS would silently move the numbers in
+#: results/forecast_benchmark.md.
+AUDIT_FOLDS: tuple[tuple[str, str], ...] = tuple(
+    (f"{y}-{m:02d}-{d} 23:45", f"{ny}-{nm:02d}-{nd} 23:45")
+    for (y, m, d), (ny, nm, nd) in [
+        ((2016, 6, 30), (2016, 7, 31)),
+        ((2016, 7, 31), (2016, 8, 31)),
+        ((2016, 8, 31), (2016, 9, 30)),
+        ((2016, 9, 30), (2016, 10, 31)),
+        ((2016, 10, 31), (2016, 11, 30)),
+        ((2016, 11, 30), (2016, 12, 31)),
+        ((2016, 12, 31), (2017, 1, 31)),
+        ((2017, 1, 31), (2017, 2, 28)),
+        ((2017, 2, 28), (2017, 3, 31)),
+        ((2017, 3, 31), (2017, 4, 30)),
+        ((2017, 4, 30), (2017, 5, 31)),
+        ((2017, 5, 31), (2017, 6, 30)),
+    ]
+)
