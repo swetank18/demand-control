@@ -66,6 +66,49 @@ def horizon_table() -> None:
           "tab:horizon")
 
 
+def acceptance_table() -> None:
+    """The closed-loop sweep. Commit violation is the acceptance metric; the
+    against-target column is shown because omitting it would look like hiding it,
+    and labelled as the business metric it is."""
+    p = RESULTS / "horizon_risk_Fox_office_Gaylord.json"
+    if not p.exists():
+        return
+    d = json.loads(p.read_text())
+    cl = d.get("closed_loop") or []
+    if not cl:
+        return
+    a = d["acceptance"]
+    rows = []
+    for r in cl:
+        eps = "--" if r.get("epsilon") is None else f"{r['epsilon']:.2f}"
+        name = "marginal $q95$" if r["mode"] == "marginal" else "scenario"
+        commit = r["commit_violation_rate"]
+        gap = "" if r.get("epsilon") is None else (
+            f" ({commit - r['epsilon']:+.3f})")
+        rows.append([
+            r["target"], name, eps,
+            f"\\textbf{{{commit:.3f}}}{gap}",
+            f"{r['window_violation_rate']:.3f}",
+            f"{r['ceiling_breaches']}",
+            f"{r['peak_kva']:.1f}",
+            f"{r['bill_inr']:,.0f}",
+            f"{r['solve_ms_mean']:.0f}",
+        ])
+    table(OUT / "acceptance.tex",
+          ["Target", "Controller", "$\\varepsilon$", "Commit viol.\\ (gap)",
+           "vs target", "Breaches", "Peak kVA", "Bill Rs", "Solve ms"],
+          rows, "llrrrrrrr",
+          "Closed loop over one billing month. \\textbf{Commit violation} is the "
+          "acceptance metric: the fraction of horizons in which realised load cleared "
+          "the ceiling the optimiser committed to, which is what $\\varepsilon$ is a "
+          "statement about. The against-target column is the business metric and is "
+          "not what the chance constraint promises, since the committed peak is a "
+          f"decision variable. Rank correlation {a['rank_corr']:.3f}, mean absolute gap "
+          f"{a['mean_abs_gap']:.3f}, conservative at {a['n_conservative']} of "
+          f"{a['n_levels']} levels; resolution floor $1/S={a['resolution_floor']:.3f}$.",
+          "tab:acceptance")
+
+
 def load_study() -> pd.DataFrame:
     import eval.comparative_report as R
     df = R.load()
@@ -159,6 +202,7 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     print("emitting LaTeX tables:")
     horizon_table()
+    acceptance_table()
     df = load_study()
     arm_table(df, "climate", "site", "Site",
               "Climate arm: demographic held fixed at Education, climate and "

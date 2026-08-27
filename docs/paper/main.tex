@@ -8,6 +8,7 @@
 \usepackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue]{hyperref}
 \usepackage{natbib}
 \usepackage{caption}
+\newcommand{\rupee}[1]{\textsf{Rs}~#1}
 \captionsetup{font=small}
 
 \title{\bf What a Per-Step Guarantee Is Not:\\
@@ -45,8 +46,14 @@ of six series below $0.85$), worst of all on Delhi at $0.762$. Third, forecast
 skill is uncorrelated with climate ($r=+0.010$, leave-one-out range crossing
 zero) while the controllable load fraction tracks it strongly ($r=+0.489$),
 so deployment screening should ask how much load is weather-driven and not
-how predictable it is. Three of our results argue against the method and are
-reported unchanged.
+how predictable it is. Closing the loop, a scenario MPC over sampled joint
+trajectories turns the horizon risk level into a parameter the operator sets:
+realised violation of the committed ceiling tracks the requested $\varepsilon$
+with rank correlation $0.957$ across an eight-point sweep, conservative at five
+of eight levels, for \rupee{3,339} on a month at the tight target --- where
+previously no such dial existed and the operating risk level was an emergent
+consequence of horizon length. Three of our results argue against the method and
+are reported unchanged.
 \end{abstract}
 
 \section{Introduction}
@@ -101,6 +108,9 @@ measure both.
         real Indian demand (Section~\ref{sec:calibration}).
   \item A null result separating forecast skill from available flexibility as
         independent deployment axes (Section~\ref{sec:axes}).
+  \item A closed-loop demonstration that the horizon risk level can be made a
+        settable parameter rather than an emergent one, with its exactness and
+        resolution limits measured (Section~\ref{sec:horizon}).
 \end{enumerate}
 
 \paragraph{What we do not claim.} No component here is novel. Quantile gradient
@@ -169,15 +179,49 @@ The practical consequence runs in both directions. A controller using
 textbook bound is over-protected by more than a factor of two and pays for it
 in usable headroom, which is the quantity the entire economic argument rests on.
 
-\paragraph{Toward a fix.} We fit a Student-$t$ copula ($\nu=7$) over the
-horizon and sample joint trajectories, feeding a scenario MPC. The copula
-reproduces the calibrated marginals to within 4.6\% of mean interval width, so
-it does not undo the calibration work upstream. It over-predicts horizon risk
-($0.497$ against a realised $0.405$ at $H=64$): conservative, which is the safe
-direction, and still far tighter than Boole. The closed-loop acceptance test
-that would establish the scenario MPC delivers a set $\varepsilon$ is in
-progress and is \emph{not} part of the claim made here. We have measured the
-problem precisely; we do not yet claim to have solved it.
+\paragraph{Restoring the guarantee.} We fit a Student-$t$ copula over the
+horizon --- $\nu=7$, selected on the validation block --- and sample joint
+trajectories, which a scenario MILP then constrains with a CVaR surrogate on the
+probability mass permitted to violate. The copula reproduces the calibrated
+marginals to within 4.6\% of mean interval width at 4{,}000 paths per origin, so
+it adds dependence and disturbs nothing upstream, and it predicts horizon
+exceedance far better than either end of the bracket: $0.497$ against a realised
+$0.405$ at $H=64$, where the marginal formulation implies $0.05$ and Boole
+implies $0.983$.
+
+\input{tables/acceptance}
+
+Table~\ref{tab:acceptance} is a closed-loop run over a real billing month at two
+demand targets and four risk levels. The acceptance metric is violation of the
+ceiling \emph{the optimiser itself committed to at each origin}, because that is
+the event $\varepsilon$ is a statement about. The operator's monthly demand
+target is a business metric the chance constraint never promised: the committed
+peak is a decision variable, and an optimiser short of capacity may lift it,
+pay the demand charge, and honour its constraint exactly. Grading a chance
+constraint against a number it never promised is the usual way this test is made
+meaningless.
+
+The result is that $\varepsilon$ becomes a dial. Realised commit violation tracks
+the requested level with rank correlation $0.957$ across the sweep, mean
+absolute gap $0.057$, and lands conservative at five of eight levels. The
+formulation errs safe by construction: the CVaR surrogate admits a strict subset
+of the chance-constrained feasible set, so it defends the committed ceiling
+harder than asked.
+
+\paragraph{What it does not do.} It is not exact. At the tightest setting,
+$\varepsilon=0.05$ delivers $0.097$ at the tight target, nearly twice the
+requested risk and on the unsafe side. There is also a hard resolution floor at
+$1/S = 0.025$: with $S$ scenarios the finest expressible risk level is one
+scenario's worth of probability mass, below which the CVaR surrogate collapses
+onto the sample maximum and successive $\varepsilon$ cease to be
+distinguishable. That is a property of sample average approximation rather than
+a tuning artefact, and a finer dial costs scenarios and solve time.
+
+The honest summary is not that the guarantee is restored exactly. It is that a
+risk level which was previously an \emph{emergent property of horizon length} ---
+unstated, unsettable, and equal to $0.106$ at the tight target under the
+incumbent marginal controller --- is now a parameter with a monotone and
+conservative response, at a cost of \rupee{3,339} on the month.
 
 \section{Calibration degrades with aggregation}
 \label{sec:calibration}
@@ -289,7 +333,8 @@ We built an instrument rather than an algorithm, and used it to bracket a
 formulation error that is widespread in applied demand-charge control, to show
 that distribution-free coverage guarantees degrade with aggregation level and
 fail worst on the load we most care about, and to separate two deployment
-criteria that are naturally conflated. Every number is regenerated by one
+criteria that are naturally conflated; and we showed the first of these can be
+made an operator-set dial, conservative but not exact. Every number is regenerated by one
 script from a clean checkout, and the results that contradict us are printed at
 the same size as the rest.
 

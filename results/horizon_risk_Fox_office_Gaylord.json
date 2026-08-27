@@ -1,0 +1,518 @@
+{
+  "building": "Fox_office_Gaylord",
+  "window": [
+    "2017-06-01",
+    "2017-06-30 23:45"
+  ],
+  "copula": {
+    "n_origins": 5793,
+    "shrink": 0.05,
+    "mean_z": 0.003350265983552848,
+    "sd_z": 1.065660525361634,
+    "corr_lag1": 0.870870125996002,
+    "corr_lag4": 0.5779308933797344,
+    "corr_lag32": 0.08548279526190816,
+    "df": 7.0,
+    "df_trace": [
+      {
+        "df": 3.0,
+        "mean_abs_gap": 0.041980264974969775,
+        "predicted": {
+          "8": 0.13293333333333332,
+          "16": 0.19655555555555557,
+          "32": 0.28357777777777776,
+          "64": 0.3906777777777778
+        },
+        "empirical": {
+          "8": 0.12325220093215951,
+          "16": 0.19506300707750734,
+          "32": 0.3196961850509235,
+          "64": 0.5113067495252891
+        }
+      },
+      {
+        "df": 4.0,
+        "mean_abs_gap": 0.028285820530525325,
+        "predicted": {
+          "8": 0.1386222222222222,
+          "16": 0.20513333333333336,
+          "32": 0.3079222222222222,
+          "64": 0.4353777777777778
+        },
+        "empirical": {
+          "8": 0.12325220093215951,
+          "16": 0.19506300707750734,
+          "32": 0.3196961850509235,
+          "64": 0.5113067495252891
+        }
+      },
+      {
+        "df": 5.0,
+        "mean_abs_gap": 0.02395717244950801,
+        "predicted": {
+          "8": 0.14103333333333332,
+          "16": 0.21766666666666665,
+          "32": 0.3248111111111111,
+          "64": 0.46097777777777776
+        },
+        "empirical": {
+          "8": 0.12325220093215951,
+          "16": 0.19506300707750734,
+          "32": 0.3196961850509235,
+          "64": 0.5113067495252891
+        }
+      },
+      {
+        "df": 7.0,
+        "mean_abs_gap": 0.0237099502272858,
+        "predicted": {
+          "8": 0.1466777777777778,
+          "16": 0.2274555555555556,
+          "32": 0.3432444444444444,
+          "64": 0.49583333333333335
+        },
+        "empirical": {
+          "8": 0.12325220093215951,
+          "16": 0.19506300707750734,
+          "32": 0.3196961850509235,
+          "64": 0.5113067495252891
+        }
+      },
+      {
+        "df": 10.0,
+        "mean_abs_gap": 0.02949824213130794,
+        "predicted": {
+          "8": 0.15013333333333334,
+          "16": 0.23375555555555555,
+          "32": 0.3595666666666667,
+          "64": 0.5238555555555556
+        },
+        "empirical": {
+          "8": 0.12325220093215951,
+          "16": 0.19506300707750734,
+          "32": 0.3196961850509235,
+          "64": 0.5113067495252891
+        }
+      },
+      {
+        "df": 15.0,
+        "mean_abs_gap": 0.03988157546464126,
+        "predicted": {
+          "8": 0.1538,
+          "16": 0.2402,
+          "32": 0.37081111111111115,
+          "64": 0.5440333333333334
+        },
+        "empirical": {
+          "8": 0.12325220093215951,
+          "16": 0.19506300707750734,
+          "32": 0.3196961850509235,
+          "64": 0.5113067495252891
+        }
+      },
+      {
+        "df": 25.0,
+        "mean_abs_gap": 0.049914908797974555,
+        "predicted": {
+          "8": 0.15434444444444442,
+          "16": 0.24527777777777782,
+          "32": 0.3819888888888889,
+          "64": 0.5673666666666666
+        },
+        "empirical": {
+          "8": 0.12325220093215951,
+          "16": 0.19506300707750734,
+          "32": 0.3196961850509235,
+          "64": 0.5113067495252891
+        }
+      },
+      {
+        "df": null,
+        "mean_abs_gap": 0.06516490879797456,
+        "predicted": {
+          "8": 0.1591,
+          "16": 0.25439999999999996,
+          "32": 0.4013777777777778,
+          "64": 0.5951
+        },
+        "empirical": {
+          "8": 0.12325220093215951,
+          "16": 0.19506300707750734,
+          "32": 0.3196961850509235,
+          "64": 0.5113067495252891
+        }
+      }
+    ],
+    "df_fitted_on": [
+      "2017-04-01",
+      "2017-05-31 23:45"
+    ]
+  },
+  "config": {
+    "scenarios": 200,
+    "reduce_to": 40,
+    "mode": "cvar",
+    "epsilons": [
+      0.05,
+      0.1,
+      0.2,
+      0.35
+    ]
+  },
+  "marginal_vs_joint": [
+    {
+      "H": 1,
+      "hours": 0.25,
+      "per_step_exceedance": 0.059637912673056445,
+      "empirical_horizon": 0.059637912673056445,
+      "empirical_horizon_block": 0.059637912673056445,
+      "independence_bound": 0.059637912673056404,
+      "copula_predicted": 0.049499999999999995,
+      "n_origins": 2817,
+      "blockmax_p95_predicted_kw": null,
+      "blockmax_realised_mean_kw": null
+    },
+    {
+      "H": 4,
+      "hours": 1.0,
+      "per_step_exceedance": 0.059992900248491306,
+      "empirical_horizon": 0.09052183173588925,
+      "empirical_horizon_block": 0.07738729144479943,
+      "independence_bound": 0.21922745197273552,
+      "copula_predicted": 0.09999166666666667,
+      "n_origins": 2817,
+      "blockmax_p95_predicted_kw": 149.18955387989098,
+      "blockmax_realised_mean_kw": 127.74398125753918
+    },
+    {
+      "H": 8,
+      "hours": 2.0,
+      "per_step_exceedance": 0.059726659566915155,
+      "empirical_horizon": 0.12602058927937523,
+      "empirical_horizon_block": 0.10791622293219737,
+      "independence_bound": 0.38901157622649996,
+      "copula_predicted": 0.14776666666666666,
+      "n_origins": 2817,
+      "blockmax_p95_predicted_kw": 158.95798676506612,
+      "blockmax_realised_mean_kw": 136.18431274916006
+    },
+    {
+      "H": 16,
+      "hours": 4.0,
+      "per_step_exceedance": 0.05948260560880369,
+      "empirical_horizon": 0.1817536386226482,
+      "empirical_horizon_block": 0.1615193468228612,
+      "independence_bound": 0.6251398175184992,
+      "copula_predicted": 0.22465000000000004,
+      "n_origins": 2817,
+      "blockmax_p95_predicted_kw": 175.31207869856536,
+      "blockmax_realised_mean_kw": 151.40296165895285
+    },
+    {
+      "H": 32,
+      "hours": 8.0,
+      "per_step_exceedance": 0.0611466098686546,
+      "empirical_horizon": 0.2751153709620163,
+      "empirical_horizon_block": 0.2470713525026624,
+      "independence_bound": 0.8672211441088804,
+      "copula_predicted": 0.34225000000000005,
+      "n_origins": 2817,
+      "blockmax_p95_predicted_kw": 198.45154837800982,
+      "blockmax_realised_mean_kw": 175.2000679754135
+    },
+    {
+      "H": 64,
+      "hours": 16.0,
+      "per_step_exceedance": 0.06197861199858005,
+      "empirical_horizon": 0.405040823571175,
+      "empirical_horizon_block": 0.37451189208377705,
+      "independence_bound": 0.9833422853217972,
+      "copula_predicted": 0.4973749999999999,
+      "n_origins": 2817,
+      "blockmax_p95_predicted_kw": 228.0351708784563,
+      "blockmax_realised_mean_kw": 204.9223308896161
+    }
+  ],
+  "copula_marginals": {
+    "q05_max_abs_err_kw": 1.2012533914615406,
+    "q25_max_abs_err_kw": 0.7600370572528465,
+    "q50_max_abs_err_kw": 0.7633940296787087,
+    "q75_max_abs_err_kw": 1.1480328761187093,
+    "q95_max_abs_err_kw": 1.8535141818040741,
+    "n_paths": 4000,
+    "n_origins": 40,
+    "mean_interval_width_kw": 40.10558636979815,
+    "worst_as_pct_of_width": 4.621586042187576
+  },
+  "closed_loop": [
+    {
+      "target": "tight",
+      "target_kw": 429.9,
+      "controller": "marginal q95",
+      "epsilon": null,
+      "mode": "marginal",
+      "S": null,
+      "bill_inr": 1138192.5127966034,
+      "peak_kva": 458.9889583742493,
+      "ceiling_breaches": 4,
+      "worst_breach_kw": 6.139510455536822,
+      "comfort_violation_pct": 0.5902777777777778,
+      "energy_kwh": 135940.30721339813,
+      "solve_ms_mean": 6.342116673266673,
+      "window_violation_rate": 0.048970901348474094,
+      "n_windows": 1409,
+      "blocks_breached": 4,
+      "n_blocks": 1440,
+      "block_breach_rate": 0.002777777777777778,
+      "commit_violation_rate": 0.10555555555555556,
+      "commit_violation_vs_target": 0.075,
+      "n_commitments": 360,
+      "median_margin_kw": 22.162440789984117,
+      "wall_s": 21.196128940999188
+    },
+    {
+      "target": "tight",
+      "target_kw": 429.9,
+      "controller": "Scenario MPC[cvar, eps=0.05]",
+      "epsilon": 0.05,
+      "mode": "cvar",
+      "S": 40,
+      "bill_inr": 1141531.7066066912,
+      "peak_kva": 464.6476634062381,
+      "ceiling_breaches": 9,
+      "worst_breach_kw": 11.515280235926184,
+      "comfort_violation_pct": 0.7638888888888888,
+      "energy_kwh": 135930.53338111984,
+      "solve_ms_mean": 53.078722109396246,
+      "window_violation_rate": 0.0965223562810504,
+      "n_windows": 1409,
+      "blocks_breached": 9,
+      "n_blocks": 1440,
+      "block_breach_rate": 0.00625,
+      "commit_violation_rate": 0.09722222222222222,
+      "commit_violation_vs_target": 0.06666666666666667,
+      "n_commitments": 360,
+      "median_margin_kw": 26.492453747257372,
+      "wall_s": 162.74528492099853
+    },
+    {
+      "target": "tight",
+      "target_kw": 429.9,
+      "controller": "Scenario MPC[cvar, eps=0.1]",
+      "epsilon": 0.1,
+      "mode": "cvar",
+      "S": 40,
+      "bill_inr": 1142186.1547900026,
+      "peak_kva": 466.7983396447864,
+      "ceiling_breaches": 9,
+      "worst_breach_kw": 13.55842266254706,
+      "comfort_violation_pct": 0.7291666666666666,
+      "energy_kwh": 135842.40018319993,
+      "solve_ms_mean": 53.14352441218249,
+      "window_violation_rate": 0.09581263307310149,
+      "n_windows": 1409,
+      "blocks_breached": 9,
+      "n_blocks": 1440,
+      "block_breach_rate": 0.00625,
+      "commit_violation_rate": 0.11388888888888889,
+      "commit_violation_vs_target": 0.075,
+      "n_commitments": 360,
+      "median_margin_kw": 23.50579899423829,
+      "wall_s": 162.97852700199837
+    },
+    {
+      "target": "tight",
+      "target_kw": 429.9,
+      "controller": "Scenario MPC[cvar, eps=0.2]",
+      "epsilon": 0.2,
+      "mode": "cvar",
+      "S": 40,
+      "bill_inr": 1142647.4010910967,
+      "peak_kva": 469.1873934837545,
+      "ceiling_breaches": 10,
+      "worst_breach_kw": 15.82802380956673,
+      "comfort_violation_pct": 0.8333333333333334,
+      "energy_kwh": 135687.90014885901,
+      "solve_ms_mean": 53.863333148260985,
+      "window_violation_rate": 0.07310149041873669,
+      "n_windows": 1409,
+      "blocks_breached": 10,
+      "n_blocks": 1440,
+      "block_breach_rate": 0.006944444444444444,
+      "commit_violation_rate": 0.15555555555555556,
+      "commit_violation_vs_target": 0.08888888888888889,
+      "n_commitments": 360,
+      "median_margin_kw": 19.760767184087427,
+      "wall_s": 165.67500338299942
+    },
+    {
+      "target": "tight",
+      "target_kw": 429.9,
+      "controller": "Scenario MPC[cvar, eps=0.35]",
+      "epsilon": 0.35,
+      "mode": "cvar",
+      "S": 40,
+      "bill_inr": 1141036.2960271442,
+      "peak_kva": 467.5213175440616,
+      "ceiling_breaches": 13,
+      "worst_breach_kw": 14.245251666858564,
+      "comfort_violation_pct": 1.0416666666666665,
+      "energy_kwh": 135561.43147541588,
+      "solve_ms_mean": 56.09764707292647,
+      "window_violation_rate": 0.0766501064584812,
+      "n_windows": 1409,
+      "blocks_breached": 13,
+      "n_blocks": 1440,
+      "block_breach_rate": 0.009027777777777777,
+      "commit_violation_rate": 0.21944444444444444,
+      "commit_violation_vs_target": 0.11388888888888889,
+      "n_commitments": 360,
+      "median_margin_kw": 16.26537163776876,
+      "wall_s": 172.1726585230008
+    },
+    {
+      "target": "nominal",
+      "target_kw": 467.2,
+      "controller": "marginal q95",
+      "epsilon": null,
+      "mode": "marginal",
+      "S": null,
+      "bill_inr": 1149579.9260363132,
+      "peak_kva": 481.8997773942233,
+      "ceiling_breaches": 0,
+      "worst_breach_kw": 0.0,
+      "comfort_violation_pct": 0.5902777777777778,
+      "energy_kwh": 135597.38832625657,
+      "solve_ms_mean": 6.366275063876022,
+      "window_violation_rate": 0.0,
+      "n_windows": 1409,
+      "blocks_breached": 0,
+      "n_blocks": 1440,
+      "block_breach_rate": 0.0,
+      "commit_violation_rate": 0.10277777777777777,
+      "commit_violation_vs_target": 0.016666666666666666,
+      "n_commitments": 360,
+      "median_margin_kw": 22.388593047015462,
+      "wall_s": 21.322842969000703
+    },
+    {
+      "target": "nominal",
+      "target_kw": 467.2,
+      "controller": "Scenario MPC[cvar, eps=0.05]",
+      "epsilon": 0.05,
+      "mode": "cvar",
+      "S": 40,
+      "bill_inr": 1148575.9363274695,
+      "peak_kva": 480.46329516510065,
+      "ceiling_breaches": 0,
+      "worst_breach_kw": 0.0,
+      "comfort_violation_pct": 0.625,
+      "energy_kwh": 135630.82420827184,
+      "solve_ms_mean": 51.64750993786053,
+      "window_violation_rate": 0.0,
+      "n_windows": 1409,
+      "blocks_breached": 0,
+      "n_blocks": 1440,
+      "block_breach_rate": 0.0,
+      "commit_violation_rate": 0.07777777777777778,
+      "commit_violation_vs_target": 0.013888888888888888,
+      "n_commitments": 360,
+      "median_margin_kw": 27.218119105750233,
+      "wall_s": 158.70173068199983
+    },
+    {
+      "target": "nominal",
+      "target_kw": 467.2,
+      "controller": "Scenario MPC[cvar, eps=0.1]",
+      "epsilon": 0.1,
+      "mode": "cvar",
+      "S": 40,
+      "bill_inr": 1151864.8850628703,
+      "peak_kva": 485.97272999747963,
+      "ceiling_breaches": 0,
+      "worst_breach_kw": 0.0,
+      "comfort_violation_pct": 0.625,
+      "energy_kwh": 135620.04458572879,
+      "solve_ms_mean": 53.00913344862389,
+      "window_violation_rate": 0.0,
+      "n_windows": 1409,
+      "blocks_breached": 0,
+      "n_blocks": 1440,
+      "block_breach_rate": 0.0,
+      "commit_violation_rate": 0.09722222222222222,
+      "commit_violation_vs_target": 0.008333333333333333,
+      "n_commitments": 360,
+      "median_margin_kw": 24.022121171368383,
+      "wall_s": 162.99118681300024
+    },
+    {
+      "target": "nominal",
+      "target_kw": 467.2,
+      "controller": "Scenario MPC[cvar, eps=0.2]",
+      "epsilon": 0.2,
+      "mode": "cvar",
+      "S": 40,
+      "bill_inr": 1148070.9361739727,
+      "peak_kva": 480.07586906501206,
+      "ceiling_breaches": 0,
+      "worst_breach_kw": 0.0,
+      "comfort_violation_pct": 0.625,
+      "energy_kwh": 135576.1557102911,
+      "solve_ms_mean": 53.32859343436667,
+      "window_violation_rate": 0.0,
+      "n_windows": 1409,
+      "blocks_breached": 0,
+      "n_blocks": 1440,
+      "block_breach_rate": 0.0,
+      "commit_violation_rate": 0.15,
+      "commit_violation_vs_target": 0.011111111111111112,
+      "n_commitments": 360,
+      "median_margin_kw": 19.904375816023474,
+      "wall_s": 163.74946068200006
+    },
+    {
+      "target": "nominal",
+      "target_kw": 467.2,
+      "controller": "Scenario MPC[cvar, eps=0.35]",
+      "epsilon": 0.35,
+      "mode": "cvar",
+      "S": 40,
+      "bill_inr": 1150364.36672432,
+      "peak_kva": 484.0122199196606,
+      "ceiling_breaches": 0,
+      "worst_breach_kw": 0.0,
+      "comfort_violation_pct": 0.625,
+      "energy_kwh": 135524.05766239596,
+      "solve_ms_mean": 53.039380383691224,
+      "window_violation_rate": 0.0,
+      "n_windows": 1409,
+      "blocks_breached": 0,
+      "n_blocks": 1440,
+      "block_breach_rate": 0.0,
+      "commit_violation_rate": 0.20833333333333334,
+      "commit_violation_vs_target": 0.005555555555555556,
+      "n_commitments": 360,
+      "median_margin_kw": 16.353631130675517,
+      "wall_s": 163.06561810499988
+    }
+  ],
+  "acceptance": {
+    "metric": "commit_violation_rate",
+    "resolution_floor": 0.025,
+    "rank_corr": 0.9572173526639411,
+    "mean_abs_gap": 0.057291666666666664,
+    "n_levels": 8,
+    "n_conservative": 5,
+    "marginal_plan_rate": {
+      "nominal": 0.10277777777777777,
+      "tight": 0.10555555555555556
+    },
+    "scenario_plan_rate_at_min_eps": {
+      "nominal": 0.07777777777777778,
+      "tight": 0.09722222222222222
+    },
+    "marginal_tight_rate": 0.048970901348474094,
+    "scenario_tight_rate": 0.0965223562810504,
+    "tight_bill_delta": 3339.1938100878615
+  }
+}

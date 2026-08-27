@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{llrrrrrrr}
+\toprule
+Target & Controller & $\varepsilon$ & Commit viol.\ (gap) & vs target & Breaches & Peak kVA & Bill Rs & Solve ms \\
+\midrule
+tight & marginal $q95$ & -- & \textbf{0.106} & 0.049 & 4 & 459.0 & 1,138,193 & 6 \\
+tight & scenario & 0.05 & \textbf{0.097} (+0.047) & 0.097 & 9 & 464.6 & 1,141,532 & 53 \\
+tight & scenario & 0.10 & \textbf{0.114} (+0.014) & 0.096 & 9 & 466.8 & 1,142,186 & 53 \\
+tight & scenario & 0.20 & \textbf{0.156} (-0.044) & 0.073 & 10 & 469.2 & 1,142,647 & 54 \\
+tight & scenario & 0.35 & \textbf{0.219} (-0.131) & 0.077 & 13 & 467.5 & 1,141,036 & 56 \\
+nominal & marginal $q95$ & -- & \textbf{0.103} & 0.000 & 0 & 481.9 & 1,149,580 & 6 \\
+nominal & scenario & 0.05 & \textbf{0.078} (+0.028) & 0.000 & 0 & 480.5 & 1,148,576 & 52 \\
+nominal & scenario & 0.10 & \textbf{0.097} (-0.003) & 0.000 & 0 & 486.0 & 1,151,865 & 53 \\
+nominal & scenario & 0.20 & \textbf{0.150} (-0.050) & 0.000 & 0 & 480.1 & 1,148,071 & 53 \\
+nominal & scenario & 0.35 & \textbf{0.208} (-0.142) & 0.000 & 0 & 484.0 & 1,150,364 & 53 \\
+\bottomrule
+\end{tabular}
+\caption{Closed loop over one billing month. \textbf{Commit violation} is the acceptance metric: the fraction of horizons in which realised load cleared the ceiling the optimiser committed to, which is what $\varepsilon$ is a statement about. The against-target column is the business metric and is not what the chance constraint promises, since the committed peak is a decision variable. Rank correlation 0.957, mean absolute gap 0.057, conservative at 5 of 8 levels; resolution floor $1/S=0.025$.}
+\label{tab:acceptance}
+\end{table}
