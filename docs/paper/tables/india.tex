@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lrrrrrr}
+\toprule
+Series & Native min & Cooling share & Load--temp. corr. & $p99/$med & Skill & Cov 90\% \\
+\midrule
+\textbf{India (Delhi)} & 15 & 0.89 & +0.59 & 1.61 & +0.097 & 0.762 \\
+Spain & 60 & 0.28 & +0.17 & 1.31 & +0.619 & 0.813 \\
+France & 60 & 0.08 & -0.64 & 1.58 & +0.636 & 0.829 \\
+Germany & 60 & 0.06 & -0.10 & 1.32 & +0.713 & 0.837 \\
+United Kingdom & 60 & 0.02 & -0.13 & 1.40 & +0.161 & 0.822 \\
+Ireland & 60 & 0.00 & -0.07 & 1.37 & +0.442 & 0.911 \\
+\bottomrule
+\end{tabular}
+\caption{India against the other national series, ordered by cooling-degree-day share. India sits at one extreme on every axis that makes the method worth deploying --- the highest cooling share, the only strongly positive load--temperature correlation, the peakiest profile --- and at the other extreme on both axes that decide whether it can be trusted: the lowest forecast skill and the worst interval coverage in the study. Delhi is also the only series at native 15-minute resolution, the cadence the controller actually runs at.}
+\label{tab:india}
+\end{table}

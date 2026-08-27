@@ -17,8 +17,45 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 RESULTS = ROOT / "results"
+CACHE = ROOT / "data/cache"
 OUT = ROOT / "docs/paper/tables"
 OURS = "lightgbm_quantile"
+
+#: Full names everywhere. Two-letter codes and internal site aliases are fine in
+#: a results file and wrong in a paper -- a reader should not have to learn that
+#: "Wolf" is Dublin or that "GB_UKM" includes Northern Ireland.
+COUNTRY_NAME = {
+    "US": "United States", "GB": "United Kingdom", "IE": "Ireland",
+    "IN": "India", "DE": "Germany", "FR": "France", "ES": "Spain",
+    "CA": "Canada",
+}
+
+SITE_CITY = {
+    "Fox": "Phoenix, United States", "Bull": "Austin, United States",
+    "Rat": "Washington DC, United States", "Hog": "Minneapolis, United States",
+    "Bear": "Berkeley, United States", "Robin": "London, United Kingdom",
+    "Wolf": "Dublin, Ireland", "Lamb": "Cardiff, United Kingdom",
+    "Mouse": "London, United Kingdom", "Shrew": "London, United Kingdom",
+    "Panther": "Orlando, United States", "Gator": "Orlando, United States",
+    "Eagle": "United States", "Peacock": "Princeton, United States",
+    "Cockatoo": "Ithaca, United States", "Crow": "Ottawa, Canada",
+    "Moose": "Ottawa, Canada", "Swan": "United States", "Bobcat": "United States",
+}
+
+SERIES_NAME = {
+    "IN_Delhi": "India (Delhi)", "GB_UKM": "United Kingdom", "IE": "Ireland",
+    "DE": "Germany", "FR": "France", "ES": "Spain",
+}
+
+
+def pretty(v: str, kind: str) -> str:
+    if kind == "country":
+        return COUNTRY_NAME.get(v, v)
+    if kind == "series":
+        return SERIES_NAME.get(v, v)
+    if kind == "site":
+        return SITE_CITY.get(v, v)
+    return v
 
 ESC = {"&": r"\&", "%": r"\%", "_": r"\_", "#": r"\#"}
 
@@ -120,6 +157,45 @@ def acceptance_table() -> None:
           "tab:acceptance")
 
 
+def india_table(df: pd.DataFrame) -> None:
+    """India against every other national series, on the axes that decide whether
+    the method is worth deploying and whether it can be trusted when it is."""
+    nat = json.loads((CACHE / "manifest_national.json").read_text())
+    g = df[df.arm == "national"].copy()
+    if g.empty:
+        return
+    g["cdd"] = g["id"].map(lambda i: nat[i]["cdd_share"])
+    g = g.sort_values("cdd", ascending=False)
+    rows = []
+    for _, r in g.iterrows():
+        m = nat[r["id"]]
+        name = pretty(r["id"], "series")
+        if r["country"] == "IN":
+            name = f"\\textbf{{{name}}}"
+        rows.append([
+            name,
+            f"{m['native_resolution_min']:.0f}",
+            f"{m['cdd_share']:.2f}",
+            f"{m['corr_temp']:+.2f}",
+            f"{m['p99_over_median']:.2f}",
+            f"{r[f'{OURS}_skill']:+.3f}",
+            f"{r[f'{OURS}_cov90']:.3f}",
+        ])
+    table(OUT / "india.tex",
+          ["Series", "Native min", "Cooling share", "Load--temp. corr.",
+           "$p99/$med", "Skill", "Cov 90\\%"],
+          rows, "lrrrrrr",
+          "India against the other national series, ordered by cooling-degree-day "
+          "share. India sits at one extreme on every axis that makes the method "
+          "worth deploying --- the highest cooling share, the only strongly "
+          "positive load--temperature correlation, the peakiest profile --- and at "
+          "the other extreme on both axes that decide whether it can be trusted: "
+          "the lowest forecast skill and the worst interval coverage in the study. "
+          "Delhi is also the only series at native 15-minute resolution, the "
+          "cadence the controller actually runs at.",
+          "tab:india")
+
+
 def load_study() -> pd.DataFrame:
     import eval.comparative_report as R
     df = R.load()
@@ -141,8 +217,15 @@ def arm_table(df: pd.DataFrame, arm: str, first: str, firstname: str,
         cd = "--" if pd.isna(r.get("cdd_share")) else f"{r['cdd_share']:.2f}"
         sk = r.get(f"{OURS}_skill")
         skt = "--" if pd.isna(sk) else f"\\textbf{{{sk:+.3f}}}"
+        # NB: not `label` -- that is this function's LaTeX-label parameter, and
+        # shadowing it silently renames \label{tab:climate} to \label{Ireland}.
+        rowname = r[first]
+        if arm == "national":
+            rowname = pretty(rowname, "series")
+        elif first == "site":
+            rowname = pretty(rowname, "site")
         rows.append([
-            esc(r[first]), esc(r["country"]), cd, hv,
+            esc(rowname), esc(pretty(r["country"], "country")), cd, hv,
             f"{r['seasonal_naive_pinball']:.3f}", f"{r[f'{OURS}_pinball']:.3f}",
             skt, f"{r[f'{OURS}_cov90']:.3f}",
         ])
@@ -221,7 +304,7 @@ def main() -> None:
               "tab:climate", "climate.tex")
     arm_table(df, "office", "site", "Site",
               "Office arm: the same ladder in a second usage class, run as a "
-              "control on the climate arm. Robin (London) is the study's worst "
+              "control on the climate arm. The London office is the study's worst "
               "row and is reported unchanged.",
               "tab:office", "office.tex")
     arm_table(df, "demographic", "usage", "Usage class",
@@ -233,6 +316,7 @@ def main() -> None:
               "15-minute native resolution from Delhi SLDC; the European series "
               "are ENTSO-E hourly via Open Power System Data.",
               "tab:national", "national.tex")
+    india_table(df)
     calibration_table(df)
     correlation_table(df)
     print(f"\n-> {OUT}")

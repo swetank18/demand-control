@@ -11,8 +11,9 @@
 \newcommand{\rupee}[1]{\textsf{Rs}~#1}
 \captionsetup{font=small}
 
-\title{\bf What a Per-Step Guarantee Is Not:\\
-Measuring Where a Tariff-Native Demand Controller's Safety Property Holds}
+\title{\bf Benchmarking a Tariff-Native Demand Controller\\
+Across Seven Countries:\\
+\large What India Gains From It, and What India Must Fix}
 
 \author{%
   Swetank Kumar\\
@@ -25,35 +26,43 @@ Measuring Where a Tariff-Native Demand Controller's Safety Property Holds}
 
 \begin{abstract}
 Demand charges in Indian commercial tariffs are set by a single worst
-30-minute block in a month, which makes defending a demand ceiling a risk
-problem rather than a prediction problem. The standard applied treatment
-substitutes a marginal high quantile of a load forecast into a per-timestep
-capacity constraint. We do not propose a new algorithm. We build an instrument
-in which the tariff compiler, quantile forecaster, chance-constrained MILP,
-RC simulator and bill engine can each be pinned while exactly one is swapped,
-and the consequence read out in currency and ceiling breaches; and we use it to
-make three measurements that the literature asserts but does not quantify.
-First, on held-out meter data a per-step exceedance rate of $0.062$ corresponds
-to a $0.405$ probability of breaching somewhere in a 16-hour planning window,
-while the independence (Boole) bound a careful designer would reach for gives
-$0.983$ --- so the naive formulation is under-protected roughly sevenfold and
-the textbook bound is $2.4\times$ too loose to be useful. Second, running one
-protocol over 24 series --- 18 buildings across three countries and eight usage
-classes, and six national or city demand series including real 15-minute Delhi
-data --- conformal coverage of a nominal 90\% interval holds at building level
-(mean $0.901$) and degrades systematically at system level (mean $0.829$, five
-of six series below $0.85$), worst of all on Delhi at $0.762$. Third, forecast
-skill is uncorrelated with climate ($r=+0.010$, leave-one-out range crossing
-zero) while the controllable load fraction tracks it strongly ($r=+0.489$),
-so deployment screening should ask how much load is weather-driven and not
-how predictable it is. Closing the loop, a scenario MPC over sampled joint
-trajectories turns the horizon risk level into a parameter the operator sets:
-realised violation of the committed ceiling tracks the requested $\varepsilon$
-with rank correlation $0.957$ across an eight-point sweep, conservative at five
-of eight levels, for \rupee{3,339} on a month at the tight target --- where
-previously no such dial existed and the operating risk level was an emergent
-consequence of horizon length. Three of our results argue against the method and
-are reported unchanged.
+thirty-minute block in a month, which makes defending a demand ceiling a risk
+problem rather than a prediction problem. We built a tariff-native controller
+for this and then, rather than reporting it on the building it was developed on,
+subjected it to a cross-country benchmark: one unchanged protocol over
+twenty-six electricity supplies in seven countries --- eighteen individual
+buildings across eight usage classes from the Building Data Genome Project 2,
+and six national or city demand series including real fifteen-minute data from
+the Delhi State Load Despatch Centre and European transmission data from
+ENTSO-E. India is the focal case throughout, and it is simultaneously the most
+favourable and the most difficult series in the study.
+
+Favourable, because India sits at one extreme of every axis that makes the
+method worth deploying: the highest cooling-degree-day share in the benchmark
+(0.89), the only strongly positive load--temperature correlation ($+0.59$,
+against $-0.64$ for France), and among the peakiest load profiles. Difficult,
+because it is last on both axes that decide whether the method can be trusted:
+the lowest forecast skill over a seasonal-naive baseline ($+0.097$, against
+$+0.713$ for Germany) and the worst probabilistic calibration in the study
+(0.762 coverage of a nominal 90\% interval).
+
+We claim no new algorithm. Every component --- quantile gradient boosting,
+conformalized and adaptive conformal prediction, chance-constrained and
+scenario-based model predictive control --- is established. The contribution is
+an instrument in which each component can be pinned while exactly one is
+swapped, and four measurements it makes possible. First, a per-step exceedance
+rate of $0.062$ corresponds to a $0.405$ probability of breaching somewhere in a
+sixteen-hour planning window, while the independence bound gives $0.983$: the
+common formulation is under-protected roughly sevenfold and the textbook
+correction is $2.4\times$ too loose. Second, a scenario controller over sampled
+joint trajectories converts that risk level into an operator-set dial, tracking
+requested $\varepsilon$ with rank correlation $0.957$ for \rupee{3,339} on the
+month. Third, conformal coverage degrades with aggregation level and fails worst
+on Indian demand. Fourth, forecast skill is uncorrelated with climate while
+available flexibility tracks it strongly, so deployment screening should ask how
+much load is weather-driven rather than how predictable it is. We close by
+stating precisely what India must fix, and three of our results argue against
+the method and are reported unchanged.
 \end{abstract}
 
 \section{Introduction}
@@ -113,18 +122,31 @@ measure both.
         resolution limits measured (Section~\ref{sec:horizon}).
 \end{enumerate}
 
-\paragraph{What we do not claim.} No component here is novel. Quantile gradient
-boosting \citep{ke2017lightgbm}, conformalized quantile regression
-\citep{romano2019cqr}, adaptive conformal inference under distribution shift
-\citep{gibbs2021adaptive}, the scenario approach
-\citep{calafiore2006scenario}, and decision-focused learning
-\citep{elmachtoub2022spo,donti2017task} are all established. Pinball loss is a
-strictly proper scoring rule for quantiles \citep{gneiting2007strictly}, and
-benchmark environments for building energy control are well developed
-\citep{nweye2023citylearn}. Cross-building
-transfer learning on the Building Data Genome corpus \citep{miller2020bdg2} is
-an active area. The contribution is the instrument and the measurements it
-makes possible, not the parts.
+\paragraph{Where the novelty is, and where it is not.} We state this
+precisely, because a novelty claim that cannot survive a literature search is
+worth less than no claim. \emph{Not novel:} chance-constrained model predictive
+control for buildings; joint chance constraints and their standard treatments,
+including Boole/Bonferroni risk allocation and the scenario approach
+\citep{calafiore2006scenario}; quantile gradient boosting
+\citep{ke2017lightgbm}; conformalized quantile regression \citep{romano2019cqr}
+and adaptive conformal inference \citep{gibbs2021adaptive}; decision-focused
+learning \citep{elmachtoub2022spo,donti2017task}; and cross-building transfer
+learning, which is an active area operating on this very corpus
+\citep{miller2020bdg2}. We invented none of it and do not claim to.
+
+\emph{Novel:} the instrument, and what it measures. We are not aware of prior
+work that (i) brackets the marginal-versus-horizon risk gap for a demand ceiling
+on real meter data with \emph{both} ends reported, so that the common
+formulation and the textbook correction are shown to be wrong in opposite
+directions by measured factors; (ii) reports that distribution-free coverage
+degrades systematically with aggregation level, holding at building scale and
+failing at system scale; (iii) separates forecast skill from available
+flexibility as empirically independent deployment criteria, with the expected
+relationship reported as a null; or (iv) benchmarks a tariff-native demand
+controller across seven countries with India as the focal case and the Indian
+result reported as the weakest one. The novelty is empirical and integrative
+rather than algorithmic. That is a narrower claim than a new method, and it is
+one that holds.
 
 \section{The instrument}
 
@@ -149,9 +171,41 @@ and moving one thing. Section~\ref{sec:horizon} pins the plant and varies only
 the risk formulation; Section~\ref{sec:calibration} pins the protocol and varies
 only the series; Section~\ref{sec:axes} pins the model and varies the site.
 
-Data are the Building Data Genome Project~2 \citep{miller2020bdg2} for buildings;
-Delhi SLDC 15-minute city demand and ENTSO-E national demand via Open Power
-System Data for the system tier; and ERA5 reanalysis for weather.
+\section{Data}
+\label{sec:data}
+
+Four public sources, all fetched by script rather than vendored, and named in
+full because the benchmark's credibility rests on them.
+
+\paragraph{Building Data Genome Project 2} \citep{miller2020bdg2}. 1{,}578
+metered non-residential buildings across nineteen sites, hourly electricity with
+matched weather, two years. It is the only harmonised multi-country building
+corpus in existence, which is why it carries the controlled comparison: the same
+physical quantity, the same metering convention, the same period. It contains
+\emph{no Indian buildings}, and this is the single most consequential gap in the
+study --- discussed in Section~\ref{sec:india-fix}.
+
+\paragraph{Delhi State Load Despatch Centre.} Fifteen-minute metered demand for
+the city of Delhi, disaggregated across five distribution companies (BRPL, BYPL,
+NDPL, NDMC and MES) plus the total, two complete years at full coverage. This is
+the only series in the entire study at \emph{native} fifteen-minute resolution
+--- the cadence the controller actually runs at and the cadence on which Indian
+demand charges are assessed. Every other series is interpolated up from hourly.
+
+\paragraph{ENTSO-E transmission data, via Open Power System Data.} Hourly
+national load for the United Kingdom, Ireland, Germany, France and Spain, drawn
+from the European transmission system operators' transparency platform.
+
+\paragraph{ERA5 reanalysis, via the Open-Meteo archive.} Hourly temperature, dew
+point and cloud cover at each location, used identically for every series.
+
+\paragraph{Windows.} The building tier and the European national tier share
+2016--2017. The Delhi archive covers 2011--2012, so the same protocol is shifted
+back five years with its shape preserved, leaving June as the test month in every
+row. Absolute losses are therefore not comparable across the two groups, which is
+why the headline metric throughout is skill against each series' own
+seasonal-naive baseline: a ratio computed inside one series' own data and its own
+period.
 
 \section{The horizon gap}
 \label{sec:horizon}
@@ -253,7 +307,8 @@ ceiling, and the safety property degrades precisely on the load the project
 targets. The mechanism is the exchangeability requirement of split conformal
 \citep{vovk2005algorithmic,romano2019cqr}: a Delhi May is not exchangeable with
 a Delhi June, because the monsoon arrives between them. Our own walk-forward
-audit finds the same failure at smaller amplitude at Fox, where monthly
+audit finds the same failure at smaller amplitude on the Phoenix office,
+where monthly
 coverage of a nominal 90\% interval ranges from $0.45$ to $0.94$. Whether the
 adaptive layer \citep{gibbs2021adaptive} restores the level at system scale is
 the obvious next experiment and is stated as one.
@@ -267,6 +322,85 @@ hottest sites in the corpus, the closest available analogues to an Indian metro
 climate, yield no admissible building at all for want of coverage in the split
 window. Both facts were discovered by applying the rule, not anticipated when
 writing it.
+
+\section{India in comparison}
+\label{sec:india}
+
+\input{tables/india}
+
+Table~\ref{tab:india} is the comparison the benchmark exists to make, and it
+resolves into a single sentence: \textbf{India is the place this method is most
+worth deploying and the place it is currently least trustworthy.}
+
+\paragraph{Why India is the favourable case.} Delhi has the highest
+cooling-degree-day share in the benchmark at $0.89$, and it is the only series
+whose demand rises strongly with temperature ($+0.59$). France is its mirror at
+$-0.64$: French demand rises when it gets \emph{cold}, because the building stock
+is electrically heated. That distinction is the whole economic argument. A
+controller that buys down a cooling peak inside a demand-charge tariff has
+something to work with in the first regime and almost nothing in the second.
+Delhi is also among the peakiest profiles in the set ($p99/$median $1.61$),
+which is precisely the shape a demand charge punishes.
+
+\paragraph{Why India is the difficult case.} On both axes that determine whether
+the controller can be relied upon, India is last. Forecast skill over a
+seasonal-naive baseline is $+0.097$, against $+0.713$ for Germany, $+0.636$ for
+France and $+0.619$ for Spain --- a model that needs no training at all is nearly
+as good on Delhi as ours. And coverage of the nominal 90\% interval is $0.762$,
+the worst figure anywhere in the study, against $0.911$ for Ireland.
+
+The second of these is the serious one. The controller's $q95$ is read from the
+same object as that interval, so an interval that is too narrow yields a demand
+ceiling that is too narrow, and the safety property is weakest on exactly the
+load the project targets.
+
+\section{What India must fix}
+\label{sec:india-fix}
+
+Stated as work rather than as caveats, in descending order of how much they cost.
+
+\paragraph{1. There is no Indian building-level load dataset.} This is a national
+research-infrastructure gap and it bounds everything else. The Building Data
+Genome Project 2 harmonises 1{,}578 buildings across three countries and contains
+no Indian building. We were therefore forced to test the \emph{controller} on
+American buildings under an Indian tariff and the \emph{forecaster} on Indian
+city demand, and no single row of this study is both Indian and building-level.
+Relabelling an American building as Indian would have been worse than the gap,
+so the gap is reported. Until an Indian equivalent exists --- submetered,
+multi-site, multi-year, openly licensed --- no one can honestly claim a
+building-level demand-control result for India, ourselves included.
+
+\paragraph{2. Calibration collapses across the monsoon.} Coverage of $0.762$ is
+not a tuning failure, it is an assumption failure. Split conformal prediction
+requires the calibration and test blocks to be exchangeable
+\citep{vovk2005algorithmic,romano2019cqr}, and a Delhi May is not exchangeable
+with a Delhi June: the monsoon arrives between them and changes the relationship
+between temperature and load. The remedy is the adaptive layer
+\citep{gibbs2021adaptive}, monsoon-aware calibration windows, or explicit regime
+detection. We have the method; we have not yet run it at this tier, and we
+decline to claim the result before we have.
+
+\paragraph{3. Indian load carries calendar structure the model does not encode.}
+A large share of Indian public holidays are lunisolar --- Diwali, Holi, Eid ---
+and move against the Gregorian calendar, so they cannot be expressed as the
+fixed date list that load-forecasting pipelines conventionally use, including
+ours until this study forced the change. Beyond holidays, Indian demand carries
+load-shedding events, agricultural pumping schedules and festival periods that
+have no counterpart in the European series and no representation in our feature
+set. The low skill figure of $+0.097$ should be read partly as a statement about
+missing features rather than solely about the data.
+
+\paragraph{4. The Indian series is a decade old.} The Delhi archive covers
+2011--2012. India's generation mix, air-conditioning penetration and peak demand
+have all moved substantially since. The load \emph{shape} conclusions are the
+durable ones; the levels are not, and nothing in this paper should be read as a
+statement about the present Indian grid.
+
+\paragraph{What this does not undermine.} The favourable half of
+Table~\ref{tab:india} rests on physical structure --- cooling share, the sign of
+the load--temperature relationship, peakiness --- which is the part least likely
+to have inverted since 2012. Indian demand has not stopped rising with
+temperature.
 
 \section{Skill and flexibility are independent axes}
 \label{sec:axes}
@@ -296,7 +430,7 @@ of the axis that matters.
 
 \section{Results that argue against the method}
 
-Three rows are reported unchanged. Robin (London) office returns skill
+Three rows are reported unchanged. The London office returns skill
 $-0.463$: worse than a baseline requiring no training. Delhi returns
 $+0.097$ with the study's worst calibration. Public services in Washington DC
 returns $+0.052$. All three sit at 1--3\% HVAC share, where a weather-aware
@@ -329,14 +463,28 @@ Indian data rather than a claim about India.
 
 \section{Conclusion}
 
-We built an instrument rather than an algorithm, and used it to bracket a
-formulation error that is widespread in applied demand-charge control, to show
-that distribution-free coverage guarantees degrade with aggregation level and
-fail worst on the load we most care about, and to separate two deployment
-criteria that are naturally conflated; and we showed the first of these can be
-made an operator-set dial, conservative but not exact. Every number is regenerated by one
-script from a clean checkout, and the results that contradict us are printed at
-the same size as the rest.
+We built an instrument rather than an algorithm, and ran it unchanged over
+twenty-six electricity supplies in seven countries to find out where a
+tariff-native demand controller's guarantees actually hold. Four results follow:
+a per-step risk guarantee on a demand ceiling is under-protected roughly
+sevenfold over a planning window while the textbook correction is $2.4\times$
+too conservative; that risk level can be turned into an operator-set dial, at
+measured and stated cost; distribution-free coverage degrades with aggregation
+level; and forecast skill and available flexibility are independent axes, only
+one of which tracks climate.
+
+For India specifically the benchmark returns a divided verdict, and both halves
+matter. India has the most favourable load physics in the study --- the highest
+cooling share, the only strongly positive load--temperature relationship, a
+peaky profile that a demand-charge tariff punishes and this method is built to
+defend. It also returns the lowest forecast skill and the worst calibration we
+measured, and there exists no Indian building-level dataset on which to close
+the loop properly. The first half is the case for the work. The second half is
+the work that remains, and Section~\ref{sec:india-fix} states it as such rather
+than as a footnote.
+
+Every number is regenerated by one script from a clean checkout, and the results
+that contradict us are printed at the same size as the rest.
 
 \bibliographystyle{plainnat}
 \bibliography{refs}
