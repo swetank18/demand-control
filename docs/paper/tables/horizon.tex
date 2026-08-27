@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{rrrrrr}
+\toprule
+$H$ & hours & per-step & empirical & Boole bound & copula \\
+\midrule
+1 & 0.25 & 0.060 & \textbf{0.060} & 0.060 & 0.049 \\
+4 & 1.00 & 0.060 & \textbf{0.091} & 0.219 & 0.100 \\
+8 & 2.00 & 0.060 & \textbf{0.126} & 0.389 & 0.148 \\
+16 & 4.00 & 0.059 & \textbf{0.182} & 0.625 & 0.225 \\
+32 & 8.00 & 0.061 & \textbf{0.275} & 0.867 & 0.342 \\
+64 & 16.00 & 0.062 & \textbf{0.405} & 0.983 & 0.497 \\
+\bottomrule
+\end{tabular}
+\caption{Marginal versus horizon-level exceedance of the demand ceiling. The per-step quantile is well calibrated at every horizon; the probability of breaching \emph{somewhere} in the window is not the number the constraint appears to promise, and the independence bound is far too loose to substitute for it. Held-out June 2017, 5,793 forecast origins.}
+\label{tab:horizon}
+\end{table}

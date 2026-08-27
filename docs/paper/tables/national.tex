@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{llrrrrrr}
+\toprule
+Series & Country & CDD sh. & HVAC sh. & Seas.\ naive & Ours & Skill & Cov 90\% \\
+\midrule
+IN\_Delhi & IN & 0.89 & -- & 72.499 & 65.437 & \textbf{+0.097} & 0.762 \\
+ES & ES & 0.28 & -- & 594.320 & 226.544 & \textbf{+0.619} & 0.813 \\
+FR & FR & 0.08 & -- & 942.571 & 342.809 & \textbf{+0.636} & 0.829 \\
+DE & DE & 0.06 & -- & 1344.698 & 386.465 & \textbf{+0.713} & 0.837 \\
+GB\_UKM & GB & 0.02 & -- & 451.549 & 378.932 & \textbf{+0.161} & 0.822 \\
+IE & IE & 0.00 & -- & 29.812 & 16.624 & \textbf{+0.442} & 0.911 \\
+\bottomrule
+\end{tabular}
+\caption{National arm: real system-level demand in six countries. Delhi is 15-minute native resolution from Delhi SLDC; the European series are ENTSO-E hourly via Open Power System Data.}
+\label{tab:national}
+\end{table}

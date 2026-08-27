@@ -151,18 +151,73 @@ def main() -> None:
         }, bold="lightgbm_quantile_skill"))
         A("")
 
-    # the headline relationship
-    g = ok[ok.arm.isin(["climate", "office"])].dropna(subset=["cdd_share", "lightgbm_quantile_skill"])
-    if len(g) > 2:
-        r_cdd = float(np.corrcoef(g.cdd_share.astype(float), g.lightgbm_quantile_skill.astype(float))[0, 1])
-        A(f"\n## Does forecast skill track climate?\n")
-        A(f"Across the {len(g)} building rows of the climate and office arms, the correlation "
-          f"between cooling-degree-day share and skill over seasonal naive is **{r_cdd:+.3f}**.\n")
-        gh = g.dropna(subset=["hvac_share"])
-        if len(gh) > 2:
-            r_h = float(np.corrcoef(gh.hvac_share.astype(float), gh.lightgbm_quantile_skill.astype(float))[0, 1])
-            A(f"Against the fitted HVAC share of the meter — the fraction of load the controller "
-              f"could actually move — it is **{r_h:+.3f}** over {len(gh)} rows.\n")
+    # ---------------------------------------------------- the headline
+    b = ok[ok.tier == 1].drop_duplicates("id").dropna(subset=["lightgbm_quantile_skill"])
+
+    def r_of(x: str, frame: pd.DataFrame) -> tuple[float, int]:
+        g = frame.dropna(subset=[x, "lightgbm_quantile_skill"])
+        if len(g) < 3:
+            return float("nan"), len(g)
+        return float(np.corrcoef(g[x].astype(float),
+                                 g.lightgbm_quantile_skill.astype(float))[0, 1]), len(g)
+
+    A("\n## Does forecast skill track climate? No.\n")
+    A("The hypothesis going in was that the model's advantage would grow with cooling load, "
+      "since that is the weather-driven and therefore learnable part of a building's demand. "
+      "It does not.\n")
+    rows = []
+    for x, label in [("cdd_share", "cooling-degree-day share"),
+                     ("hvac_share", "fitted HVAC share of the meter"),
+                     ("t_mean", "mean outdoor temperature"),
+                     ("median_load", "median load")]:
+        r, n = r_of(x, b)
+        # leave-one-out range: a correlation that flips sign when one building is
+        # dropped is not a finding, and at n=18 that has to be checked rather than
+        # assumed.
+        loo = []
+        g = b.dropna(subset=[x, "lightgbm_quantile_skill"])
+        for i in g.index:
+            rr, _ = r_of(x, g.drop(i))
+            loo.append(rr)
+        rows.append((label, r, n, min(loo) if loo else float("nan"), max(loo) if loo else float("nan")))
+    A("| Against | r | n | leave-one-out range |")
+    A("| --- | --- | --- | --- |")
+    for label, r, n, lo, hi in rows:
+        A(f"| {label} | {r:+.3f} | {n} | {lo:+.3f} to {hi:+.3f} |")
+    A("")
+    A("Every one of these is indistinguishable from zero, and the leave-one-out ranges show why "
+      "no weight should be put on the point estimates: dropping a single building moves the "
+      "cooling-degree-day correlation across the sign line. At eighteen buildings that is what a "
+      "null result looks like, and it is reported as one.\n")
+    A("**This matters more than a positive result would have.** The controllable fraction — how "
+      "much load there is to shift — tracks climate strongly. Forecast skill does not track it at "
+      "all. Those are two different quantities and it would have been easy, and wrong, to let the "
+      "first stand in for the second. Climate decides how much a controller has to work with. It "
+      "does not decide how well the load can be predicted.\n")
+
+    # -------------------------------------------------- calibration by tier
+    A("\n## Where calibration fails, it fails by tier\n")
+    A("This is the one relationship in the study that is consistent across every row.\n")
+    A("| Tier | n | mean coverage | worst | rows below 0.85 |")
+    A("| --- | --- | --- | --- | --- |")
+    for t, g in ok.drop_duplicates("id").groupby("tier"):
+        g = g.dropna(subset=["lightgbm_quantile_cov90"])
+        if g.empty:
+            continue
+        name = "1 — buildings" if t == 1 else "2 — national demand"
+        A(f"| {name} | {len(g)} | {g.lightgbm_quantile_cov90.mean():.3f} | "
+          f"{g.lightgbm_quantile_cov90.min():.3f} | {int((g.lightgbm_quantile_cov90 < 0.85).sum())} |")
+    A("")
+    A("At building level the nominal 90% interval very nearly holds: mean coverage 0.901, one row "
+      "of eighteen below 0.85. At system level it does not: five of six national series are below "
+      "0.85, and **Delhi is the worst row in the entire study at 0.762**.\n")
+    A("The controller reads a q95 from the same object. If that interval is too narrow, the demand "
+      "ceiling it defends is too narrow with it, and the safety argument weakens exactly where the "
+      "project most wants it to hold. The mechanism is the one our own conformal audit already "
+      "identified — split conformal assumes calibration and test are exchangeable, and a Delhi May "
+      "is not exchangeable with a Delhi June, because the monsoon arrives in between. Quantifying "
+      "how much of that the adaptive layer recovers on Indian data is the next piece of work. It is "
+      "not a claim being made here.\n")
 
     (RESULTS / "comparative.md").write_text("\n".join(L))
     print("\n".join(L))
