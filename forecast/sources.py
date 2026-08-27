@@ -133,3 +133,101 @@ class PVQuantiles:
             return np.zeros(H)
         sl = slice(k0, k0 + H)
         return self.clear[sl] * self.qmap[q][self.elev_now[sl]]
+
+
+class ScenarioForecast(ForecastSource):
+    """Joint sample paths, drawn on demand from a copula over the marginals.
+
+    Sits on top of a :class:`TensorForecast` rather than replacing it, and
+    delegates ``base`` and ``pv`` straight through. That matters for the
+    comparison: the marginal-quantile controller and the scenario controller can
+    then be handed the *same object* and differ only in which method they call,
+    so a difference between them cannot be a difference in the forecast.
+
+    Sampling is on demand rather than precomputed. A month of origins at 50
+    scenarios over a 64-step horizon is 9 million floats, and the draw is
+    cheaper than the parquet read would be. Reproducibility comes from seeding
+    per origin: the scenarios at origin k are the same whether you solved the
+    month forwards, backwards, or restarted halfway, which a single shared
+    generator would not give you.
+
+    Base load and PV are drawn independently. That is an assumption, and it is
+    the conservative direction for this constraint -- cloud cover raises base
+    load through the cooling system at the same time as it cuts PV output, so
+    the true dependence would make bad afternoons worse than these scenarios
+    say. Stated here rather than buried, and it is the first thing to fix if the
+    site ever gets a solar meter.
+    """
+
+    name = "quantile LightGBM + copula scenarios"
+
+    def __init__(
+        self,
+        tensor_forecast: "TensorForecast",
+        base_copula,
+        pv_copula=None,
+        n_scenarios: int = 50,
+        reduce_to: int | None = None,
+        seed: int = 0,
+    ):
+        self.tf = tensor_forecast
+        self.base_copula = base_copula
+        self.pv_copula = pv_copula
+        self.n_scenarios = int(n_scenarios)
+        self.reduce_to = reduce_to
+        self.seed = int(seed)
+        self.max_horizon = tensor_forecast.max_horizon
+        self._cache: dict[tuple[int, int], tuple] = {}
+
+    # -- the plain marginal interface, unchanged -------------------------
+    def base(self, k0: int, H: int, q: str) -> np.ndarray:
+        return self.tf.base(k0, H, q)
+
+    def pv(self, k0: int, H: int, q: str) -> np.ndarray:
+        return self.tf.pv(k0, H, q)
+
+    # -- the joint interface ---------------------------------------------
+    def _ladder(self, k0: int, H: int, which: str) -> np.ndarray:
+        get = self.base if which == "base" else self.pv
+        return np.stack([get(k0, H, qn) for qn in QCOLS], axis=-1)   # (H, K)
+
+    def scenarios(self, k0: int, H: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """``(base_paths, pv_paths, weights)`` at origin ``k0``.
+
+        Shapes are (S, H), (S, H) and (S,), with the weights summing to one.
+        They are uniform unless scenario reduction is on, in which case they
+        carry the mass of the paths each survivor stands in for.
+        """
+        key = (int(k0), int(H))
+        if key in self._cache:
+            return self._cache[key]
+
+        rng = np.random.default_rng([self.seed, int(k0), int(H)])
+        S = self.n_scenarios
+        base = self.base_copula.sample(self._ladder(k0, H, "base"), S, rng)
+        base = np.maximum(base, 0.0)
+
+        pv_lad = self._ladder(k0, H, "pv")
+        if self.pv_copula is not None and pv_lad.max() > 1e-9:
+            pv = np.clip(self.pv_copula.sample(pv_lad, S, rng), 0.0, None)
+            # never let a sampled PV path exceed clear sky: the ladder's top is
+            # a cloud-free afternoon and there is no more sun than that
+            pv = np.minimum(pv, pv_lad[:, -1][None, :] * 1.02)
+        else:
+            pv = np.broadcast_to(pv_lad[:, 2], (S, H)).copy()
+
+        w = np.full(S, 1.0 / S)
+        if self.reduce_to and self.reduce_to < S:
+            from forecast.trajectories import select_scenarios
+            # reduce on the *net* exogenous path, because that is the quantity
+            # the ceiling constraint actually sees; reducing base and PV
+            # separately would keep two sets of representatives that no longer
+            # line up scenario by scenario
+            keep, w = select_scenarios(base - pv, self.reduce_to)
+            base, pv = base[keep], pv[keep]
+
+        out = (base, pv, w)
+        if len(self._cache) > 4096:
+            self._cache.clear()
+        self._cache[key] = out
+        return out

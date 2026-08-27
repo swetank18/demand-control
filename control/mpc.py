@@ -75,9 +75,17 @@ class MPCConfig:
 
 
 class _VarIndex:
-    """Flat variable layout for the MILP."""
+    """Flat variable layout for the MILP.
 
-    def __init__(self, H: int, has_wh: bool, has_ev: bool, has_batt: bool):
+    ``extra`` appends named blocks after the standard ones. The scenario
+    formulation in ``control/scenario_mpc.py`` needs a per-scenario indicator
+    and a couple of risk variables; giving it a hook here is what lets it reuse
+    this entire solver rather than fork a second copy of the plant model, which
+    would then drift.
+    """
+
+    def __init__(self, H: int, has_wh: bool, has_ev: bool, has_batt: bool,
+                 extra: dict[str, int] | None = None):
         self.H = H
         self.slices: dict[str, slice] = {}
         n = 0
@@ -105,8 +113,14 @@ class _VarIndex:
             add("s_soc", 1)
         add("Dpeak", 1)
         add("excess", 1)
+        for name, size in (extra or {}).items():
+            if size > 0:
+                add(name, size)
         self.n = n
         self.has_wh, self.has_ev, self.has_batt = has_wh, has_ev, has_batt
+
+    def has(self, name: str) -> bool:
+        return name in self.slices
 
     def __call__(self, name: str) -> slice:
         return self.slices[name]
@@ -160,6 +174,14 @@ class ChanceConstrainedMPC:
         self._age = 0
         self.solve_times: list[float] = []
         self.statuses: list[str] = []
+        #: The ceiling the optimiser committed to at each step, one entry per
+        #: simulator step. The risk formulations make their promise about *this*
+        #: number -- "no block in the window exceeds D_peak with probability
+        #: 1 - eps" -- and not about the operator's monthly target, which the
+        #: plant may simply be unable to hold. Measuring the promise against the
+        #: target conflates a formulation that is working with a building that
+        #: is short of capacity, so the runner records both.
+        self.planned_dpeak: list[float] = []
 
     # -- interface used by the runner ------------------------------------
     def reset(self) -> None:
@@ -169,6 +191,7 @@ class ChanceConstrainedMPC:
         self._age = 0
         self.solve_times.clear()
         self.statuses.clear()
+        self.planned_dpeak.clear()
 
     def note_block_progress(self, realised_kw: list[float]) -> None:
         """Power already metered in the billing block still in progress."""
@@ -185,11 +208,13 @@ class ChanceConstrainedMPC:
 
         if self._cache is not None and self._age < self.cfg.solve_every:
             self._age += 1
+            self.planned_dpeak.append(self._cache.d_peak_kw)
             return self._advance_cached()
         t0 = time.perf_counter()
         res = self.solve(sim, obs)
         self.solve_times.append(time.perf_counter() - t0)
         self.statuses.append(res.status)
+        self.planned_dpeak.append(res.d_peak_kw)
         self._cache = res
         self._age = 1
         return res.action
@@ -204,6 +229,84 @@ class ChanceConstrainedMPC:
             batt_charge_kw=float(p["bc"][i]) if "bc" in p else 0.0,
             batt_discharge_kw=float(p["bd"][i]) if "bd" in p else 0.0,
         )
+
+    # -- extension points -------------------------------------------------
+    # The scenario formulation differs from this one in exactly one place: the
+    # rows that hold grid import under the ceiling. Everything else -- the RC
+    # envelope, the tank, the EV window, the battery, the objective, the
+    # fallback -- is identical and must stay identical, or the comparison
+    # between the two stops being a comparison of risk formulations and becomes
+    # a comparison of two separately maintained plant models.
+
+    def _extra_vars(self, H: int) -> dict[str, int]:
+        """Extra variable blocks appended to the layout. Empty for this one."""
+        return {}
+
+    def _extra_bounds(self, V: "_VarIndex", lo, hi, integrality, H: int) -> None:
+        pass
+
+    def _extra_objective(self, V: "_VarIndex", c, H: int) -> None:
+        pass
+
+    def _billing_blocks(self, idx, H: int) -> list[dict]:
+        """Group horizon steps into tariff billing blocks.
+
+        A block is billed on its average over the *whole* block, so the divisor
+        is the block length and not the number of steps still under our control.
+        Anything already metered in the block in progress is a fixed head start,
+        carried here as ``head`` so both formulations account for it the same
+        way -- a half-spent block that the optimiser thinks it owns entirely is
+        how a defended ceiling gets breached by arithmetic rather than by
+        forecast error.
+        """
+        bi = self.tariff.billing_interval_minutes
+        block_id = np.array([(ts.hour * 60 + ts.minute) // bi for ts in idx])
+        day_id = np.array([ts.dayofyear for ts in idx])
+        keyed: dict[tuple[int, int], list[int]] = {}
+        for t in range(H):
+            keyed.setdefault((int(day_id[t]), int(block_id[t])), []).append(t)
+
+        steps_per_block = max(1, bi // 15)
+        first_key = (int(day_id[0]), int(block_id[0]))
+        out = []
+        for key, steps in keyed.items():
+            elapsed = self._block_progress if key == first_key else []
+            n = steps_per_block if len(steps) + len(elapsed) >= steps_per_block else len(steps)
+            out.append({"key": key, "steps": steps, "n": n,
+                        "head": (sum(elapsed) / n) if elapsed else 0.0})
+        return out
+
+    def _block_coeffs(self, V: "_VarIndex", steps: list[int], n: int, p) -> dict[int, float]:
+        """Coefficients of the controllable variables in one block average."""
+        hv = V("hvac").start
+        coeffs: dict[int, float] = {}
+        for t in steps:
+            coeffs[hv + t] = coeffs.get(hv + t, 0.0) + 1.0 / n
+            if V.has_wh:
+                j = V("wh").start + t
+                coeffs[j] = coeffs.get(j, 0.0) + p.water_heater.power_kw / n
+            if V.has_ev:
+                j = V("ev").start + t
+                coeffs[j] = coeffs.get(j, 0.0) + 1.0 / n
+            if V.has_batt:
+                j = V("bc").start + t
+                coeffs[j] = coeffs.get(j, 0.0) + 1.0 / n
+                j = V("bd").start + t
+                coeffs[j] = coeffs.get(j, 0.0) - 1.0 / n
+        return coeffs
+
+    def _add_demand_rows(self, add_row, V, blocks, base_risk, pv_risk, p, k0, H) -> None:
+        """The ceiling, one row per billing block, at a single risk quantile.
+
+        Substituting q95 makes each row individually a 95% chance constraint.
+        Whether 32 of those compose into anything is the question Track B exists
+        to answer, and the answer is no -- see ``control/scenario_mpc.py``.
+        """
+        dpi = V("Dpeak").start
+        for b in blocks:
+            coeffs = {dpi: -1.0, **self._block_coeffs(V, b["steps"], b["n"], p)}
+            rhs = -b["head"] - sum((base_risk[t] - pv_risk[t]) / b["n"] for t in b["steps"])
+            add_row(coeffs, -np.inf, rhs)
 
     # -- the optimisation -------------------------------------------------
     def solve(self, sim: BuildingSim, obs: dict) -> MPCResult:
@@ -221,7 +324,7 @@ class ChanceConstrainedMPC:
         has_wh = p.water_heater is not None
         has_ev = p.ev is not None
         has_batt = p.battery is not None
-        V = _VarIndex(H, has_wh, has_ev, has_batt)
+        V = _VarIndex(H, has_wh, has_ev, has_batt, self._extra_vars(H))
 
         # ---- exogenous forecasts ----------------------------------------
         base_risk = self.fc.base(k0, H, self.risk_quantile)
@@ -267,6 +370,7 @@ class ChanceConstrainedMPC:
                  if cfg.ratchet_to_committed else (self.demand_target_kw or self.d_committed_kw))
         c[V("excess")] = self.tariff.demand_charge_per_kva / max(p.power_factor, 1e-6)
         c[V("Dpeak")] = cfg.peak_shaping_cost
+        self._extra_objective(V, c, H)
 
         # constant part of the energy cost (uncontrollable), dropped: it does not
         # change the argmin. Reported separately by the bill engine.
@@ -301,6 +405,7 @@ class ChanceConstrainedMPC:
         if has_wh and not cfg.relax_binaries:
             nb = max(0, min(cfg.binary_steps, H))
             integrality[V("wh").start : V("wh").start + nb] = 1
+        self._extra_bounds(V, lo, hi, integrality, H)
 
         # Sparse triplets, not dense rows. Each constraint touches a handful of
         # the variables; materialising a dense row per constraint is fine for a
@@ -378,35 +483,8 @@ class ChanceConstrainedMPC:
         # ---- the demand ceiling, on billing-block averages -------------------
         # This is the chance constraint. base_risk is q95, pv_risk is q05.
         dpi = V("Dpeak").start
-        block_id = np.array([
-            (ts.hour * 60 + ts.minute) // self.tariff.billing_interval_minutes for ts in idx
-        ])
-        day_id = np.array([ts.dayofyear for ts in idx])
-        keyed: dict[tuple[int, int], list[int]] = {}
-        for t in range(H):
-            keyed.setdefault((int(day_id[t]), int(block_id[t])), []).append(t)
-
-        steps_per_block = max(1, self.tariff.billing_interval_minutes // 15)
-        first_key = (int(day_id[0]), int(block_id[0]))
-        for key, steps in keyed.items():
-            # A block is billed on its average over the *whole* block, so the
-            # divisor is the block length, not the number of steps we can still
-            # influence, and anything already metered is a fixed head start.
-            elapsed = self._block_progress if key == first_key else []
-            n = steps_per_block if len(steps) + len(elapsed) >= steps_per_block else len(steps)
-            coeffs: dict[int, float] = {dpi: -1.0}
-            rhs = -sum(elapsed) / n if elapsed else 0.0
-            for t in steps:
-                coeffs[hv + t] = coeffs.get(hv + t, 0.0) + 1.0 / n
-                if has_wh:
-                    coeffs[V("wh").start + t] = coeffs.get(V("wh").start + t, 0.0) + p.water_heater.power_kw / n
-                if has_ev:
-                    coeffs[V("ev").start + t] = coeffs.get(V("ev").start + t, 0.0) + 1.0 / n
-                if has_batt:
-                    coeffs[V("bc").start + t] = coeffs.get(V("bc").start + t, 0.0) + 1.0 / n
-                    coeffs[V("bd").start + t] = coeffs.get(V("bd").start + t, 0.0) - 1.0 / n
-                rhs -= (base_risk[t] - pv_risk[t]) / n
-            add_row(coeffs, -np.inf, rhs)
+        blocks = self._billing_blocks(idx, H)
+        self._add_demand_rows(add_row, V, blocks, base_risk, pv_risk, p, k0, H)
 
         # excess >= Dpeak - d_ref, excess >= 0 (bounds already give the latter)
         add_row({V("excess").start: 1.0, dpi: -1.0}, -d_ref, np.inf)
