@@ -29,8 +29,19 @@ def esc(s: str) -> str:
 
 def table(path: Path, header: list[str], rows: list[list[str]], align: str,
           caption: str, label: str) -> None:
-    L = [r"\begin{table}[t]", r"\centering", r"\small",
-         r"\begin{tabular}{" + align + "}", r"\toprule",
+    """Wide tables get a smaller face and tighter columns.
+
+    Eight or more columns overruns the text block at \\small on a4paper, which
+    LaTeX reports as an overfull hbox and a reader sees as a table poking into
+    the margin. Deciding this from the column count keeps it automatic rather
+    than something to remember per table.
+    """
+    wide = len(header) >= 8
+    size = r"\footnotesize" if wide else r"\small"
+    L = [r"\begin{table}[t]", r"\centering", size]
+    if wide:
+        L.append(r"\setlength{\tabcolsep}{3.5pt}")
+    L += [r"\begin{tabular}{" + align + "}", r"\toprule",
          " & ".join(header) + r" \\", r"\midrule"]
     L += [" & ".join(r) + r" \\" for r in rows]
     L += [r"\bottomrule", r"\end{tabular}",
