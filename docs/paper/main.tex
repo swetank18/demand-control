@@ -10,10 +10,11 @@
 \usepackage{caption}
 \newcommand{\rupee}[1]{\textsf{Rs}~#1}
 \captionsetup{font=small}
+\graphicspath{{figures/}}
 
-\title{\bf Benchmarking a Tariff-Native Demand Controller\\
-Across Seven Countries:\\
-\large What India Gains From It, and What India Must Fix}
+\title{\bf What a Chance Constraint Does Not Promise\\[2pt]
+\large Measuring a demand-ceiling guarantee across thirty electricity supplies\\
+in eight countries, with India as the focal case}
 
 \author{%
   Swetank Kumar\\
@@ -25,44 +26,49 @@ Across Seven Countries:\\
 \maketitle
 
 \begin{abstract}
-Demand charges in Indian commercial tariffs are set by a single worst
-thirty-minute block in a month, which makes defending a demand ceiling a risk
-problem rather than a prediction problem. We built a tariff-native controller
-for this and then, rather than reporting it on the building it was developed on,
-subjected it to a cross-country benchmark: one unchanged protocol over
-twenty-six electricity supplies in seven countries --- eighteen individual
-buildings across eight usage classes from the Building Data Genome Project 2,
-and six national or city demand series including real fifteen-minute data from
-the Delhi State Load Despatch Centre and European transmission data from
-ENTSO-E. India is the focal case throughout, and it is simultaneously the most
-favourable and the most difficult series in the study.
+Indian commercial demand charges are set by a single worst thirty-minute block
+in a month, which makes defending a demand ceiling a risk problem rather than a
+prediction problem. The standard applied response is to substitute a high
+forecast quantile into the capacity constraint and call the result a
+$95\%$ guarantee. We measure what that guarantee is actually worth. On held-out
+meter data over $5{,}793$ forecast origins, the per-step exceedance rate is
+$0.062$ against a nominal $0.05$ --- marginally, the forecaster does exactly
+what it promised --- while the probability of breaching the ceiling
+\emph{somewhere} in the controller's 16-hour planning window is $0.405$. That is
+$6.5\times$ the per-step rate the forecaster delivers and $8.1\times$ the level
+the constraint appears to promise. Neither textbook substitute recovers it: the
+independence calculation $1-(1-\alpha)^H$ overstates the risk by $2.4\times$
+because load errors are strongly autocorrelated, and the Boole/Bonferroni union
+bound --- the only one of the two that is a valid bound --- reaches $1$ by
+$H=17$ and is vacuous over the horizon the controller actually plans on. We then
+restore the level as a settable parameter with a copula-scenario MILP, tracking
+requested $\varepsilon$ at rank correlation $0.957$ for \rupee{3{,}339} on a
+billing month, and report its exactness and resolution limits.
 
-Favourable, because India sits at one extreme of every axis that makes the
-method worth deploying: the highest cooling-degree-day share in the benchmark
-(0.89), the only strongly positive load--temperature correlation ($+0.59$,
-against $-0.64$ for France), and among the peakiest load profiles. Difficult,
-because it is last on both axes that decide whether the method can be trusted:
-the lowest forecast skill over a seasonal-naive baseline ($+0.097$, against
-$+0.713$ for Germany) and the worst probabilistic calibration in the study
-(0.762 coverage of a nominal 90\% interval).
+We test the rest of the pipeline by running one unchanged protocol over thirty
+electricity supplies in eight countries: eighteen buildings across eight usage
+classes from the Building Data Genome Project 2, six metered national or city
+demand series including the Delhi State Load Despatch Centre and ENTSO-E, and
+six Chinese provinces added late on an externally imposed constraint. Two
+findings follow. Distribution-free coverage degrades with aggregation level ---
+mean $0.901$ on buildings, $0.829$ on metered system demand --- and the
+adaptive layer, not split conformal, is what holds it. And forecast skill is
+uncorrelated with climate while available flexibility tracks it strongly, so
+deployment screening should ask how much load is weather-driven rather than how
+predictable it is; the null replicates on the Chinese panel it was not fitted
+to.
 
-We claim no new algorithm. Every component --- quantile gradient boosting,
-conformalized and adaptive conformal prediction, chance-constrained and
-scenario-based model predictive control --- is established. The contribution is
-an instrument in which each component can be pinned while exactly one is
-swapped, and four measurements it makes possible. First, a per-step exceedance
-rate of $0.062$ corresponds to a $0.405$ probability of breaching somewhere in a
-sixteen-hour planning window, while the independence bound gives $0.983$: the
-common formulation is under-protected roughly sevenfold and the textbook
-correction is $2.4\times$ too loose. Second, a scenario controller over sampled
-joint trajectories converts that risk level into an operator-set dial, tracking
-requested $\varepsilon$ with rank correlation $0.957$ for \rupee{3,339} on the
-month. Third, conformal coverage degrades with aggregation level and fails worst
-on Indian demand. Fourth, forecast skill is uncorrelated with climate while
-available flexibility tracks it strongly, so deployment screening should ask how
-much load is weather-driven rather than how predictable it is. We close by
-stating precisely what India must fix, and three of our results argue against
-the method and are reported unchanged.
+India is the focal case and returns a divided verdict: the most favourable load
+physics in the study and the worst calibration in it. The China arm's most
+quotable result --- that the closest structural analogue to Delhi returns the
+second-worst skill in the benchmark --- is retracted in
+Section~\ref{sec:china}, because auditing that dataset against its own
+documentation showed a whole year of provincial demand to be $778$ numbers
+reproducing $8{,}760$ values to the precision the source is published at, which
+makes its skill column a statement
+about the data rather than about a forecaster. Five rows argue against the
+method, three of them outright negative, and all five are reported at the
+same size as the rest.
 \end{abstract}
 
 \section{Introduction}
@@ -70,13 +76,13 @@ the method and are reported unchanged.
 An Indian commercial electricity bill has three levers: a time-of-day energy
 charge, a demand charge levied on the highest 30-minute average demand in the
 month, and power-factor penalties. The second dominates the risk. It is set by
-one block out of roughly 1{,}440 in a month, so a single bad afternoon prices
+one block out of roughly $1{,}440$ in a month, so a single bad afternoon prices
 all thirty days. A controller that reduces average consumption but occasionally
 overshoots can cost more than one that does nothing.
 
 The standard applied response is a chance constraint: replace the forecast mean
 in the capacity constraint with a high quantile, typically the 95th, and treat
-the result as a 95\% guarantee. Formally, with $b_t$ the uncontrollable base
+the result as a $95\%$ guarantee. Formally, with $b_t$ the uncontrollable base
 load, $u_t$ the controllable allocation, $s_t$ solar generation and $D$ the
 ceiling,
 %
@@ -88,7 +94,7 @@ ceiling,
 %
 Equation~\eqref{eq:marginal} is a set of \emph{marginal} statements. Each row
 says that at that timestep, considered alone, the realisation exceeds the bound
-about 5\% of the time. The event that costs money is different: it is
+about $5\%$ of the time. The event that costs money is different: it is
 %
 \begin{equation}
   \Pr\Big[\max_{t \in \mathcal{W}} \big(b_t + u_t - s_t\big) > D\Big],
@@ -96,43 +102,53 @@ about 5\% of the time. The event that costs money is different: it is
 \end{equation}
 %
 a statement about a maximum over a window $\mathcal{W}$. That
-\eqref{eq:marginal} does not imply \eqref{eq:joint} is elementary and
-well known; joint chance constraints, their intractability, and the standard
-routes around them --- Boole/Bonferroni risk allocation and the scenario
-approach \citep{calafiore2006scenario} --- are textbook material.
+\eqref{eq:marginal} does not imply \eqref{eq:joint} is elementary and well
+known; joint chance constraints, their intractability, and the standard routes
+around them --- Boole/Bonferroni risk allocation and the scenario approach
+\citep{calafiore2006scenario,nemirovski2006convex} --- are textbook material.
 
 \paragraph{What is not established} is how large the gap is on real building
-load, and how badly the conservative bound overshoots it. Both ends matter
+load, and how badly each of the standard substitutes misses it. Both ends matter
 practically: the first is how much a deployed controller is under-protected, and
 the second is how much headroom a careful designer gives away for nothing. We
-measure both.
+measure both, and find they are wrong in opposite directions by factors we can
+state.
 
 \paragraph{Contributions.}
 \begin{enumerate}
-  \item A three-way bracket on horizon risk for a demand ceiling on held-out
+  \item A measured bracket on horizon risk for a demand ceiling on held-out
         meter data (Section~\ref{sec:horizon}): claimed $0.05$, realised
-        $0.405$, Boole bound $0.983$ at a 16-hour horizon.
+        $0.405$, independence calculation $0.983$, union bound vacuous. The
+        common formulation is under-protected by $8.1\times$ and the usual
+        correction is $2.4\times$ too conservative.
+  \item A closed-loop demonstration that this risk level can be made an
+        operator-set parameter rather than an emergent property of horizon
+        length, with its exactness and resolution floor measured and its price
+        stated (Section~\ref{sec:dial}).
   \item Evidence that conformal coverage degrades with aggregation level, from
-        one protocol run over 24 series in seven countries, and fails worst on
-        real Indian demand (Section~\ref{sec:calibration}).
-  \item A null result separating forecast skill from available flexibility as
-        independent deployment axes (Section~\ref{sec:axes}).
-  \item A closed-loop demonstration that the horizon risk level can be made a
-        settable parameter rather than an emergent one, with its exactness and
-        resolution limits measured (Section~\ref{sec:horizon}).
+        one protocol run over thirty supplies in eight countries, together with
+        the measurement showing that the adaptive layer and not split conformal
+        is what holds the level (Section~\ref{sec:calibration}).
+  \item A null separating forecast skill from available flexibility as
+        independent deployment axes, replicated on a panel it was not fitted to
+        (Section~\ref{sec:axes}).
+  \item A provenance audit of a dataset added to the study under an external
+        constraint, which disqualifies that arm's most favourable result and is
+        reported as such (Section~\ref{sec:china}).
 \end{enumerate}
 
-\paragraph{Where the novelty is, and where it is not.} We state this
-precisely, because a novelty claim that cannot survive a literature search is
-worth less than no claim. \emph{Not novel:} chance-constrained model predictive
-control for buildings; joint chance constraints and their standard treatments,
-including Boole/Bonferroni risk allocation and the scenario approach
-\citep{calafiore2006scenario}; quantile gradient boosting
+\paragraph{Where the novelty is, and where it is not.} We state this precisely,
+because a novelty claim that cannot survive a literature search is worth less
+than no claim. \emph{Not novel:} chance-constrained model predictive control for
+buildings; joint chance constraints and their standard treatments, including
+Boole/Bonferroni risk allocation and the scenario approach
+\citep{calafiore2006scenario,nemirovski2006convex}; quantile gradient boosting
 \citep{ke2017lightgbm}; conformalized quantile regression \citep{romano2019cqr}
 and adaptive conformal inference \citep{gibbs2021adaptive}; decision-focused
-learning \citep{elmachtoub2022spo,donti2017task}; and cross-building transfer
-learning, which is an active area operating on this very corpus
-\citep{miller2020bdg2}. We invented none of it and do not claim to.
+learning \citep{elmachtoub2022spo,donti2017task,berthet2020perturbed}; and
+cross-building transfer learning, which is an active area operating on this very
+corpus \citep{miller2020bdg2,nweye2023citylearn}. We invented none of it and do
+not claim to.
 
 \emph{Novel:} the instrument, and what it measures. We are not aware of prior
 work that (i) brackets the marginal-versus-horizon risk gap for a demand ceiling
@@ -140,188 +156,403 @@ on real meter data with \emph{both} ends reported, so that the common
 formulation and the textbook correction are shown to be wrong in opposite
 directions by measured factors; (ii) reports that distribution-free coverage
 degrades systematically with aggregation level, holding at building scale and
-failing at system scale; (iii) separates forecast skill from available
-flexibility as empirically independent deployment criteria, with the expected
-relationship reported as a null; or (iv) benchmarks a tariff-native demand
-controller across seven countries with India as the focal case and the Indian
-result reported as the weakest one. The novelty is empirical and integrative
-rather than algorithmic. That is a narrower claim than a new method, and it is
-one that holds.
+failing at system scale, with the adaptive remedy measured over a walk-forward
+year; (iii) separates forecast skill from available flexibility as empirically
+independent deployment criteria, with the expected relationship reported as a
+null and replicated; or (iv) benchmarks a tariff-native demand controller across
+eight countries with India as the focal case and the Indian result reported as
+the weakest one. The novelty is empirical and integrative rather than
+algorithmic. That is a narrower claim than a new method, and it is one that
+holds.
 
 \section{The instrument}
+\label{sec:instrument}
 
 Six components, each independently swappable, with the bill engine as the single
 source of truth for every reported figure:
 %
-\[
-\text{tariff} \rightarrow \text{quantile forecast} \rightarrow
-\text{chance-constrained MILP} \rightarrow \text{RC simulator}
-\rightarrow \text{bill engine}.
-\]
+\begin{align*}
+\text{tariff} \;\rightarrow\; \text{quantile forecast}
+  \;\rightarrow\; \text{conformal calibration}
+  \;\rightarrow\;& \text{chance-constrained MILP}\\
+  \rightarrow\;& \text{RC simulator} \;\rightarrow\; \text{bill engine}.
+\end{align*}
 %
-The forecaster is a quantile LightGBM at five levels over a 64-step
-(16-hour) horizon at 15-minute resolution, wrapped in split and adaptive
-conformal calibration. The controller is a deterministic MILP solved with
-HiGHS; no language model touches a money decision. The evaluation discipline is
-that a number reaches a table only if a script produced it, and a single
-entry point regenerates every figure from a clean checkout.
+The forecaster is a quantile LightGBM at five levels over a 64-step (16-hour)
+horizon at 15-minute resolution, wrapped in split and adaptive conformal
+calibration. The controller is a deterministic MILP solved with HiGHS; no
+language model touches a money decision. The evaluation discipline is that a
+number reaches a table only if a script produced it, and a single entry point
+regenerates every figure and every table in this paper from a clean checkout.
 
 This matters for the measurements because each one requires pinning everything
 and moving one thing. Section~\ref{sec:horizon} pins the plant and varies only
-the risk formulation; Section~\ref{sec:calibration} pins the protocol and varies
-only the series; Section~\ref{sec:axes} pins the model and varies the site.
+the risk formulation. Section~\ref{sec:calibration} pins the protocol and varies
+only the series. Section~\ref{sec:axes} pins the model and varies the site.
+Section~\ref{sec:china} pins all three and varies the country, which is the one
+we did not choose.
 
 \section{Data}
 \label{sec:data}
 
-Four public sources, all fetched by script rather than vendored, and named in
+Five public sources, all fetched by script rather than vendored, and named in
 full because the benchmark's credibility rests on them.
 
-\paragraph{Building Data Genome Project 2} \citep{miller2020bdg2}. 1{,}578
-metered non-residential buildings across nineteen sites, hourly electricity with
-matched weather, two years. It is the only harmonised multi-country building
-corpus in existence, which is why it carries the controlled comparison: the same
-physical quantity, the same metering convention, the same period. It contains
-\emph{no Indian buildings}, and this is the single most consequential gap in the
-study --- discussed in Section~\ref{sec:india-fix}.
+\paragraph{Building Data Genome Project 2} \citep{miller2020bdg2}. $1{,}636$
+metered non-residential buildings across nineteen sites, of which $1{,}578$
+carry an electricity meter, hourly with matched weather, two years. It is the
+only harmonised multi-country building corpus in existence, which is why it
+carries the controlled comparison: the same physical quantity, the same metering
+convention, the same period. It contains \emph{no Indian buildings}, and this is
+the single most consequential gap in the study --- Section~\ref{sec:india-fix}.
 
 \paragraph{Delhi State Load Despatch Centre.} Fifteen-minute metered demand for
 the city of Delhi, disaggregated across five distribution companies (BRPL, BYPL,
 NDPL, NDMC and MES) plus the total, two complete years at full coverage. This is
 the only series in the entire study at \emph{native} fifteen-minute resolution
---- the cadence the controller actually runs at and the cadence on which Indian
-demand charges are assessed. Every other series is interpolated up from hourly.
+--- the cadence the controller runs at and the cadence on which Indian demand
+charges are assessed. Every other series is interpolated up from hourly.
 
 \paragraph{ENTSO-E transmission data, via Open Power System Data.} Hourly
 national load for the United Kingdom, Ireland, Germany, France and Spain, drawn
 from the European transmission system operators' transparency platform.
+
+\paragraph{Chinese provincial demand} \citep{wu2023china}. Hourly load for the
+31 provinces of mainland China, 2018, from which six are drawn. This source was
+added after the study was otherwise complete, and it is the only tier-2 series
+that is constructed rather than metered. Section~\ref{sec:china} audits it.
 
 \paragraph{ERA5 reanalysis, via the Open-Meteo archive.} Hourly temperature, dew
 point and cloud cover at each location, used identically for every series.
 
 \paragraph{Windows.} The building tier and the European national tier share
 2016--2017. The Delhi archive covers 2011--2012, so the same protocol is shifted
-back five years with its shape preserved, leaving June as the test month in every
-row. Absolute losses are therefore not comparable across the two groups, which is
-why the headline metric throughout is skill against each series' own
-seasonal-naive baseline: a ratio computed inside one series' own data and its own
-period.
+back five years with its shape preserved. The Chinese series is a single
+calendar year, 2018. In every row of the study the test month is June, and the
+headline metric is skill against each series' own seasonal-naive baseline: a
+ratio computed inside one series' own data and its own period, which is what
+makes rows with different units and different years comparable at all. Absolute
+losses are not comparable across groups and are never compared.
+
+\paragraph{Selection.} One rule, stated in advance and applied uniformly: no
+district chilled-water meter, $>$$97\%$ coverage, median load 40--800\,kW,
+positive load--temperature correlation; ties within a (site, usage) cell broken
+by highest $p99/\text{median}$. Thirty supplies pass. Two facts about the rule
+were discovered by applying it rather than anticipated when writing it, and both
+are reported in Section~\ref{sec:calibration}.
 
 \section{The horizon gap}
 \label{sec:horizon}
 
 \input{tables/horizon}
 
-Table~\ref{tab:horizon} reports, for a 13{,}759\,m$^2$ office on held-out June
-2017 data over 5{,}793 forecast origins, the per-step exceedance rate of the
-ceiling alongside the probability that the ceiling is breached at least once
-within a window of $H$ steps.
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.82\textwidth]{fig_horizon.pdf}
+\caption{The bracket. Marginal calibration is a statement about each row of
+\eqref{eq:marginal} separately; it constrains the probability of breaching
+somewhere in the window only to the shaded region, which at $H=64$ spans
+$0.05$ to $0.983$. The per-step rate (bottom) is flat and well calibrated at
+every horizon, so nothing here is a broken forecaster. Held-out June 2017, one
+13{,}759\,m$^2$ office, $5{,}793$ forecast origins.}
+\label{fig:horizon}
+\end{figure}
+
+Table~\ref{tab:horizon} and Figure~\ref{fig:horizon} report, for a
+13{,}759\,m$^2$ office on held-out June 2017 data over $5{,}793$ forecast
+origins, the per-step exceedance rate of the ceiling alongside the probability
+that the ceiling is breached at least once within a window of $H$ steps.
 
 Three readings of the last row are simultaneously true and together are the
-result. The per-step quantile is \emph{well calibrated}: $0.062$ against a
-nominal $0.05$, at every horizon. The forecaster is not broken and marginal
-calibration is exactly what it promised. The probability of breaching somewhere
-in the 16-hour window is $0.405$, roughly sevenfold the number
-\eqref{eq:marginal} appears to promise. And the independence bound
-$1-(1-\alpha)^H = 0.983$ is $2.4\times$ the realised value, because building
-load is heavily autocorrelated --- lag-1 correlation $0.871$, decaying to
-$0.086$ by lag 32 --- and Boole assumes the worst case over dependence
-structures.
+result.
+
+\paragraph{The forecaster is not the problem.} The per-step quantile is well
+calibrated at every horizon: $\hat\alpha$ holds between $0.059$ and $0.062$
+against a nominal $0.05$. Marginal calibration delivers exactly what it
+promised, which is why this is a result about a formulation rather than a bug
+report about a model.
+
+\paragraph{The formulation is under-protected by a factor of eight.} The
+probability of breaching somewhere in the 16-hour window is $0.405$: $6.5\times$
+the per-step rate the forecaster actually delivers, and $8.1\times$ the $0.05$
+that \eqref{eq:marginal} appears to promise. A controller deployed on
+\eqref{eq:marginal} and described to an operator as a $95\%$ guarantee is
+running at roughly $60\%$.
+
+\paragraph{Neither standard substitute recovers it, and they fail in opposite
+directions.} This is the correction to the usual telling, and it matters. The
+quantity commonly quoted, $1-(1-\alpha)^H$, is the \emph{independence}
+calculation, not a bound: it assumes the exceedance events are independent,
+which is the one thing load errors are not. It gives $0.983$, which is
+$2.4\times$ the realised $0.405$, because the fitted error process is heavily
+autocorrelated --- lag-1 correlation $0.871$, $0.578$ at lag 4, decaying to
+$0.085$ by lag 32 --- so exceedances cluster rather than spread. The quantity
+that \emph{is} a valid bound, Boole/Bonferroni's $\min(1, H\hat\alpha)$, makes
+no dependence assumption and pays for it: at $\hat\alpha \approx 0.06$ it
+reaches $1$ by $H=17$, four hours into a sixteen-hour horizon, after which it
+says nothing at all.
 
 The practical consequence runs in both directions. A controller using
-\eqref{eq:marginal} is materially under-protected. A controller using the
-textbook bound is over-protected by more than a factor of two and pays for it
-in usable headroom, which is the quantity the entire economic argument rests on.
+\eqref{eq:marginal} is materially under-protected. A controller sized off the
+independence figure is over-protected by more than a factor of two and pays for
+it in usable headroom, which is the quantity the entire economic argument rests
+on. A controller that insists on a valid bound over this horizon has no bound to
+use.
 
-\paragraph{Restoring the guarantee.} We fit a Student-$t$ copula over the
-horizon --- $\nu=7$, selected on the validation block --- and sample joint
-trajectories, which a scenario MILP then constrains with a CVaR surrogate on the
-probability mass permitted to violate. The copula reproduces the calibrated
-marginals to within 4.6\% of mean interval width at 4{,}000 paths per origin, so
-it adds dependence and disturbs nothing upstream, and it predicts horizon
-exceedance far better than either end of the bracket: $0.497$ against a realised
-$0.405$ at $H=64$, where the marginal formulation implies $0.05$ and Boole
-implies $0.983$.
+\section{Restoring the guarantee as a dial}
+\label{sec:dial}
 
 \input{tables/acceptance}
+
+We fit a Student-$t$ copula over the horizon and sample joint trajectories,
+which a scenario MILP then constrains with a CVaR surrogate on the probability
+mass permitted to violate. The copula reproduces the calibrated marginals to
+within $4.6\%$ of mean interval width at $4{,}000$ paths per origin, so it adds
+dependence and disturbs nothing upstream, and it predicts horizon exceedance far
+closer than either substitute: $0.497$ against a realised $0.405$ at $H=64$,
+where \eqref{eq:marginal} implies $0.05$ and the independence figure is $0.983$.
 
 Table~\ref{tab:acceptance} is a closed-loop run over a real billing month at two
 demand targets and four risk levels. The acceptance metric is violation of the
 ceiling \emph{the optimiser itself committed to at each origin}, because that is
 the event $\varepsilon$ is a statement about. The operator's monthly demand
 target is a business metric the chance constraint never promised: the committed
-peak is a decision variable, and an optimiser short of capacity may lift it,
-pay the demand charge, and honour its constraint exactly. Grading a chance
+peak is a decision variable, and an optimiser short of capacity may lift it, pay
+the demand charge, and honour its constraint exactly. Grading a chance
 constraint against a number it never promised is the usual way this test is made
-meaningless.
+meaningless, so both columns are shown and only one is the acceptance criterion.
 
-The result is that $\varepsilon$ becomes a dial. Realised commit violation tracks
-the requested level with rank correlation $0.957$ across the sweep, mean
+The result is that $\varepsilon$ becomes a dial. Realised commit violation
+tracks the requested level with rank correlation $0.957$ across the sweep, mean
 absolute gap $0.057$, and lands conservative at five of eight levels. The
 formulation errs safe by construction: the CVaR surrogate admits a strict subset
 of the chance-constrained feasible set, so it defends the committed ceiling
 harder than asked.
 
-\paragraph{What it does not do.} It is not exact. At the tightest setting,
-$\varepsilon=0.05$ delivers $0.097$ at the tight target, nearly twice the
-requested risk and on the unsafe side. There is also a hard resolution floor at
-$1/S = 0.025$: with $S$ scenarios the finest expressible risk level is one
-scenario's worth of probability mass, below which the CVaR surrogate collapses
-onto the sample maximum and successive $\varepsilon$ cease to be
-distinguishable. That is a property of sample average approximation rather than
-a tuning artefact, and a finer dial costs scenarios and solve time.
+\paragraph{What it does not do, stated in full.} It is not exact. At the
+tightest setting, $\varepsilon=0.05$ delivers $0.097$ at the tight target,
+nearly twice the requested risk and on the unsafe side. There is a hard
+resolution floor at $1/S = 0.025$: with $S$ scenarios the finest expressible
+risk level is one scenario's worth of probability mass, below which the CVaR
+surrogate collapses onto the sample maximum and successive $\varepsilon$ cease
+to be distinguishable. That is a property of sample average approximation rather
+than a tuning artefact, and a finer dial costs scenarios and solve time.
+
+Three further caveats belong here rather than in a footnote. The copula's degrees
+of freedom, $\nu=7$, were selected on the validation block by matching predicted
+to realised horizon exceedance --- which is the same quantity the copula is
+later judged on, so the agreement in the last column of Table~\ref{tab:horizon}
+is not an independent test of the family. Base-load and PV scenarios are drawn
+independently, while cloud physically raises cooling load at the same moment it
+cuts PV output, so the true joint law has worse afternoons than these scenarios
+contain. And the horizon is sixteen hours while the demand charge bills a
+monthly maximum over roughly $2{,}880$ intervals: a joint guarantee over the
+window is strictly stronger than a marginal one and strictly weaker than a
+monthly one. Extending it needs the copula fitted over a month-length horizon,
+which is a $2{,}880$-square correlation matrix and needs structure rather than a
+raw estimate.
 
 The honest summary is not that the guarantee is restored exactly. It is that a
-risk level which was previously an \emph{emergent property of horizon length} ---
-unstated, unsettable, and equal to $0.106$ at the tight target under the
+risk level which was previously an \emph{emergent property of horizon length}
+--- unstated, unsettable, and equal to $0.106$ at the tight target under the
 incumbent marginal controller --- is now a parameter with a monotone and
-conservative response, at a cost of \rupee{3,339} on the month.
+conservative response, at a cost of \rupee{3{,}339} on the month.
 
 \section{Calibration degrades with aggregation}
 \label{sec:calibration}
 
 One protocol --- 15 months train, 2 months validate, 1 month test, temporal
 throughout, conformal calibration on the validation block --- run unchanged over
-24 series. Selection is by a rule stated in advance and applied uniformly:
-no district chilled-water meter, $>$97\% coverage, median load 40--800\,kW,
-positive load--temperature correlation; ties within a (site, usage) cell broken
-by highest $p99/\text{median}$.
-
-Tables~\ref{tab:climate}--\ref{tab:national} give the four arms.
+thirty supplies. Tables~\ref{tab:climate}--\ref{tab:china} give the five arms.
 
 \input{tables/climate}
 \input{tables/office}
 \input{tables/demographic}
 \input{tables/national}
+\input{tables/china}
 
 \input{tables/calibration}
 
-Table~\ref{tab:calibration} is the consistent finding. A nominal 90\% interval
-holds at building level (mean $0.901$; one row of eighteen below $0.85$) and
-fails at system level (mean $0.829$; five of six below $0.85$). Delhi is the
-worst row in the study at $0.762$.
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{fig_calibration.pdf}
+\caption{One dot per supply. The nominal $90\%$ interval very nearly holds on
+individual buildings and fails systematically once demand is aggregated to
+system level, on both the metered panel and the reconstructed one. The two
+populations of system demand share no country, no year and no
+data-generating process, and their means differ by $0.005$.}
+\label{fig:calibration}
+\end{figure}
+
+Table~\ref{tab:calibration} and Figure~\ref{fig:calibration} are the consistent
+finding. A nominal $90\%$ interval holds at building level (mean $0.901$; one
+row of eighteen below $0.85$) and fails at system level (mean $0.829$ metered,
+$0.824$ reconstructed; five of six and two of six below $0.85$ respectively).
+Delhi is the worst metered row in the study at $0.762$ and Heilongjiang the
+worst row anywhere at $0.565$.
 
 This is consequential rather than curious, because the controller's $q95$ is
 read from the same object. Too narrow an interval yields too narrow a demand
 ceiling, and the safety property degrades precisely on the load the project
-targets. The mechanism is the exchangeability requirement of split conformal
-\citep{vovk2005algorithmic,romano2019cqr}: a Delhi May is not exchangeable with
-a Delhi June, because the monsoon arrives between them. Our own walk-forward
-audit finds the same failure at smaller amplitude on the Phoenix office,
-where monthly
-coverage of a nominal 90\% interval ranges from $0.45$ to $0.94$. Whether the
-adaptive layer \citep{gibbs2021adaptive} restores the level at system scale is
-the obvious next experiment and is stated as one.
+targets.
 
-\paragraph{Selection is regional.} The rule's final clause --- positive
-load--temperature correlation --- is a sanity check in Phoenix, where every
-candidate is cooling-dominated, and a site-destroying filter in Minneapolis or
-Dublin, where buildings consume electricity when it is cold. Seventy-seven
-buildings across nine sites pass every clause but that one. Separately, the two
-hottest sites in the corpus, the closest available analogues to an Indian metro
-climate, yield no admissible building at all for want of coverage in the split
-window. Both facts were discovered by applying the rule, not anticipated when
-writing it.
+\paragraph{The mechanism.} Split conformal guarantees coverage when the
+calibration and test blocks are exchangeable
+\citep{vovk2005algorithmic,romano2019cqr}. A Delhi May is not exchangeable with
+a Delhi June, because the monsoon arrives between them and changes the
+relationship between temperature and load. This is an assumption failure, not a
+tuning failure, and it is diagnosable rather than speculative: our own audit
+partitions May into six disjoint calibration blocks and finds coverage varying
+from $0.710$ to $0.861$ with a block-bootstrap standard error of $0.031$,
+failing every acceptance criterion stated in advance.\footnote{The bootstrap
+resamples thirty whole test days rather than $184{,}320$ overlapping 15-minute
+forecasts, because those are not $184{,}320$ independent observations. The naive
+standard error is $0.0007$ and would pass any model ever built.}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.86\textwidth]{fig_aci.pdf}
+\caption{The remedy, measured. Twelve monthly folds, each trained strictly on
+its own past and calibrated on the thirty days immediately before it. Raw
+quantiles are not calibrated out of sample at all. Split conformal --- the layer
+with the theorem attached --- narrows the failure and does not remove it,
+bottoming out at $0.447$ in a month whose ceiling was being defended against a
+bound reality broke through a third of the time. Adaptive conformal inference
+holds $0.867$--$0.928$ in every month of the year.}
+\label{fig:aci}
+\end{figure}
+
+\paragraph{The remedy, at building scale.} Figure~\ref{fig:aci} runs a
+walk-forward year. Split conformal ranges over $0.447$--$0.936$ by month and
+spends $52\%$ of the year inside a $0.85$--$0.95$ band; adaptive conformal
+inference \citep{gibbs2021adaptive} ranges over $0.867$--$0.928$ and spends
+$87\%$. Under a frozen model and a synthetic distribution shift the same
+ordering holds: split conformal settles at $0.770$ coverage and never recovers
+within the run, ACI at $0.885$. The layer with the finite-sample theorem is not
+the layer that delivers the level here, and that is worth stating plainly
+because it inverts the usual presentation order.
+
+\paragraph{What remains open.} Whether the adaptive layer restores the level at
+\emph{system} scale --- the tier where the failure is systematic, and the tier
+India sits in --- is the obvious next experiment. We have the method and have not
+run it at that tier, and we decline to claim the result before we have.
+
+\paragraph{Selection is regional, and we found that out the hard way.} The
+rule's final clause --- positive load--temperature correlation --- is a sanity
+check in Phoenix, where every candidate is cooling-dominated, and a
+site-destroying filter in Minneapolis or Dublin, where buildings consume
+electricity when it is cold. Seventy-seven buildings across nine sites pass every
+clause but that one. Separately, the two hottest sites in the corpus, the closest
+available analogues to an Indian metro climate, yield no admissible building at
+all for want of coverage in the split window. Both facts were discovered by
+applying the rule, not anticipated when writing it.
+
+\section{Skill and flexibility are independent axes}
+\label{sec:axes}
+
+\input{tables/correlations}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig_null.pdf}
+\caption{(a) The null. (b) The same null on a panel it was not fitted to, in a
+different country, year and data-generating process; panels (a) and (b) share a
+vertical scale. (c) The same eighteen buildings, the same horizontal axis, and
+the one relationship in the study that is real. How much load there is to shift
+tracks climate. How well it can be predicted does not.}
+\label{fig:null}
+\end{figure}
+
+We expected forecast skill --- measured with pinball loss, a strictly proper
+scoring rule \citep{gneiting2007strictly}, against each series' own
+seasonal-naive baseline --- to increase with cooling load, on the reasoning that
+weather-driven demand is the learnable part. Table~\ref{tab:correlations} and
+Figure~\ref{fig:null} report the opposite: a null. Every correlation against
+skill is indistinguishable from zero and every leave-one-out range straddles or
+nearly straddles the sign line, which at these sample sizes is what a null
+result looks like. It replicates at $r=+0.054$ on the Chinese provincial panel,
+which was added afterwards and spans a wider climate range than the whole
+European set.
+
+The controllable fraction, by contrast, tracks climate strongly ($r=+0.489$),
+running from $37.6\%$ of the meter in Phoenix to $0.8\%$ in London.
+
+The deployment consequence is a screening rule. Do not ask whether a site's load
+is predictable; ask how much of it is weather-driven. A Dublin office is highly
+predictable (skill $+0.513$) with roughly $3\%$ controllable load, and there is
+nothing to sell there. Conflating the axes inverts the decision. For the target
+market this is favourable: Delhi demand correlates $+0.59$ with outdoor
+temperature against $-0.64$ for France, placing India at the useful end of the
+axis that matters.
+
+\section{The new country, and what it turned out to measure}
+\label{sec:china}
+
+The study was complete when a constraint was imposed from outside it: add a
+country. China was chosen because six provinces spanning Hainan to Heilongjiang
+cover a wider climate range than the entire European panel and do so in a
+developing economy, which is the comparison India actually needs. The protocol
+adaptation it forced is stated in Table~\ref{tab:china} and is a single change:
+the source is one calendar year, so the fifteen-month training block does not
+exist and the calendar \emph{position} of the split is preserved instead ---
+validate on April and May, test on June, as in every other row --- leaving three
+months of training rather than fifteen. That biases against us, which is the safe
+direction to err.
+
+\input{tables/china_audit}
+
+\paragraph{The audit.} This is the only tier-2 source whose documentation
+describes a construction rather than a measurement. Wu and Kan take each day's
+maximum and minimum from National Development and Reform Commission reporting,
+trace a representative workday profile and a representative holiday profile off
+published load curves with WebPlotDigitizer, and rescale one of those two
+profiles to each day's envelope \citep{wu2023china}. Taking that on trust is
+exactly what this project does not do elsewhere, so we checked it against the
+data: min--max normalise every calendar day's 24-hour profile and count the
+distinct shapes in a year.
+
+The answer is two, in every province. Table~\ref{tab:china-audit} reports it:
+$778$ numbers --- two normalised day-shapes and $365$ (min, max) pairs ---
+reproduce all $8{,}760$ hourly values to within $2\times10^{-9}$ of their
+magnitude, which is the precision the source is published at rather than an
+approximation we introduced, at a compression of better than eleven to one. The
+documentation is accurate.
+
+\paragraph{What that disqualifies.} Skill in this study is a ratio against each
+series' own seasonal-naive baseline. When every workday shares one shape,
+seasonal naive recovers that shape exactly and its entire error is the daily
+envelope --- and so is ours. Both models collapse onto predicting the same two
+administrative numbers per day, the ratio between them collapses toward zero,
+and the observed mean skill of $+0.040$ with two negative rows is what that
+predicts rather than a finding about a forecaster. The China skill column is
+reported for completeness and is not evidence either way about the method.
+
+This costs us the arm's most quotable result. Guangdong is the closest structural
+analogue to Delhi anywhere in the study --- cooling share $0.85$ against Delhi's
+$0.89$, load--temperature correlation $+0.37$ against $+0.59$, a comparably peaky
+profile --- and it returns $-0.314$, the second-worst skill in the benchmark.
+Read naively that corroborates the Indian result on independent 2018 data from
+another country and retires the objection that Delhi's weakness is an artefact of
+a decade-old archive. It does not, because the number is a property of the
+construction. We report the temptation as well as the retraction, because the
+inference is one a reader would otherwise make on our behalf.
+
+\paragraph{What survives.} Coverage is a property of interval width against
+realised error and does not run through the baseline, so the tier-2 result can be
+read on this arm --- and it replicates: mean $0.824$ against $0.829$ on the
+metered panel, on an error process unlike any other in the study, with the worst
+row anywhere at $0.565$. That two populations sharing no country, no year and no
+data-generating process land within $0.005$ of each other is stronger evidence
+for the aggregation effect than a larger metered sample would have been. The null
+of Section~\ref{sec:axes} replicates too. The wider coverage spread on this panel
+($0.565$--$0.960$ against $0.762$--$0.911$) is consistent with the three-month
+calibration history and is not separately identified.
+
+\paragraph{What the exercise is worth.} A constraint imposed late produced no new
+capability and one new measurement, which is a characterisation of the dataset
+rather than of the method, and which removed a result we would have liked to
+keep. That is the outcome we would want from an audit, and it is reported at the
+same size as everything else.
 
 \section{India in comparison}
 \label{sec:india}
@@ -333,21 +564,22 @@ resolves into a single sentence: \textbf{India is the place this method is most
 worth deploying and the place it is currently least trustworthy.}
 
 \paragraph{Why India is the favourable case.} Delhi has the highest
-cooling-degree-day share in the benchmark at $0.89$, and it is the only series
-whose demand rises strongly with temperature ($+0.59$). France is its mirror at
-$-0.64$: French demand rises when it gets \emph{cold}, because the building stock
-is electrically heated. That distinction is the whole economic argument. A
-controller that buys down a cooling peak inside a demand-charge tariff has
-something to work with in the first regime and almost nothing in the second.
-Delhi is also among the peakiest profiles in the set ($p99/$median $1.61$),
-which is precisely the shape a demand charge punishes.
+cooling-degree-day share of any metered series in the benchmark at $0.89$, and
+it is the only series whose demand rises \emph{strongly} with temperature
+($+0.59$). France is its mirror at $-0.64$: French demand rises when it gets
+cold, because the building stock is electrically heated. That distinction is the
+whole economic argument. A controller that buys down a cooling peak inside a
+demand-charge tariff has something to work with in the first regime and almost
+nothing in the second. Delhi is also among the peakiest profiles in the set
+($p99/$median $1.61$), which is precisely the shape a demand charge punishes.
 
 \paragraph{Why India is the difficult case.} On both axes that determine whether
-the controller can be relied upon, India is last. Forecast skill over a
-seasonal-naive baseline is $+0.097$, against $+0.713$ for Germany, $+0.636$ for
-France and $+0.619$ for Spain --- a model that needs no training at all is nearly
-as good on Delhi as ours. And coverage of the nominal 90\% interval is $0.762$,
-the worst figure anywhere in the study, against $0.911$ for Ireland.
+the controller can be relied upon, India is last among metered supplies. Skill
+over a seasonal-naive baseline is $+0.097$, against $+0.713$ for Germany,
+$+0.636$ for France and $+0.619$ for Spain --- a model that needs no training at
+all is nearly as good on Delhi as ours. And coverage of the nominal $90\%$
+interval is $0.762$, the worst metered figure anywhere in the study, against
+$0.911$ for Ireland.
 
 The second of these is the serious one. The controller's $q95$ is read from the
 same object as that interval, so an interval that is too narrow yields a demand
@@ -357,28 +589,30 @@ load the project targets.
 \section{What India must fix}
 \label{sec:india-fix}
 
-Stated as work rather than as caveats, in descending order of how much they cost.
+Stated as work rather than as caveats, in descending order of how much they
+cost.
 
-\paragraph{1. There is no Indian building-level load dataset.} This is a national
-research-infrastructure gap and it bounds everything else. The Building Data
-Genome Project 2 harmonises 1{,}578 buildings across three countries and contains
-no Indian building. We were therefore forced to test the \emph{controller} on
-American buildings under an Indian tariff and the \emph{forecaster} on Indian
-city demand, and no single row of this study is both Indian and building-level.
-Relabelling an American building as Indian would have been worse than the gap,
-so the gap is reported. Until an Indian equivalent exists --- submetered,
-multi-site, multi-year, openly licensed --- no one can honestly claim a
-building-level demand-control result for India, ourselves included.
+\paragraph{1. There is no Indian building-level load dataset.} This is a
+national research-infrastructure gap and it bounds everything else. The Building
+Data Genome Project 2 harmonises $1{,}636$ buildings across three countries and
+contains no Indian building. We were therefore forced to test the
+\emph{controller} on American buildings under an Indian tariff and the
+\emph{forecaster} on Indian city demand, and no single row of this study is both
+Indian and building-level. Relabelling an American building as Indian would have
+been worse than the gap, so the gap is reported. Until an Indian equivalent
+exists --- submetered, multi-site, multi-year, openly licensed --- no one can
+honestly claim a building-level demand-control result for India, ourselves
+included.
 
 \paragraph{2. Calibration collapses across the monsoon.} Coverage of $0.762$ is
-not a tuning failure, it is an assumption failure. Split conformal prediction
-requires the calibration and test blocks to be exchangeable
+an assumption failure, not a tuning failure: split conformal requires
+calibration and test blocks to be exchangeable
 \citep{vovk2005algorithmic,romano2019cqr}, and a Delhi May is not exchangeable
-with a Delhi June: the monsoon arrives between them and changes the relationship
-between temperature and load. The remedy is the adaptive layer
-\citep{gibbs2021adaptive}, monsoon-aware calibration windows, or explicit regime
-detection. We have the method; we have not yet run it at this tier, and we
-decline to claim the result before we have.
+with a Delhi June. Section~\ref{sec:calibration} shows that the adaptive layer
+fixes exactly this failure mode at building scale, holding $0.867$--$0.928$
+across a walk-forward year where split conformal falls to $0.447$. That is the
+strongest available reason to expect it to help at system scale, and it is not
+the same thing as having measured it there, which we have not.
 
 \paragraph{3. Indian load carries calendar structure the model does not encode.}
 A large share of Indian public holidays are lunisolar --- Diwali, Holi, Eid ---
@@ -394,7 +628,8 @@ missing features rather than solely about the data.
 2011--2012. India's generation mix, air-conditioning penetration and peak demand
 have all moved substantially since. The load \emph{shape} conclusions are the
 durable ones; the levels are not, and nothing in this paper should be read as a
-statement about the present Indian grid.
+statement about the present Indian grid. We had a candidate answer to this
+objection in the China arm and Section~\ref{sec:china} withdrew it.
 
 \paragraph{What this does not undermine.} The favourable half of
 Table~\ref{tab:india} rests on physical structure --- cooling share, the sign of
@@ -402,40 +637,22 @@ the load--temperature relationship, peakiness --- which is the part least likely
 to have inverted since 2012. Indian demand has not stopped rising with
 temperature.
 
-\section{Skill and flexibility are independent axes}
-\label{sec:axes}
-
-\input{tables/correlations}
-
-We expected forecast skill --- measured with pinball loss, a strictly proper
-scoring rule \citep{gneiting2007strictly}, against each series' own
-seasonal-naive baseline, a within-series ratio comparable across differing units and periods
---- to increase with cooling load, on the reasoning that weather-driven demand
-is the learnable part. Table~\ref{tab:correlations} reports the opposite: a null.
-Every correlation against skill is indistinguishable from zero and every
-leave-one-out range straddles or nearly straddles the sign line, which at
-$n=18$ is what a null result looks like.
-
-The controllable fraction, by contrast, tracks climate strongly ($r=+0.489$),
-running from 37.6\% of the meter in Phoenix to 0.8\% in London.
-
-The deployment consequence is a screening rule. Do not ask whether a site's load
-is predictable; ask how much of it is weather-driven. A Dublin office is highly
-predictable (skill $+0.513$) with roughly 3\% controllable load, and there is
-nothing to sell there. Conflating the axes inverts the decision.
-
-For the target market this is favourable: Delhi demand correlates $+0.59$ with
-outdoor temperature against $-0.64$ for France, placing India at the useful end
-of the axis that matters.
-
 \section{Results that argue against the method}
+\label{sec:against}
 
-Three rows are reported unchanged. The London office returns skill
-$-0.463$: worse than a baseline requiring no training. Delhi returns
-$+0.097$ with the study's worst calibration. Public services in Washington DC
-returns $+0.052$. All three sit at 1--3\% HVAC share, where a weather-aware
-model has little to add over ``last week, same time'' --- a coherent and
-testable explanation rather than an excuse.
+Five rows are reported unchanged, and three of them are outright negative ---
+worse than a baseline that needs no training at all.
+
+The London office returns skill $-0.463$ and public services in Washington DC
+returns $+0.052$. Both sit at $1$--$3\%$ HVAC share, where a weather-aware model
+has little to add over ``last week, same time'' --- a coherent and testable
+explanation rather than an excuse. Delhi returns $+0.097$ with the study's worst
+metered calibration, and its explanation is different and given in
+Section~\ref{sec:india-fix}: a system-level series carrying calendar structure
+the feature set does not encode. Guangdong and Heilongjiang return $-0.314$ and
+$-0.294$, the two lowest figures in the study, and Section~\ref{sec:china}
+explains why those two should not be used against the method any more than they
+should have been used for it.
 
 Two defects in our own pipeline were exposed by running it outside its home
 site. A hard-coded United States federal holiday calendar would have inverted
@@ -446,45 +663,76 @@ expressible as a fixed list. And a data-preparation stage overwrote its own
 manifest, silently discarding every site but the last, which single-site work
 had never exposed.
 
+A third is worth recording because it is the kind that survives review. The
+column commonly written as ``the Boole bound'' in applied chance-constraint work
+is usually $1-(1-\alpha)^H$, which is the independence calculation and is not a
+bound. Our own tables carried that label until this draft. The corrected reading
+in Section~\ref{sec:horizon} is stronger than the one it replaces, because the
+valid bound turns out to be vacuous over the horizon that matters.
+
 \section{Limitations}
 
-The system tier is a forecasting benchmark, not a control benchmark: there is
-no thermal mass to shift at grid level and no savings claim is made from it. The
-Delhi window (2011--12) does not overlap the European one (2016--17), which
-motivates reporting within-series skill rather than absolute loss but does not
-eliminate the concern. Capital-city temperature proxies national load-weighted
-temperature, acceptable for Great Britain and Ireland and rough for Germany,
-France and Spain. Nothing here claims that model \emph{weights} transfer across
-countries --- our own cold-start study finds the model losing to seasonal naive
-on an unseen building at the same site --- only that the architecture and
-protocol do. The demographic arm is a single city and cannot separate
-demographic from local building stock. Delhi is one Indian city, and is real
-Indian data rather than a claim about India.
+The system tier is a forecasting benchmark, not a control benchmark: there is no
+thermal mass to shift at grid level and no savings claim is made from it. The
+Delhi window (2011--12) does not overlap the European one (2016--17) or the
+Chinese one (2018), which motivates reporting within-series skill rather than
+absolute loss but does not eliminate the concern. Capital-city temperature
+proxies national load-weighted temperature, acceptable for Great Britain and
+Ireland and rough for Germany, France, Spain and every Chinese province.
+Nothing here claims that model \emph{weights} transfer across countries --- our
+own cold-start study finds the model losing to seasonal naive on an unseen
+building at the same site, scoring $3.546$ pinball against that baseline's
+$3.037$ --- only that the architecture and protocol do. The demographic arm is a
+single city and cannot separate demographic from local building stock. Delhi is
+one Indian city, and is real Indian data rather than a claim about India. The
+China arm is reconstructed data and Section~\ref{sec:china} states exactly which
+of its columns may be read. The horizon and acceptance results are one building
+over one month; they are the deepest measurements in the study and the narrowest.
 
 \section{Conclusion}
 
-We built an instrument rather than an algorithm, and ran it unchanged over
-twenty-six electricity supplies in seven countries to find out where a
-tariff-native demand controller's guarantees actually hold. Four results follow:
-a per-step risk guarantee on a demand ceiling is under-protected roughly
-sevenfold over a planning window while the textbook correction is $2.4\times$
-too conservative; that risk level can be turned into an operator-set dial, at
-measured and stated cost; distribution-free coverage degrades with aggregation
-level; and forecast skill and available flexibility are independent axes, only
-one of which tracks climate.
+We built an instrument rather than an algorithm and ran it unchanged over thirty
+electricity supplies in eight countries to find out where a tariff-native demand
+controller's guarantees actually hold.
 
-For India specifically the benchmark returns a divided verdict, and both halves
-matter. India has the most favourable load physics in the study --- the highest
-cooling share, the only strongly positive load--temperature relationship, a
-peaky profile that a demand-charge tariff punishes and this method is built to
-defend. It also returns the lowest forecast skill and the worst calibration we
-measured, and there exists no Indian building-level dataset on which to close
-the loop properly. The first half is the case for the work. The second half is
-the work that remains, and Section~\ref{sec:india-fix} states it as such rather
-than as a footnote.
+The central result is that the guarantee most commonly deployed is not the
+guarantee most commonly claimed. A per-step chance constraint on a demand
+ceiling, marginally calibrated and behaving exactly as specified, is
+under-protected over a sixteen-hour planning window by a factor of eight; the
+figure usually quoted as the conservative correction is not a bound and
+overstates the risk by $2.4\times$; and the correction that is a bound is
+vacuous four hours in. That risk level can be turned into an operator-set
+parameter, at a measured price of \rupee{3{,}339} on a billing month and with
+its inexactness and resolution floor stated. Alongside it, distribution-free
+coverage degrades with aggregation level and it is the adaptive layer rather
+than the one with the theorem that holds it; and forecast skill and available
+flexibility are independent axes, only one of which tracks climate.
 
-Every number is regenerated by one script from a clean checkout, and the results
-that contradict us are printed at the same size as the rest.
+For India the benchmark returns a divided verdict, and both halves matter. India
+has the most favourable load physics in the study --- the highest cooling share,
+the only strongly positive load--temperature relationship, a peaky profile that
+a demand-charge tariff punishes and this method is built to defend. It also
+returns the lowest metered forecast skill and the worst metered calibration we
+measured, and there exists no Indian building-level dataset on which to close the
+loop properly. The first half is the case for the work. The second half is the
+work that remains, and Section~\ref{sec:india-fix} states it as such rather than
+as a footnote.
+
+Every number here is regenerated by one script from a clean checkout. The
+results that contradict us are printed at the same size as the rest, and the one
+result we most wanted to keep is the one Section~\ref{sec:china} withdraws.
+
+\subsection*{Reproducibility}
+
+\begin{verbatim}
+python data/national.py        # fetch and cache every system-level series
+python eval/comparative.py     # run the protocol over all thirty supplies
+python eval/china_audit.py     # audit the China arm against its own data
+python eval/horizon_risk.py    # the bracket, the copula and the closed loop
+python eval/conformal_audit.py # the walk-forward calibration year
+python eval/paper_tables.py    # emit every table in this paper
+python eval/paper_figures.py   # emit every figure in this paper
+\end{verbatim}
 
 \bibliographystyle{plainnat}
 \bibliography{refs}

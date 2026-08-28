@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lrrlrrr}
+\toprule
+Province & Days & Shapes & Days/shape & Numbers & Values & Max err.\ \% \\
+\midrule
+Hainan (Haikou) & 365 & \textbf{2} & 115/250 & 778 & 8,760 & 0.000000 \\
+Guangdong (Guangzhou) & 365 & \textbf{2} & 115/250 & 778 & 8,760 & 0.000000 \\
+Shanghai & 365 & \textbf{2} & 115/250 & 778 & 8,760 & 0.000000 \\
+Beijing & 365 & \textbf{2} & 115/250 & 778 & 8,760 & 0.000000 \\
+Yunnan (Kunming) & 365 & \textbf{2} & 115/250 & 778 & 8,760 & 0.000000 \\
+Heilongjiang (Harbin) & 365 & \textbf{2} & 115/250 & 778 & 8,760 & 0.000000 \\
+\bottomrule
+\end{tabular}
+\caption{Provenance audit of the China arm, run against the data rather than taken from its documentation. Every calendar day's 24-hour profile is min--max normalised and the distinct shapes counted. \emph{Shapes} is how many survive; \emph{Numbers} is how many values are needed to rebuild the year from them; \emph{Values} is how many the year contains. A whole year of hourly provincial demand is 778 numbers --- 2 normalised day-shapes and one (min, max) pair per day --- reproducing all 8,760 values to within 2e-09 of their magnitude, which is the precision the source is published at rather than an approximation we introduced. Compression 11.26:1. The published method is exactly what the authors state it is. The consequence for this study is that forecast skill, a ratio against a seasonal-naive baseline, is uninformative on these series: the shape the baseline has to guess is constant, so both models reduce to predicting the same two administrative numbers per day.}
+\label{tab:china-audit}
+\end{table}

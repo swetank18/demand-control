@@ -3,12 +3,13 @@
 \small
 \begin{tabular}{lrrrr}
 \toprule
-Tier & $n$ & mean cov. & worst & $<0.85$ \\
+Population & $n$ & mean cov. & worst & $<0.85$ \\
 \midrule
-Buildings (BDG2) & 18 & \textbf{0.901} & 0.824 & 1 \\
-National demand & 6 & \textbf{0.829} & 0.762 & 5 \\
+Buildings (BDG2), metered & 18 & \textbf{0.901} & 0.824 & 1 \\
+System demand, metered & 6 & \textbf{0.829} & 0.762 & 5 \\
+System demand, reconstructed & 6 & \textbf{0.824} & 0.565 & 2 \\
 \bottomrule
 \end{tabular}
-\caption{Empirical coverage of the nominal 90\% interval after conformal calibration, by aggregation level. The guarantee very nearly holds on individual buildings and fails systematically on system-level demand, worst of all on Delhi (0.762).}
+\caption{Empirical coverage of the nominal 90\% interval after conformal calibration. The guarantee very nearly holds on individual buildings and fails systematically on system-level demand. The third row is the replication: six Chinese provinces, a different country, a different year and a different data-generating process, reproduce the system-level failure to within 0.005 of the metered panel and contain the worst row in the study (Heilongjiang, 0.565).}
 \label{tab:calibration}
 \end{table}

@@ -1,0 +1,19 @@
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{llrrrrrrr}
+\toprule
+Series & Country & Load--temp. & CDD sh. & HVAC sh. & Seas.\ naive & Ours & Skill & Cov 90\% \\
+\midrule
+Hainan (Haikou) & China & +0.10 & 0.97 & -- & 131.650 & 93.878 & \textbf{+0.287} & 0.960 \\
+Guangdong (Guangzhou) & China & +0.37 & 0.85 & -- & 2357.241 & 3097.316 & \textbf{-0.314} & 0.919 \\
+Shanghai & China & +0.07 & 0.44 & -- & 445.551 & 352.338 & \textbf{+0.209} & 0.894 \\
+Beijing & China & -0.28 & 0.29 & -- & 451.459 & 387.453 & \textbf{+0.142} & 0.905 \\
+Yunnan (Kunming) & China & -0.35 & 0.14 & -- & 251.362 & 197.905 & \textbf{+0.213} & 0.703 \\
+Heilongjiang (Harbin) & China & -0.47 & 0.12 & -- & 148.038 & 191.583 & \textbf{-0.294} & 0.565 \\
+\bottomrule
+\end{tabular}
+\caption{The China arm, added after the study was complete on a constraint imposed from outside it: six provinces spanning a wider climate range than the entire European panel, in a developing economy, at one calendar year and therefore a three-month training block rather than fifteen. Mean skill is $+0.040$ with 2 negative rows. \textbf{That column should not be read as a statement about the method}, for the reason established in Table~\ref{tab:china-audit}: the series is constructed, not metered, and its construction pins our model and the baseline it is scored against to the same two numbers per day. Coverage does not run through the baseline and is readable; skill is not.}
+\label{tab:china}
+\end{table}

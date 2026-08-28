@@ -27,7 +27,7 @@ OURS = "lightgbm_quantile"
 COUNTRY_NAME = {
     "US": "United States", "GB": "United Kingdom", "IE": "Ireland",
     "IN": "India", "DE": "Germany", "FR": "France", "ES": "Spain",
-    "CA": "Canada",
+    "CA": "Canada", "CN": "China",
 }
 
 SITE_CITY = {
@@ -45,6 +45,11 @@ SITE_CITY = {
 SERIES_NAME = {
     "IN_Delhi": "India (Delhi)", "GB_UKM": "United Kingdom", "IE": "Ireland",
     "DE": "Germany", "FR": "France", "ES": "Spain",
+    #: The Chinese rows are provinces, so they are named by their load centre --
+    #: a reader should not have to know that CN_Hainan is Haikou.
+    "CN_Hainan": "Hainan (Haikou)", "CN_Guangdong": "Guangdong (Guangzhou)",
+    "CN_Shanghai": "Shanghai", "CN_Yunnan": "Yunnan (Kunming)",
+    "CN_Beijing": "Beijing", "CN_Heilongjiang": "Heilongjiang (Harbin)",
 }
 
 
@@ -80,7 +85,10 @@ def table(path: Path, header: list[str], rows: list[list[str]], align: str,
         L.append(r"\setlength{\tabcolsep}{3.5pt}")
     L += [r"\begin{tabular}{" + align + "}", r"\toprule",
          " & ".join(header) + r" \\", r"\midrule"]
-    L += [" & ".join(r) + r" \\" for r in rows]
+    #: A one-element row whose text starts with a backslash is emitted verbatim,
+    #: which is how a table carries an internal \midrule and splits into panels.
+    L += [r[0] if len(r) == 1 and str(r[0]).startswith("\\")
+          else " & ".join(r) + r" \\" for r in rows]
     L += [r"\bottomrule", r"\end{tabular}",
           rf"\caption{{{caption}}}", rf"\label{{{label}}}", r"\end{table}", ""]
     path.write_text("\n".join(L))
@@ -94,23 +102,41 @@ def horizon_table() -> None:
     d = json.loads(p.read_text())
     rows = []
     for r in d["marginal_vs_joint"]:
+        # Boole/Bonferroni is the union bound, sum of the per-step rates capped
+        # at one -- NOT 1-(1-a)^H, which is the independence calculation and is
+        # not a bound at all under positive dependence. Reporting the two in
+        # separate columns is the whole point: the union bound goes vacuous long
+        # before the horizon the controller actually plans over, so the textbook
+        # correction is not merely loose there, it says nothing.
+        boole = min(1.0, r["per_step_exceedance"] * r["H"])
         rows.append([
             f"{r['H']}", f"{r['hours']:.2f}",
             f"{r['per_step_exceedance']:.3f}",
             f"\\textbf{{{r['empirical_horizon']:.3f}}}",
             f"{r.get('independence_bound', float('nan')):.3f}",
+            f"{boole:.3f}",
             f"{r.get('copula_predicted', float('nan')):.3f}",
         ])
+    last = d["marginal_vs_joint"][-1]
+    #: The horizon at which the union bound reaches 1 and stops saying anything,
+    #: computed from the measured per-step rate rather than asserted.
+    boole_saturates = int(np.ceil(1.0 / last["per_step_exceedance"]))
     table(OUT / "horizon.tex",
-          ["$H$", "hours", "per-step", "empirical", "Boole bound", "copula"],
-          rows, "rrrrrr",
-          "Marginal versus horizon-level exceedance of the demand ceiling. "
-          "The per-step quantile is well calibrated at every horizon; the "
-          "probability of breaching \\emph{somewhere} in the window is not the "
-          "number the constraint appears to promise, and the independence bound "
-          "is far too loose to substitute for it. "
-          "Held-out June 2017, "
-          f"{d['copula']['n_origins']:,} forecast origins.",
+          ["$H$", "hours", "per-step $\\hat\\alpha$", "realised",
+           "independent", "Boole $H\\hat\\alpha$", "copula"],
+          rows, "rrrrrrr",
+          "Marginal versus horizon-level exceedance of the demand ceiling, "
+          "held-out June 2017, "
+          f"{d['copula']['n_origins']:,} forecast origins. "
+          "The per-step rate $\\hat\\alpha$ is well calibrated at every horizon "
+          "against a nominal $0.05$. The realised probability of breaching "
+          "\\emph{somewhere} in the window is not that number. Neither substitute "
+          "is usable: the independence calculation "
+          f"$1-(1-\\hat\\alpha)^H$ overstates the risk by ${last['independence_bound'] / last['empirical_horizon']:.1f}\\times$ "
+          "because load errors are strongly autocorrelated, and the "
+          "Boole/Bonferroni union bound $\\min(1, H\\hat\\alpha)$ -- the only one "
+          f"of the two that is a valid bound -- saturates at $1$ by $H={boole_saturates}$ "
+          "and is vacuous over the controller's actual horizon.",
           "tab:horizon")
 
 
@@ -158,8 +184,11 @@ def acceptance_table() -> None:
 
 
 def india_table(df: pd.DataFrame) -> None:
-    """India against every other national series, on the axes that decide whether
-    the method is worth deploying and whether it can be trusted when it is."""
+    """India against every other system-level series, on the axes that decide
+    whether the method is worth deploying and whether it can be trusted when it
+    is. The provenance column is load-bearing: with China in the panel, three of
+    India's four headline positions are held only among *metered* supplies, and a
+    table that hid where the numbers came from would overstate the claim."""
     nat = json.loads((CACHE / "manifest_national.json").read_text())
     g = df[df.arm == "national"].copy()
     if g.empty:
@@ -174,6 +203,7 @@ def india_table(df: pd.DataFrame) -> None:
             name = f"\\textbf{{{name}}}"
         rows.append([
             name,
+            "recon." if m.get("reconstructed") else "metered",
             f"{m['native_resolution_min']:.0f}",
             f"{m['cdd_share']:.2f}",
             f"{m['corr_temp']:+.2f}",
@@ -182,18 +212,68 @@ def india_table(df: pd.DataFrame) -> None:
             f"{r[f'{OURS}_cov90']:.3f}",
         ])
     table(OUT / "india.tex",
-          ["Series", "Native min", "Cooling share", "Load--temp. corr.",
-           "$p99/$med", "Skill", "Cov 90\\%"],
-          rows, "lrrrrrr",
-          "India against the other national series, ordered by cooling-degree-day "
-          "share. India sits at one extreme on every axis that makes the method "
-          "worth deploying --- the highest cooling share, the only strongly "
-          "positive load--temperature correlation, the peakiest profile --- and at "
-          "the other extreme on both axes that decide whether it can be trusted: "
-          "the lowest forecast skill and the worst interval coverage in the study. "
-          "Delhi is also the only series at native 15-minute resolution, the "
-          "cadence the controller actually runs at.",
+          ["Series", "Provenance", "Native min", "Cooling share",
+           "Load--temp. corr.", "$p99/$med", "Skill", "Cov 90\\%"],
+          rows, "llrrrrrr",
+          "India against every other system-level series in the study, ordered "
+          "by cooling-degree-day share. Among metered supplies Delhi is the "
+          "extreme of both halves of the verdict: the highest cooling share, the "
+          "strongest positive load--temperature relationship, the peakiest "
+          "profile, and simultaneously the lowest forecast skill and the worst "
+          "interval coverage. The six Chinese provinces, added after the study "
+          "was written, displace India from three of those four extremes on the "
+          "face of the table --- and the provenance column is why that "
+          "displacement is reported rather than acted on. Guangdong is the "
+          "closest structural analogue to Delhi in the study and returns the "
+          "second-worst skill in it, which reads like corroboration and is not: "
+          "Section~\\ref{sec:china} shows the Chinese skill column is an "
+          "artefact of how the data was built. Delhi remains the only series at "
+          "native 15-minute resolution, the cadence the controller runs at and "
+          "the cadence Indian demand charges are assessed on.",
           "tab:india")
+
+
+def china_audit_table() -> None:
+    """The audit that decides how the China arm may be read. Emitted from the
+    audit's own output so the compression figure in the paper is the one the
+    check produced."""
+    p = RESULTS / "china_audit.json"
+    if not p.exists():
+        return
+    d = json.loads(p.read_text())
+    rows = []
+    for code, r in d["provinces"].items():
+        rows.append([
+            esc(r["name"]), f"{r['n_days']}",
+            f"\\textbf{{{r['n_distinct_shapes']}}}",
+            "/".join(str(c) for c in r["days_per_shape"]),
+            f"{r['n_free_parameters']:,}", f"{r['n_hourly_values']:,}",
+            f"{r['max_reconstruction_error_pct_of_mean']:.6f}",
+        ])
+    v = next(iter(d["provinces"].values()))
+    table(OUT / "china_audit.tex",
+          ["Province", "Days", "Shapes", "Days/shape", "Numbers",
+           "Values", "Max err.\\ \\%"],
+          rows, "lrrlrrr",
+          "Provenance audit of the China arm, run against the data rather than "
+          "taken from its documentation. Every calendar day's 24-hour profile is "
+          "min--max normalised and the distinct shapes counted. \\emph{Shapes} is "
+          "how many survive; \\emph{Numbers} is how many values are needed to "
+          "rebuild the year from them; \\emph{Values} is how many the year "
+          "contains. A whole year of "
+          f"hourly provincial demand is {v['n_free_parameters']} numbers --- "
+          f"{v['n_distinct_shapes']} normalised day-shapes and one (min, max) "
+          f"pair per day --- reproducing all {v['n_hourly_values']:,} values to "
+          f"within {d['summary']['worst_reconstruction_error_pct']/100:.0e} of "
+          "their magnitude, which is the precision the source is published at "
+          f"rather than an approximation we introduced. Compression "
+          f"{v['compression_ratio']}:1. The "
+          "published method is exactly what the authors state it is. The "
+          "consequence for this study is that forecast skill, a ratio against a "
+          "seasonal-naive baseline, is uninformative on these series: the shape "
+          "the baseline has to guess is constant, so both models reduce to "
+          "predicting the same two administrative numbers per day.",
+          "tab:china-audit")
 
 
 def load_study() -> pd.DataFrame:
@@ -205,8 +285,17 @@ def load_study() -> pd.DataFrame:
 
 
 def arm_table(df: pd.DataFrame, arm: str, first: str, firstname: str,
-              caption: str, label: str, fname: str) -> None:
+              caption: str, label: str, fname: str,
+              keep=None,
+              extra: list[tuple[str, str, str]] | None = None) -> None:
+    """`keep` filters rows inside an arm. The national arm holds two populations
+    with different provenance -- metered transmission and city data, and the
+    Chinese provincial series reconstructed from digitised load curves -- and
+    pooling them into one table would silently launder the second into the
+    first."""
     g = df[df.arm == arm].copy()
+    if keep is not None:
+        g = g[g.apply(keep, axis=1)]
     if g.empty:
         return
     g = g.sort_values("cdd_share" if arm != "demographic" else f"{OURS}_skill",
@@ -224,41 +313,66 @@ def arm_table(df: pd.DataFrame, arm: str, first: str, firstname: str,
             rowname = pretty(rowname, "series")
         elif first == "site":
             rowname = pretty(rowname, "site")
-        rows.append([
-            esc(rowname), esc(pretty(r["country"], "country")), cd, hv,
-            f"{r['seasonal_naive_pinball']:.3f}", f"{r[f'{OURS}_pinball']:.3f}",
-            skt, f"{r[f'{OURS}_cov90']:.3f}",
-        ])
-    table(OUT / fname,
-          [firstname, "Country", "CDD sh.", "HVAC sh.", "Seas.\\ naive",
-           "Ours", "Skill", "Cov 90\\%"],
-          rows, "llrrrrrr", caption, label)
+        row = [esc(rowname), esc(pretty(r["country"], "country")), cd, hv,
+               f"{r['seasonal_naive_pinball']:.3f}", f"{r[f'{OURS}_pinball']:.3f}",
+               skt, f"{r[f'{OURS}_cov90']:.3f}"]
+        for i, (col, _hdr, kind) in enumerate(extra or []):
+            v = r.get(col)
+            row.insert(2 + i, "--" if pd.isna(v) else
+                       (f"{v:+.2f}" if kind == "signed" else f"{v:.2f}"))
+        rows.append(row)
+    header = [firstname, "Country", "CDD sh.", "HVAC sh.", "Seas.\\ naive",
+              "Ours", "Skill", "Cov 90\\%"]
+    align = "llrrrrrr"
+    for i, (_col, hdr, _kind) in enumerate(extra or []):
+        header.insert(2 + i, hdr)
+        align = align[:2] + "r" + align[2:]
+    table(OUT / fname, header, rows, align, caption, label)
 
 
 def calibration_table(df: pd.DataFrame) -> None:
-    rows = []
-    for t, g in df.groupby("tier"):
+    """Coverage pooled by aggregation level. The Chinese rows are held out as
+    their own population rather than folded into tier 2: their provenance is
+    different, and the interesting question is whether the tier effect
+    *replicates* on them, which pooling would destroy."""
+    def group(g, name):
         g = g.dropna(subset=[f"{OURS}_cov90"])
         if g.empty:
-            continue
-        name = "Buildings (BDG2)" if t == 1 else "National demand"
-        rows.append([name, f"{len(g)}",
-                     f"\\textbf{{{g[f'{OURS}_cov90'].mean():.3f}}}",
-                     f"{g[f'{OURS}_cov90'].min():.3f}",
-                     f"{int((g[f'{OURS}_cov90'] < 0.85).sum())}"])
+            return None
+        c = g[f"{OURS}_cov90"]
+        return [name, f"{len(g)}", f"\\textbf{{{c.mean():.3f}}}",
+                f"{c.min():.3f}", f"{int((c < 0.85).sum())}"]
+
+    rows = [r for r in (
+        group(df[df.tier == 1], "Buildings (BDG2), metered"),
+        group(df[(df.tier == 2) & (~df.reconstructed.astype(bool))],
+              "System demand, metered"),
+        group(df[(df.tier == 2) & (df.reconstructed.astype(bool))],
+              "System demand, reconstructed"),
+    ) if r is not None]
     table(OUT / "calibration.tex",
-          ["Tier", "$n$", "mean cov.", "worst", "$<0.85$"],
+          ["Population", "$n$", "mean cov.", "worst", "$<0.85$"],
           rows, "lrrrr",
           "Empirical coverage of the nominal 90\\% interval after conformal "
-          "calibration, by aggregation level. The guarantee very nearly holds "
-          "on individual buildings and fails systematically on system-level "
-          "demand, worst of all on Delhi (0.762).",
+          "calibration. The guarantee very nearly holds on individual buildings "
+          "and fails systematically on system-level demand. The third row is the "
+          "replication: six Chinese provinces, a different country, a different "
+          "year and a different data-generating process, reproduce the "
+          "system-level failure to within 0.005 of the metered panel and contain "
+          "the worst row in the study (Heilongjiang, 0.565).",
           "tab:calibration")
 
 
 def correlation_table(df: pd.DataFrame) -> None:
-    b = df[df.tier == 1].dropna(subset=[f"{OURS}_skill"])
+    """The null, and its replication.
 
+    The building panel is the original test. The Chinese provincial panel is an
+    independent one -- different country, different year, different provenance,
+    and a wider climate span than the whole European set -- run after the study
+    was written, on data chosen by someone else's question. Reporting them as two
+    panels rather than one pooled correlation is the point: a null that
+    replicates on a panel it was not fitted to is worth more than a null with a
+    larger $n$."""
     def r_of(x, frame):
         g = frame.dropna(subset=[x, f"{OURS}_skill"])
         if len(g) < 3:
@@ -266,29 +380,54 @@ def correlation_table(df: pd.DataFrame) -> None:
         return float(np.corrcoef(g[x].astype(float),
                                  g[f"{OURS}_skill"].astype(float))[0, 1]), len(g)
 
-    rows = []
-    for x, label in [("cdd_share", "cooling-degree-day share"),
-                     ("hvac_share", "controllable (HVAC) fraction"),
-                     ("t_mean", "mean outdoor temperature"),
-                     ("median_load", "median load")]:
-        r, n = r_of(x, b)
-        g = b.dropna(subset=[x, f"{OURS}_skill"])
-        loo = [r_of(x, g.drop(i))[0] for i in g.index]
-        rows.append([label, f"{r:+.3f}", f"{n}",
-                     f"{min(loo):+.3f} to {max(loo):+.3f}"])
-    # the one that is not null
+    def block(frame, specs):
+        out = []
+        for x, label in specs:
+            r, n = r_of(x, frame)
+            if n == 0:
+                continue
+            g = frame.dropna(subset=[x, f"{OURS}_skill"])
+            loo = [r_of(x, g.drop(i))[0] for i in g.index]
+            out.append([label, f"{r:+.3f}", f"{n}",
+                        f"{min(loo):+.3f} to {max(loo):+.3f}"])
+        return out
+
+    b = df[df.tier == 1].dropna(subset=[f"{OURS}_skill"])
+    cn = df[(df.tier == 2) & (df.reconstructed.astype(bool))].dropna(
+        subset=[f"{OURS}_skill"])
+
+    rows = [[r"\emph{Panel A --- 18 BDG2 buildings, three countries}", "", "", ""]]
+    rows += block(b, [("cdd_share", "\\quad cooling-degree-day share"),
+                      ("hvac_share", "\\quad controllable (HVAC) fraction"),
+                      ("t_mean", "\\quad mean outdoor temperature"),
+                      ("median_load", "\\quad median load")])
+    if len(cn):
+        rows += [[r"\midrule"],
+                 [r"\emph{Panel B --- 6 Chinese provinces, independent replication}",
+                  "", "", ""]]
+        rows += block(cn, [("cdd_share", "\\quad cooling-degree-day share"),
+                           ("t_mean", "\\quad mean outdoor temperature"),
+                           ("corr_temp", "\\quad load--temperature correlation")])
+
+    # the one relationship that is not null
     g = df[df.tier == 1].dropna(subset=["cdd_share", "hvac_share"])
     r = float(np.corrcoef(g.cdd_share.astype(float), g.hvac_share.astype(float))[0, 1])
-    rows.insert(0, ["\\emph{controllable fraction} vs climate",
-                    f"\\textbf{{{r:+.3f}}}", f"{len(g)}", "--"])
+    rows += [[r"\midrule"],
+             ["\\emph{controllable fraction} vs climate (not vs skill)",
+              f"\\textbf{{{r:+.3f}}}", f"{len(g)}", "--"]]
+
     table(OUT / "correlations.tex",
-          ["Against forecast skill", "$r$", "$n$", "leave-one-out range"],
+          ["Correlation against forecast skill", "$r$", "$n$",
+           "leave-one-out range"],
           rows, "lrrl",
           "Forecast skill is uncorrelated with climate, controllable fraction, "
-          "temperature and load size; every leave-one-out range straddles or "
-          "nearly straddles zero. The controllable fraction (first row, against "
-          "climate rather than skill) is the one relationship that is real. "
-          "Skill and available flexibility are independent axes.",
+          "temperature and load size, and every leave-one-out range straddles or "
+          "nearly straddles zero --- which at these sample sizes is what a null "
+          "looks like. Panel B is the replication on a panel the null was not "
+          "fitted to. The final row is the one relationship in the study that is "
+          "real, and note what it is between: available flexibility tracks "
+          "climate strongly, while predictability does not track anything. Skill "
+          "and flexibility are independent deployment axes.",
           "tab:correlations")
 
 
@@ -309,14 +448,39 @@ def main() -> None:
               "tab:office", "office.tex")
     arm_table(df, "demographic", "usage", "Usage class",
               "Demographic arm: climate held fixed at Washington DC, demographic "
-              "varied across eight usage classes.",
+              "varied across the eight usage classes that pass the selection rule "
+              "at that site. Six rows appear here; Education and Office were "
+              "also run in this arm and are shown in "
+              "Tables~\\ref{tab:climate} and~\\ref{tab:office} instead, since a "
+              "building is one supply however many arms it appears in.",
               "tab:demographic", "demographic.tex")
     arm_table(df, "national", "site", "Series",
-              "National arm: real system-level demand in six countries. Delhi is "
-              "15-minute native resolution from Delhi SLDC; the European series "
-              "are ENTSO-E hourly via Open Power System Data.",
-              "tab:national", "national.tex")
+              "National arm, metered: system-level demand in six countries. "
+              "Delhi is 15-minute native resolution from the Delhi State Load "
+              "Despatch Centre; the European series are ENTSO-E hourly via Open "
+              "Power System Data.",
+              "tab:national", "national.tex",
+              keep=lambda r: not bool(r.get("reconstructed")))
+    _cnskill = df[(df.tier == 2) & (df.reconstructed.astype(bool))][f"{OURS}_skill"]
+    _cn = {"mean": float(_cnskill.mean()), "neg": int((_cnskill < 0).sum())}
+    arm_table(df, "national", "site", "Series",
+              "The China arm, added after the study was complete on a "
+              "constraint imposed from outside it: six provinces spanning a "
+              "wider climate range than the entire European panel, in a "
+              "developing economy, at one calendar year and therefore a "
+              "three-month training block rather than fifteen. "
+              f"Mean skill is ${_cn['mean']:+.3f}$ with {_cn['neg']} negative "
+              "rows. \\textbf{That column should not be read as a statement "
+              "about the method}, for the reason established in "
+              "Table~\\ref{tab:china-audit}: the series is constructed, not "
+              "metered, and its construction pins our model and the baseline it "
+              "is scored against to the same two numbers per day. Coverage does "
+              "not run through the baseline and is readable; skill is not.",
+              "tab:china", "china.tex",
+              keep=lambda r: bool(r.get("reconstructed")),
+              extra=[("corr_temp", "Load--temp.", "signed")])
     india_table(df)
+    china_audit_table()
     calibration_table(df)
     correlation_table(df)
     print(f"\n-> {OUT}")

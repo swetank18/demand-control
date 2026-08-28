@@ -1,18 +1,25 @@
 \begin{table}[t]
 \centering
-\small
-\begin{tabular}{lrrrrrr}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{llrrrrrr}
 \toprule
-Series & Native min & Cooling share & Load--temp. corr. & $p99/$med & Skill & Cov 90\% \\
+Series & Provenance & Native min & Cooling share & Load--temp. corr. & $p99/$med & Skill & Cov 90\% \\
 \midrule
-\textbf{India (Delhi)} & 15 & 0.89 & +0.59 & 1.61 & +0.097 & 0.762 \\
-Spain & 60 & 0.28 & +0.17 & 1.31 & +0.619 & 0.813 \\
-France & 60 & 0.08 & -0.64 & 1.58 & +0.636 & 0.829 \\
-Germany & 60 & 0.06 & -0.10 & 1.32 & +0.713 & 0.837 \\
-United Kingdom & 60 & 0.02 & -0.13 & 1.40 & +0.161 & 0.822 \\
-Ireland & 60 & 0.00 & -0.07 & 1.37 & +0.442 & 0.911 \\
+Hainan (Haikou) & recon. & 60 & 0.97 & +0.10 & 1.32 & +0.287 & 0.960 \\
+\textbf{India (Delhi)} & metered & 15 & 0.89 & +0.59 & 1.61 & +0.097 & 0.762 \\
+Guangdong (Guangzhou) & recon. & 60 & 0.85 & +0.37 & 1.47 & -0.314 & 0.919 \\
+Shanghai & recon. & 60 & 0.44 & +0.07 & 1.64 & +0.209 & 0.894 \\
+Beijing & recon. & 60 & 0.29 & -0.28 & 1.59 & +0.142 & 0.905 \\
+Spain & metered & 60 & 0.28 & +0.17 & 1.31 & +0.619 & 0.813 \\
+Yunnan (Kunming) & recon. & 60 & 0.14 & -0.35 & 1.24 & +0.213 & 0.703 \\
+Heilongjiang (Harbin) & recon. & 60 & 0.12 & -0.47 & 1.31 & -0.294 & 0.565 \\
+France & metered & 60 & 0.08 & -0.64 & 1.58 & +0.636 & 0.829 \\
+Germany & metered & 60 & 0.06 & -0.10 & 1.32 & +0.713 & 0.837 \\
+United Kingdom & metered & 60 & 0.02 & -0.13 & 1.40 & +0.161 & 0.822 \\
+Ireland & metered & 60 & 0.00 & -0.07 & 1.37 & +0.442 & 0.911 \\
 \bottomrule
 \end{tabular}
-\caption{India against the other national series, ordered by cooling-degree-day share. India sits at one extreme on every axis that makes the method worth deploying --- the highest cooling share, the only strongly positive load--temperature correlation, the peakiest profile --- and at the other extreme on both axes that decide whether it can be trusted: the lowest forecast skill and the worst interval coverage in the study. Delhi is also the only series at native 15-minute resolution, the cadence the controller actually runs at.}
+\caption{India against every other system-level series in the study, ordered by cooling-degree-day share. Among metered supplies Delhi is the extreme of both halves of the verdict: the highest cooling share, the strongest positive load--temperature relationship, the peakiest profile, and simultaneously the lowest forecast skill and the worst interval coverage. The six Chinese provinces, added after the study was written, displace India from three of those four extremes on the face of the table --- and the provenance column is why that displacement is reported rather than acted on. Guangdong is the closest structural analogue to Delhi in the study and returns the second-worst skill in it, which reads like corroboration and is not: Section~\ref{sec:china} shows the Chinese skill column is an artefact of how the data was built. Delhi remains the only series at native 15-minute resolution, the cadence the controller runs at and the cadence Indian demand charges are assessed on.}
 \label{tab:india}
 \end{table}

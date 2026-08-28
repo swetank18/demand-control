@@ -24,3 +24,10 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .venv/
+
+# LaTeX build artefacts. main.pdf is kept -- it is the thing people open.
+docs/paper/*.aux
+docs/paper/*.log
+docs/paper/*.out
+docs/paper/*.blg
+docs/paper/*.bbl

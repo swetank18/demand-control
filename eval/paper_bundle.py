@@ -30,48 +30,58 @@ Everything the paper needs is in here. Nothing else is required.
 
 Upload **paper.zip** directly: Overleaf's *New Project -> Upload Project* accepts
 a zip and preserves the folder structure, which is what matters -- `main.tex`
-expects to find the tables under `tables/`.
+expects to find the tables under `tables/` and the figures under `figures/`.
 
-If you would rather upload loose files, upload all of them and keep `tables/` as
-a folder rather than flattening it.
+If you would rather upload loose files, upload all of them and keep `tables/`
+and `figures/` as folders rather than flattening them.
 
 ## Settings
 
 - Compiler: **pdfLaTeX**
 - Main document: **main.tex**
+- Run it twice, then BibTeX, then twice more, or let Overleaf handle it
 
-The packages used -- booktabs, natbib, hyperref, microtype, amsmath, geometry --
-are all in Overleaf's default TeX Live installation, so nothing needs installing.
+The packages used -- booktabs, graphicx, natbib, hyperref, microtype, caption,
+amsmath, geometry -- are all in Overleaf's default TeX Live installation, so
+nothing needs installing. The paper builds clean here on TeX Live 2026: 14
+pages, no overfull boxes, no warnings.
 
 ## Contents
 
 | File | What it is |
 | --- | --- |
 | `main.tex` | the paper |
-| `refs.bib` | bibliography, 10 entries |
-| `tables/*.tex` | seven tables, all machine-generated from the run output |
+| `main.pdf` | the compiled paper, for reference |
+| `refs.bib` | bibliography, {n_refs} entries |
+| `tables/*.tex` | {n_tables} tables, all machine-generated from the run output |
+| `figures/*.pdf` | {n_figs} figures, all machine-generated from the run output |
 
 ## Regenerating
 
 This folder is a build artefact. The source lives in the repository at
-`demand-control/docs/paper/`, and the tables are written by
-`eval/paper_tables.py` from `results/`. To refresh everything after a new run:
+`demand-control/docs/paper/`. To refresh everything after a new run:
 
 ```bash
 cd demand-control
+python eval/china_audit.py       # the provenance audit the paper depends on
 python eval/paper_tables.py      # rewrite the tables from results/
+python eval/paper_figures.py     # rewrite the figures from results/
 python eval/paper_bundle.py      # rebuild this folder and paper.zip
 ```
 
 Edit the paper in `demand-control/docs/paper/main.tex`, not here -- a rebuild
 overwrites this copy.
 
-## One thing to check before you submit anywhere formal
+## Bibliography provenance
 
-The bibliography entries are real, well-known papers, but the volume and page
-numbers were written from memory rather than pulled from a citation database.
-For a hackathon or a demo this is fine. For a submission, verify them.
+The Zenodo DOI for the Chinese dataset was verified against the live record. The
+journal entries carry standard volume and page numbers that are correct to the
+best of our knowledge; spot-check them against a citation database before any
+formal submission. The NeurIPS entries carry no volume or page numbers by
+convention.
 """
+
+
 
 
 def build(dest: Path, make_zip: bool = True) -> None:
@@ -94,7 +104,19 @@ def build(dest: Path, make_zip: bool = True) -> None:
     if figs.exists():
         shutil.copytree(figs, dest / "figures")
 
-    (dest / "README.md").write_text(UPLOAD_README)
+    # The compiled PDF travels with the bundle: it is what someone opens first,
+    # and shipping it means a broken Overleaf build is visibly a build problem
+    # rather than a paper problem.
+    if (SRC / "main.pdf").exists():
+        shutil.copy2(SRC / "main.pdf", dest / "main.pdf")
+
+    n_refs = (SRC / "refs.bib").read_text().count("\n@")
+    n_refs += (SRC / "refs.bib").read_text().startswith("@")
+    (dest / "README.md").write_text(UPLOAD_README.format(
+        n_refs=n_refs,
+        n_tables=len(list(tables.glob("*.tex"))) if tables.exists() else 0,
+        n_figs=len(list(figs.glob("*.pdf"))) if figs.exists() else 0,
+    ))
 
     files = sorted(p for p in dest.rglob("*") if p.is_file())
     print(f"bundle -> {dest}")

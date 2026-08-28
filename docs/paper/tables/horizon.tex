@@ -1,18 +1,18 @@
 \begin{table}[t]
 \centering
 \small
-\begin{tabular}{rrrrrr}
+\begin{tabular}{rrrrrrr}
 \toprule
-$H$ & hours & per-step & empirical & Boole bound & copula \\
+$H$ & hours & per-step $\hat\alpha$ & realised & independent & Boole $H\hat\alpha$ & copula \\
 \midrule
-1 & 0.25 & 0.060 & \textbf{0.060} & 0.060 & 0.049 \\
-4 & 1.00 & 0.060 & \textbf{0.091} & 0.219 & 0.100 \\
-8 & 2.00 & 0.060 & \textbf{0.126} & 0.389 & 0.148 \\
-16 & 4.00 & 0.059 & \textbf{0.182} & 0.625 & 0.225 \\
-32 & 8.00 & 0.061 & \textbf{0.275} & 0.867 & 0.342 \\
-64 & 16.00 & 0.062 & \textbf{0.405} & 0.983 & 0.497 \\
+1 & 0.25 & 0.060 & \textbf{0.060} & 0.060 & 0.060 & 0.049 \\
+4 & 1.00 & 0.060 & \textbf{0.091} & 0.219 & 0.240 & 0.100 \\
+8 & 2.00 & 0.060 & \textbf{0.126} & 0.389 & 0.478 & 0.148 \\
+16 & 4.00 & 0.059 & \textbf{0.182} & 0.625 & 0.952 & 0.225 \\
+32 & 8.00 & 0.061 & \textbf{0.275} & 0.867 & 1.000 & 0.342 \\
+64 & 16.00 & 0.062 & \textbf{0.405} & 0.983 & 1.000 & 0.497 \\
 \bottomrule
 \end{tabular}
-\caption{Marginal versus horizon-level exceedance of the demand ceiling. The per-step quantile is well calibrated at every horizon; the probability of breaching \emph{somewhere} in the window is not the number the constraint appears to promise, and the independence bound is far too loose to substitute for it. Held-out June 2017, 5,793 forecast origins.}
+\caption{Marginal versus horizon-level exceedance of the demand ceiling, held-out June 2017, 5,793 forecast origins. The per-step rate $\hat\alpha$ is well calibrated at every horizon against a nominal $0.05$. The realised probability of breaching \emph{somewhere} in the window is not that number. Neither substitute is usable: the independence calculation $1-(1-\hat\alpha)^H$ overstates the risk by $2.4\times$ because load errors are strongly autocorrelated, and the Boole/Bonferroni union bound $\min(1, H\hat\alpha)$ -- the only one of the two that is a valid bound -- saturates at $1$ by $H=17$ and is vacuous over the controller's actual horizon.}
 \label{tab:horizon}
 \end{table}
