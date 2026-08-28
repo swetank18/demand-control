@@ -120,6 +120,133 @@ def band_payload(band: pd.DataFrame, rule: str) -> dict:
     }
 
 
+def error_correlation(building: str) -> dict | None:
+    """Do the forecasters fail at the same moments?
+
+    The ablation table says how *much* each forecaster costs. It cannot say
+    whether two of them are wrong in the same places, and that is a different
+    question with a different consequence: models whose errors move together are
+    one model wearing several hats, and averaging them buys nothing. Models whose
+    errors are uncorrelated are genuinely seeing different things, and an
+    ensemble of them would be worth building.
+
+    So: Pearson correlation of the point error (q50 - actual), every forecaster
+    against every other, on the native band grid with no resampling -- resampling
+    to the billing block would average away exactly the short-horizon
+    disagreement being measured.
+
+    A forecaster with no error has no error to correlate. Perfect foresight is
+    reported as degenerate and its row is null rather than zero, because zero
+    would read as "uncorrelated with everything", which is a claim, and the
+    truth is that the question does not apply.
+    """
+    src = RESULTS / "ablation"
+    if not src.exists():
+        return None
+
+    payload_f = RESULTS / f"ablation_{building}.json"
+    labels: dict[str, str] = {}
+    if payload_f.exists():
+        block = json.loads(payload_f.read_text())
+        block = block.get("none") or next(iter(block.values()))
+        labels = {r["key"]: r["forecaster"] for r in block["rows"]}
+
+    err: dict[str, pd.Series] = {}
+    for key in ABLATION_ORDER:
+        f = src / f"band_{building}_none_{key}.parquet"
+        if not f.exists():
+            continue
+        band = pd.read_parquet(f)
+        band.index = pd.to_datetime(band.index)
+        e = (band["q50"] - band["actual"]).dropna()
+        if not e.empty:
+            err[key] = e
+    if len(err) < 2:
+        return None
+
+    # one common index, so every pair is scored on identical timestamps and a
+    # forecaster with a shorter history cannot flatter itself on an easier month
+    common = None
+    for e in err.values():
+        common = e.index if common is None else common.intersection(e.index)
+    frame = pd.DataFrame({k: v.reindex(common) for k, v in err.items()}).dropna()
+
+    keys = list(frame.columns)
+    degenerate = {k: bool(frame[k].std(ddof=0) < 1e-9) for k in keys}
+    corr = frame.corr(method="pearson")
+
+    matrix = [[None if (degenerate[a] or degenerate[b]) else round(float(corr.loc[a, b]), 4)
+               for b in keys] for a in keys]
+
+    models = []
+    for k in keys:
+        e = frame[k]
+        models.append({
+            "key": k,
+            "label": labels.get(k, k.replace("_", " ")),
+            "rmse_kw": round(float(np.sqrt((e ** 2).mean())), 3),
+            "bias_kw": round(float(e.mean()), 3),
+            "sd_kw": round(float(e.std(ddof=0)), 3),
+            "degenerate": degenerate[k],
+        })
+
+    # Where each forecaster sits relative to the others, by classical MDS on the
+    # correlation distance (1 - r). The layout is computed here rather than in
+    # the browser for the same reason every other number is: so the picture and
+    # the matrix cannot drift, and so the placement is reproducible instead of
+    # being whatever a force simulation happened to settle on. Degenerate models
+    # take no part in the embedding and are placed by the interface.
+    live = [k for k in keys if not degenerate[k]]
+    layout: dict[str, list[float]] = {}
+    explained = None
+    aspect = 1.0
+    if len(live) >= 3:
+        d = np.array([[1.0 - float(corr.loc[a, b]) for b in live] for a in live])
+        d = (d + d.T) / 2.0
+        j = np.eye(len(live)) - np.ones((len(live), len(live))) / len(live)
+        gram = -0.5 * j @ (d ** 2) @ j
+        w, v = np.linalg.eigh(gram)
+        order = np.argsort(w)[::-1]
+        top = order[:2]
+        # how much of the real structure the two drawn axes actually carry, so
+        # the caption can say it rather than the picture implying it is all of it
+        explained = round(float(w[top].clip(min=0).sum() / np.abs(w).sum() * 100), 1)
+        xy = v[:, top] * np.sqrt(np.maximum(w[top], 0.0))
+        # a sign flip is not a different embedding; pin it so reruns agree
+        for c in range(2):
+            if xy[np.argmax(np.abs(xy[:, c])), c] < 0:
+                xy[:, c] *= -1
+        # Scale both axes by the SAME factor. Normalising each axis to [0,1]
+        # independently would stretch the shorter one -- here by a third -- and
+        # the whole claim of the picture is that distance means something, so a
+        # distorted aspect would be a quiet lie. The short axis is centred in the
+        # unit box and the interface is told the ratio so it can size the frame.
+        lo, hi = xy.min(axis=0), xy.max(axis=0)
+        rng = hi - lo
+        scale = float(rng.max()) or 1.0
+        norm = (xy - lo) / scale
+        norm += (rng.max() - rng) / (2.0 * scale)          # centre the short axis
+        aspect = round(float(rng[1] / rng[0]) if rng[0] > 1e-9 else 1.0, 4)
+        layout = {k: [round(float(norm[i, 0]), 4), round(float(norm[i, 1]), 4)]
+                  for i, k in enumerate(live)}
+
+    return {
+        "keys": keys,
+        "models": models,
+        "matrix": matrix,
+        "layout": layout,
+        "layout_explained_pct": explained,
+        "layout_aspect": aspect,
+        "n": int(len(frame)),
+        "window": [str(frame.index[0]), str(frame.index[-1])],
+        "statistic": "pearson",
+        "quantity": "q50 - actual",
+        "note": ("Correlation of the point forecast error, native band grid, no "
+                 "resampling. Perfect foresight has zero error and so no "
+                 "correlation to report."),
+    }
+
+
 def model_payload(building: str) -> dict:
     """Everything the model has to show for itself, as data.
 
@@ -181,6 +308,10 @@ def model_payload(building: str) -> dict:
             "rows": trim(block["rows"]),
             "stress_rows": {k: trim(v["rows"]) for k, v in abl.items()},
         }
+
+        ec = error_correlation(building)
+        if ec:
+            out["error_correlation"] = ec
 
     if frontier:
         out["frontier"] = {k: frontier[k] for k in
