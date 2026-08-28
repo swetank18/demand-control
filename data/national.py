@@ -51,11 +51,48 @@ CACHE = ROOT / "cache"
 
 DELHI_URL = "https://raw.githubusercontent.com/Ecohen4/Delhi/master/data/Delhi-SLDC-data-15min-master.csv"
 OPSD_URL = "https://data.open-power-system-data.org/time_series/latest/time_series_60min_singleindex.csv"
+CHINA_URL = ("https://zenodo.org/records/8322210/files/"
+             "Appendix%201_Hourly%20electric%20power%20load%20final.csv?download=1")
 
 #: name -> (iso country for holidays, lat, lon, source key, window)
 #: Capital-city temperature is a proxy for a national load-weighted temperature.
 #: It is a good one for GB and IE and a rougher one for DE/FR/ES, which is said
 #: here and repeated in the study.
+#: China enters as a within-country climate ladder rather than one national
+#: series, because 31 provinces spanning Hainan to Heilongjiang is a wider
+#: climate range than the whole European panel and it is a *developing-economy*
+#: range, which is the comparison India actually needs.
+#:
+#: **Provenance warning, and it is not a small one.** Unlike Delhi (metered by
+#: the State Load Despatch Centre) and the European series (metered by
+#: transmission operators), the Chinese series is *reconstructed*: the authors
+#: take each day's maximum and minimum from NDRC reporting, trace a
+#: representative workday profile and a representative holiday profile off
+#: published load curves with WebPlotDigitizer, and rescale one of those two
+#: profiles to each day's envelope. `eval/china_audit.py` checks that against
+#: the data rather than taking it on trust, and finds it exact: a whole year of
+#: hourly demand in every province is 778 numbers -- two normalised day-shapes
+#: and 365 (min, max) pairs -- reproducing all 8,760 values to machine
+#: precision.
+#:
+#: The consequence is specific, and it is not the obvious one. It does not make
+#: the series look unusually forecastable to *us*; it makes the seasonal-naive
+#: baseline we are scored against recover the shape exactly too. Both models
+#: collapse onto predicting the same two administrative numbers per day, so the
+#: skill ratio between them collapses toward zero and says nothing about a
+#: forecaster. Coverage does not run through the baseline and stays readable.
+#: The arm is included with that stated, because excluding the second-largest
+#: electricity system on earth would be the worse error, and because what it
+#: turned out to measure is worth reporting on its own.
+CHINA = {
+    "CN_Hainan":       ("HI", 20.04, 110.32, "Haikou -- tropical, the most cooling-driven province"),
+    "CN_Guangdong":    ("GD", 23.13, 113.26, "Guangzhou -- subtropical, the closest Chinese analogue to an Indian metro"),
+    "CN_Shanghai":     ("SH", 31.23, 121.47, "humid subtropical, hot summer and cold winter"),
+    "CN_Yunnan":       ("YN", 25.04, 102.72, "Kunming -- mild highland, little cooling and little heating"),
+    "CN_Beijing":      ("BJ", 39.90, 116.41, "cold continental, heating-dominated"),
+    "CN_Heilongjiang": ("HL", 45.80, 126.53, "Harbin -- severe cold, the coldest province in the set"),
+}
+
 PANEL = {
     "IN_Delhi":  dict(country="IN", lat=28.61, lon=77.21, source="delhi",
                       col="Total", start="2011-01-01", end="2012-12-31",
@@ -80,6 +117,10 @@ PANEL = {
                       col="ES_load_actual_entsoe_transparency",
                       start="2016-01-01", end="2017-06-30",
                       note="Spain national, hourly, capital-temperature proxy is rough"),
+    **{name: dict(country="CN", lat=lat, lon=lon, source="china", col=code,
+                  start="2018-01-01", end="2018-12-31",
+                  note=f"China, {note}. RECONSTRUCTED from digitised load curves, not metered.")
+       for name, (code, lat, lon, note) in CHINA.items()},
 }
 
 
@@ -147,6 +188,25 @@ def load_delhi(col: str, start: str, end: str) -> pd.Series:
     return s.loc[start:end]
 
 
+def load_china(col: str, start: str, end: str) -> pd.Series:
+    """One province from the 2018 reconstruction. Semicolon-delimited, MWh.
+
+    The time column is an hour-of-year index rather than a timestamp; the paper
+    states 00:00 1 Jan to 23:00 31 Dec 2018 in UTC+8, so the index is rebuilt
+    from that. Two provinces share the abbreviation ``HB`` (Hebei and Hubei) and
+    pandas disambiguates the second as ``HB.1``; none of the provinces used here
+    is affected, but the collision is why columns are selected by position-safe
+    lookup rather than assumed unique.
+    """
+    path = _download(CHINA_URL, RAW / "china_provincial_2018.csv")
+    d = pd.read_csv(path, sep=";", encoding="utf-8-sig")
+    if col not in d.columns:
+        raise SystemExit(f"province {col} not in {list(d.columns)[:8]}...")
+    idx = pd.date_range("2018-01-01 00:00", periods=len(d), freq="h")
+    s = pd.Series(pd.to_numeric(d[col], errors="coerce").to_numpy(), index=idx).dropna()
+    return s.loc[start:end]
+
+
 def load_opsd(col: str, start: str, end: str) -> pd.Series:
     path = _download(OPSD_URL, RAW / "opsd_60min.csv")
     d = pd.read_csv(path, usecols=["utc_timestamp", col], parse_dates=["utc_timestamp"])
@@ -156,8 +216,8 @@ def load_opsd(col: str, start: str, end: str) -> pd.Series:
 
 
 def build(name: str, spec: dict) -> dict:
-    load = (load_delhi if spec["source"] == "delhi" else load_opsd)(
-        spec["col"], spec["start"], spec["end"])
+    loader = {"delhi": load_delhi, "opsd": load_opsd, "china": load_china}[spec["source"]]
+    load = loader(spec["col"], spec["start"], spec["end"])
     if load.empty:
         raise SystemExit(f"{name}: no load rows in window")
     native_min = int(pd.Series(load.index).diff().dt.total_seconds().median() // 60)
@@ -186,7 +246,8 @@ def build(name: str, spec: dict) -> dict:
         "upsampled": native_min > 15,
         "window": [str(out.index.min()), str(out.index.max())],
         "n_intervals": int(len(out)),
-        "unit": "MW" if spec["source"] == "delhi" else "MW",
+        "unit": "MWh" if spec["source"] == "china" else "MW",
+        "reconstructed": spec["source"] == "china",
         "mean": float(out.total_kw.mean()), "peak": float(out.total_kw.max()),
         "p99_over_median": float(out.total_kw.quantile(0.99) / out.total_kw.median()),
         "corr_temp": float(np.corrcoef(out.total_kw, out.t_out)[0, 1]),

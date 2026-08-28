@@ -1,0 +1,88 @@
+{
+ "provinces": {
+  "HI": {
+   "name": "Hainan (Haikou)",
+   "n_days": 365,
+   "n_distinct_shapes": 2,
+   "days_per_shape": [
+    115,
+    250
+   ],
+   "n_free_parameters": 778,
+   "n_hourly_values": 8760,
+   "compression_ratio": 11.26,
+   "max_reconstruction_error_pct_of_mean": 4.545017921501116e-08
+  },
+  "GD": {
+   "name": "Guangdong (Guangzhou)",
+   "n_days": 365,
+   "n_distinct_shapes": 2,
+   "days_per_shape": [
+    115,
+    250
+   ],
+   "n_free_parameters": 778,
+   "n_hourly_values": 8760,
+   "compression_ratio": 11.26,
+   "max_reconstruction_error_pct_of_mean": 1.1963418146489088e-07
+  },
+  "SH": {
+   "name": "Shanghai",
+   "n_days": 365,
+   "n_distinct_shapes": 2,
+   "days_per_shape": [
+    115,
+    250
+   ],
+   "n_free_parameters": 778,
+   "n_hourly_values": 8760,
+   "compression_ratio": 11.26,
+   "max_reconstruction_error_pct_of_mean": 9.25779062533475e-08
+  },
+  "BJ": {
+   "name": "Beijing",
+   "n_days": 365,
+   "n_distinct_shapes": 2,
+   "days_per_shape": [
+    115,
+    250
+   ],
+   "n_free_parameters": 778,
+   "n_hourly_values": 8760,
+   "compression_ratio": 11.26,
+   "max_reconstruction_error_pct_of_mean": 1.8414362276728592e-07
+  },
+  "YN": {
+   "name": "Yunnan (Kunming)",
+   "n_days": 365,
+   "n_distinct_shapes": 2,
+   "days_per_shape": [
+    115,
+    250
+   ],
+   "n_free_parameters": 778,
+   "n_hourly_values": 8760,
+   "compression_ratio": 11.26,
+   "max_reconstruction_error_pct_of_mean": 8.307240455475163e-08
+  },
+  "HL": {
+   "name": "Heilongjiang (Harbin)",
+   "n_days": 365,
+   "n_distinct_shapes": 2,
+   "days_per_shape": [
+    115,
+    250
+   ],
+   "n_free_parameters": 778,
+   "n_hourly_values": 8760,
+   "compression_ratio": 11.26,
+   "max_reconstruction_error_pct_of_mean": 1.4302910508352268e-07
+  }
+ },
+ "summary": {
+  "all_provinces_have_same_shape_count": true,
+  "shape_count": 2,
+  "worst_reconstruction_error_pct": 1.8414362276728592e-07,
+  "verdict": "exact to published precision"
+ }
+}

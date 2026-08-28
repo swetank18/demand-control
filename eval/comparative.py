@@ -86,6 +86,25 @@ def shifted_split(years: int):
     )
 
 
+def china_split():
+    """China is a single calendar year, so the 15-month training block does not
+    exist. The calendar *position* is preserved instead -- validate on April and
+    May, test on June, exactly as every other row -- and the training block is
+    whatever precedes it, three months rather than fifteen.
+
+    This biases against us and is the safe direction to err. Less training data
+    hurts a learned model more than it hurts seasonal naive, so a China skill
+    figure is a lower bound on what the model would achieve with a full history,
+    not an inflated one.
+    """
+    return replace(
+        SPLIT,
+        train_start="2018-01-01 00:00", train_end="2018-03-31 23:45",
+        valid_start="2018-04-01 00:00", valid_end="2018-05-31 23:45",
+        test_start="2018-06-01 00:00", test_end="2018-06-30 23:45",
+    )
+
+
 def supervised_for(series_id: str, country: str, rebuild: bool = False) -> pd.DataFrame:
     """Cache key carries the country, because the holiday feature depends on it."""
     path = CACHE / f"sup_cmp_{series_id}_{country}_h{HORIZON_STEPS}.parquet"
@@ -158,7 +177,12 @@ def panel_rows() -> list[dict]:
         for name, m in json.loads(nat_path.read_text()).items():
             # Delhi's archive predates BDG2's window by five years; same protocol,
             # shifted, so the test month is June for every row in the table.
-            sp = shifted_split(5) if m["source"] == "delhi" else SPLIT
+            if m["source"] == "delhi":
+                sp = shifted_split(5)
+            elif m["source"] == "china":
+                sp = china_split()
+            else:
+                sp = SPLIT
             rows.append(dict(arm="national", id=name, site=name, usage="system demand",
                              country=m["country"], tier=2, split=sp))
     return rows

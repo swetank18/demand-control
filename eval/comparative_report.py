@@ -27,7 +27,8 @@ def load() -> pd.DataFrame:
     writing its own output, so the study is the union of them."""
     raw = {}
     for name in ("comparative", "comparative_climate", "comparative_office",
-                 "comparative_demographic", "comparative_national"):
+                 "comparative_demographic", "comparative_national",
+                 "comparative_china"):
         path = RESULTS / f"{name}.json"
         if path.exists():
             try:
@@ -67,13 +68,20 @@ def climate_covariates() -> pd.DataFrame:
         cov[bid] = dict(cdd_share=float(clim.loc[site, "cdd_share"]) if site in clim.index else np.nan,
                         hvac_share=p.get("hvac_share_of_meter"),
                         t_mean=float(clim.loc[site, "t_mean"]) if site in clim.index else np.nan,
-                        p99_over_median=None)
+                        p99_over_median=None, reconstructed=False)
     nat = CACHE / "manifest_national.json"
     if nat.exists():
         for name, m in json.loads(nat.read_text()).items():
+            # `reconstructed` separates metered supplies from the Chinese series,
+            # which were digitised from published load curves rather than read off
+            # a meter. Every table that pools coverage or skill has to keep those
+            # two apart, so the flag travels with the row rather than being
+            # re-derived from the series name at each use.
             cov[name] = dict(cdd_share=m["cdd_share"], hvac_share=np.nan,
                              t_mean=m["t_mean"], p99_over_median=m["p99_over_median"],
-                             corr_temp=m["corr_temp"])
+                             corr_temp=m["corr_temp"],
+                             reconstructed=bool(m.get("reconstructed", False)),
+                             native_min=m.get("native_resolution_min"))
     return pd.DataFrame(cov).T.rename_axis("id").reset_index()
 
 
