@@ -43,7 +43,7 @@ and `figures/` as folders rather than flattening them.
 
 The packages used -- booktabs, graphicx, natbib, hyperref, microtype, caption,
 amsmath, geometry -- are all in Overleaf's default TeX Live installation, so
-nothing needs installing. The paper builds clean here on TeX Live 2026: 14
+nothing needs installing. The paper builds clean here on TeX Live 2026: {pages}
 pages, no overfull boxes, no warnings.
 
 ## Contents
@@ -112,7 +112,16 @@ def build(dest: Path, make_zip: bool = True) -> None:
 
     n_refs = (SRC / "refs.bib").read_text().count("\n@")
     n_refs += (SRC / "refs.bib").read_text().startswith("@")
+    # page count read from the compiled PDF rather than typed, so it cannot go stale
+    pages = "?"
+    try:
+        import subprocess
+        info = subprocess.run(["pdfinfo", str(SRC / "main.pdf")], capture_output=True, text=True).stdout
+        pages = next(l.split()[-1] for l in info.splitlines() if l.startswith("Pages:"))
+    except Exception:
+        pass
     (dest / "README.md").write_text(UPLOAD_README.format(
+        pages=pages,
         n_refs=n_refs,
         n_tables=len(list(tables.glob("*.tex"))) if tables.exists() else 0,
         n_figs=len(list(figs.glob("*.pdf"))) if figs.exists() else 0,

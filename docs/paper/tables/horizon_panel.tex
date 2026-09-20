@@ -1,0 +1,28 @@
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{llrrrrrr}
+\toprule
+Series & June & per-step $\hat\alpha$ & realised $H{=}64$ & independent & Boole & copula & lag-1 $\rho$ \\
+\midrule
+Phoenix office (BDG2) & 2017 & 0.062 & \textbf{0.405} & 0.983 & 1.00 & 0.497 & 0.87 \\
+\midrule
+IIIT-Delhi Academic & 2015 & 0.049 & \textbf{0.393} & 0.959 & 1.00 & 0.477 & 0.77 \\
+IIIT-Delhi Academic & 2016 & 0.050 & \textbf{0.636} & 0.963 & 1.00 & 0.580 & 0.72 \\
+IIIT-Delhi Academic & 2017 & 0.048 & \textbf{0.422} & 0.956 & 1.00 & 0.595 & 0.71 \\
+IIIT-Delhi Boys & 2014 & 0.032 & \textbf{0.501} & 0.874 & 1.00 & 0.554 & 0.72 \\
+IIIT-Delhi Campus & 2017 & 0.079 & \textbf{0.432} & 0.995 & 1.00 & 0.482 & 0.85 \\
+IIIT-Delhi Dining & 2017 & 0.053 & \textbf{0.714} & 0.970 & 1.00 & 0.744 & 0.72 \\
+IIIT-Delhi Facilities & 2015 & 0.052 & \textbf{0.639} & 0.967 & 1.00 & 0.705 & 0.63 \\
+IIIT-Delhi Facilities & 2016 & 0.054 & \textbf{0.621} & 0.972 & 1.00 & 0.633 & 0.66 \\
+IIIT-Delhi Facilities & 2017 & 0.048 & \textbf{0.739} & 0.958 & 1.00 & 0.753 & 0.61 \\
+IIIT-Delhi Girls & 2014 & 0.048 & \textbf{0.693} & 0.957 & 1.00 & 0.589 & 0.63 \\
+IIIT-Delhi Girls & 2017 & 0.046 & \textbf{0.818} & 0.951 & 1.00 & 0.739 & 0.46 \\
+IIIT-Delhi Library & 2014 & 0.036 & \textbf{0.480} & 0.902 & 1.00 & 0.567 & 0.73 \\
+IIIT-Delhi Library & 2016 & 0.042 & \textbf{0.509} & 0.935 & 1.00 & 0.504 & 0.80 \\
+\bottomrule
+\end{tabular}
+\caption{The bracket of Table~\ref{tab:horizon}, replicated over 14 windows: the Phoenix office of the original measurement and 13 Indian windows at native 15-minute resolution. The per-step rate is calibrated throughout ($0.032$--$0.079$ against a nominal $0.05$). The realised probability of breaching somewhere in the 16-hour window runs from $0.393$ to $0.818$, median $0.565$ --- between $8$ and $16$ times the level the constraint appears to promise, and not a constant of the formulation: the same building returns different values in different years while its per-step rate does not move. The independence figure overstates realised risk by $1.66\times$ (median); the Boole bound is $1$ on every row. The copula predicts the realised value to a mean absolute error of $0.065$ against $0.382$ for independence, and lands within $0.10$ on 12 of 14 windows.}
+\label{tab:horizon-panel}
+\end{table}

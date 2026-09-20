@@ -290,9 +290,79 @@ def fig_aci() -> None:
     _save(fig, "fig_aci")
 
 
+# --------------------------------------------------------------------------
+def fig_horizon_panel() -> None:
+    """The bracket of fig_horizon, one row per window: Phoenix plus the Indian
+    windows. Same marks as fig_horizon so the two figures read as one: the
+    per-step rate (red diamond), the realised horizon exceedance (black dot),
+    the independence figure (grey square) and the copula's prediction (blue
+    triangle), on one probability axis, rows sorted by the realised value."""
+    files = [RESULTS / "horizon_risk_Fox_office_Gaylord.json"] + \
+            sorted(RESULTS.glob("horizon_risk_IIITD_*.json"))
+    rows = []
+    for f in files:
+        if not f.exists():
+            continue
+        d = json.loads(f.read_text())
+        r = [x for x in d["marginal_vs_joint"] if x["H"] == 64][0]
+        fox = d["building"].startswith("Fox")
+        label = "Phoenix office, 2017" if fox else \
+            f"{d['building'].replace('IIITD_', '')}, {d.get('tag', '').lstrip('@')}"
+        rows.append((label, fox, r["per_step_exceedance"], r["empirical_horizon"],
+                     r["independence_bound"], r["copula_predicted"]))
+    if len(rows) < 2:
+        return
+    rows.sort(key=lambda t: t[3])
+    n = len(rows)
+    y = np.arange(n)
+
+    fig, ax = plt.subplots(figsize=(4.9, 0.20 * n + 1.15))
+    ax.axvspan(0.0, 0.05, color=LIGHT, alpha=0.20, lw=0)
+    ax.axvline(0.05, color=ACCENT, ls=":", lw=0.9)
+    for i, (label, fox, per, emp, ind, cop) in enumerate(rows):
+        # the bracket, drawn as a hairline from the per-step rate to the
+        # independence figure, with the realised value on it
+        ax.plot([per, ind], [i, i], color=LIGHT, lw=0.7, zorder=1)
+        ax.plot(ind, i, marker="s", ms=3.0, color=MID, ls="none", zorder=2)
+        ax.plot(cop, i, marker="^", ms=3.3, color=COOL, ls="none", zorder=3)
+        ax.plot(per, i, marker="D", ms=2.9, color=ACCENT, ls="none", zorder=4)
+        ax.plot(emp, i, marker="o", ms=4.2 if fox else 3.8, color=INK, ls="none",
+                zorder=5, markeredgecolor="white", markeredgewidth=0.5)
+    ax.set_yticks(y)
+    ax.set_yticklabels([r[0] for r in rows], fontsize=6.9)
+    for tick, (_, fox, *_r) in zip(ax.get_yticklabels(), rows):
+        if fox:
+            tick.set_fontweight("bold")
+    ax.set_xlim(0, 1.0)
+    ax.set_ylim(-0.7, n - 0.3)
+    ax.set_xlabel("probability the ceiling is exceeded somewhere in the 16-hour window")
+    ax.annotate("nominal 0.05", xy=(0.055, n - 0.45), fontsize=6.8, color=ACCENT,
+                ha="left", va="center")
+    med = float(np.median([r[3] for r in rows]))
+    ax.axvline(med, color=INK, lw=0.6, ls="--", zorder=0)
+    ax.annotate(f"median {med:.2f}", xy=(med + 0.01, -0.45), fontsize=6.8, color=INK,
+                ha="left", va="center")
+    ax.tick_params(axis="y", length=0)
+    _despine(ax, keep=("bottom",))
+    handles = [
+        plt.Line2D([], [], color=ACCENT, marker="D", ms=2.9, ls="none",
+                   label=r"realised per-step $\hat\alpha$ (nominal 0.05)"),
+        plt.Line2D([], [], color=INK, marker="o", ms=3.8, ls="none",
+                   label="realised horizon exceedance, $H=64$"),
+        plt.Line2D([], [], color=COOL, marker="^", ms=3.3, ls="none", label="copula, predicted"),
+        plt.Line2D([], [], color=MID, marker="s", ms=3.0, ls="none",
+                   label=r"independence $1-(1-\hat\alpha)^H$ -- not a bound"),
+    ]
+    ax.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, -0.16),
+              ncol=2, frameon=False, handletextpad=0.5, columnspacing=1.4)
+    _save(fig, "fig_horizon_panel")
+
+
+
 def main() -> None:
     print("emitting figures:")
     fig_horizon()
+    fig_horizon_panel()
     df = _study()
     fig_calibration(df)
     fig_null(df)

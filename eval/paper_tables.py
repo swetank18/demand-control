@@ -140,6 +140,114 @@ def horizon_table() -> None:
           "tab:horizon")
 
 
+
+def _india_rows() -> list[dict]:
+    """The I-BLEND arm, one row per admissible (series, June) window."""
+    p = RESULTS / "comparative_india.json"
+    if not p.exists():
+        return []
+    rows = []
+    for v in json.loads(p.read_text()).values():
+        if "models" not in v:
+            continue
+        rows.append(dict(
+            id=v["id"], name=v["id"].replace("IIITD_", ""), level=v["usage"],
+            june=int(v["test_june"]), train_months=int(v["train_months"]),
+            cooling=bool(v.get("cooling_on_meter")), median=float(v["median_load"]),
+            seasonal=v["models"]["seasonal_naive"]["pinball_mean"],
+            ours=v["models"][OURS]["pinball_mean"],
+            skill=v["models"][OURS]["skill_vs_seasonal"],
+            cov=v["models"][OURS]["coverage_90"],
+        ))
+    rows.sort(key=lambda r: (r["level"] != "campus", r["name"], r["june"]))
+    return rows
+
+
+def iblend_table() -> None:
+    rows = _india_rows()
+    if not rows:
+        return
+    out = []
+    for r in rows:
+        out.append([
+            esc(r["name"]), r["level"], f"{r['june']}", f"{r['train_months']}",
+            "yes" if r["cooling"] else "no",
+            f"{r['median']:.1f}", f"{r['seasonal']:.3f}", f"{r['ours']:.3f}",
+            f"\\textbf{{{r['skill']:+.3f}}}", f"{r['cov']:.3f}",
+        ])
+    b = [r for r in rows if r["level"] != "campus"]
+    won = sum(r["skill"] > 0 for r in b)
+    full = [r for r in b if r["train_months"] >= 13]
+    short = [r for r in b if r["train_months"] < 13]
+    camp = [r for r in rows if r["level"] == "campus"]
+    table(OUT / "iblend.tex",
+          ["Series", "Level", "June", "Train mo.", "Cooling on meter", "Median kW",
+           "Seas.\\ naive", "Ours", "Skill", "Cov 90\\%"],
+          out, "llrrlrrrrr",
+          "The Indian building arm: I-BLEND, IIIT-Delhi, one row per admissible "
+          "(series, June) window, native 15-minute blocks, the unchanged protocol "
+          "with the training block shortened where meter uptime forces it (the "
+          "China-arm precedent). \\emph{Cooling on meter} is the selection rule's "
+          "chilled-water clause: six of seven buildings are served by a central "
+          "chiller on the campus feed, so only the Facilities building and the "
+          "campus total are control objects; every row is a forecasting and "
+          "calibration result. "
+          f"Over the {len(b)} building rows the model beats seasonal naive on {won}; "
+          f"mean skill is ${np.mean([r['skill'] for r in b]):+.3f}$, "
+          f"${np.mean([r['skill'] for r in full]):+.3f}$ on the {len(full)} windows with a full "
+          f"training block and ${np.mean([r['skill'] for r in short]):+.3f}$ on the {len(short)} shorter ones. "
+          f"Coverage is {min(r['cov'] for r in b):.3f}--{max(r['cov'] for r in b):.3f} on every building row"
+          + (f" and {camp[0]['cov']:.3f} on the campus feed" if camp else "") + ".",
+          "tab:iblend")
+
+
+def horizon_panel_table() -> None:
+    """The bracket, replicated: one row per window, Fox first."""
+    files = [RESULTS / "horizon_risk_Fox_office_Gaylord.json"] + \
+            sorted(RESULTS.glob("horizon_risk_IIITD_*.json"))
+    rows, vals = [], []
+    for f in files:
+        if not f.exists():
+            continue
+        d = json.loads(f.read_text())
+        r = [x for x in d["marginal_vs_joint"] if x["H"] == 64][0]
+        fox = d["building"].startswith("Fox")
+        name = "Phoenix office (BDG2)" if fox else esc(d["building"].replace("IIITD_", "IIIT-Delhi "))
+        june = "2017" if fox else d.get("tag", "").lstrip("@")
+        boole = min(1.0, 64 * r["per_step_exceedance"])
+        rows.append([name, june, f"{r['per_step_exceedance']:.3f}",
+                     f"\\textbf{{{r['empirical_horizon']:.3f}}}",
+                     f"{r['independence_bound']:.3f}", f"{boole:.2f}",
+                     f"{r['copula_predicted']:.3f}", f"{d['copula']['corr_lag1']:.2f}"])
+        vals.append((r["per_step_exceedance"], r["empirical_horizon"],
+                     r["independence_bound"], r["copula_predicted"]))
+        if fox and len(files) > 1:
+            rows.append(["\\midrule"])
+    if len(vals) < 2:
+        return
+    ps, emp, ind, cop = (np.array([v[i] for v in vals]) for i in range(4))
+    cop_err, ind_err = np.abs(cop - emp), np.abs(ind - emp)
+    table(OUT / "horizon_panel.tex",
+          ["Series", "June", "per-step $\\hat\\alpha$", "realised $H{=}64$",
+           "independent", "Boole", "copula", "lag-1 $\\rho$"],
+          rows, "llrrrrrr",
+          "The bracket of Table~\\ref{tab:horizon}, replicated over "
+          f"{len(vals)} windows: the Phoenix office of the original measurement and "
+          f"{len(vals) - 1} Indian windows at native 15-minute resolution. The per-step "
+          f"rate is calibrated throughout (${ps.min():.3f}$--${ps.max():.3f}$ against a "
+          "nominal $0.05$). The realised probability of breaching somewhere in the "
+          f"16-hour window runs from ${emp.min():.3f}$ to ${emp.max():.3f}$, median "
+          f"${np.median(emp):.3f}$ --- between ${emp.min() / 0.05:.0f}$ and "
+          f"${emp.max() / 0.05:.0f}$ times the level the constraint appears to promise, "
+          "and not a constant of the formulation: the same building returns "
+          "different values in different years while its per-step rate does not move. "
+          f"The independence figure overstates realised risk by ${np.median(ind / emp):.2f}\\times$ "
+          "(median); the Boole bound is $1$ on every row. The copula predicts the "
+          f"realised value to a mean absolute error of ${cop_err.mean():.3f}$ against "
+          f"${ind_err.mean():.3f}$ for independence, and lands within $0.10$ on "
+          f"{int((cop_err <= 0.10).sum())} of {len(vals)} windows.",
+          "tab:horizon-panel")
+
 def acceptance_table() -> None:
     """The closed-loop sweep. Commit violation is the acceptance metric; the
     against-target column is shown because omitting it would look like hiding it,
@@ -350,6 +458,23 @@ def calibration_table(df: pd.DataFrame) -> None:
         group(df[(df.tier == 2) & (df.reconstructed.astype(bool))],
               "System demand, reconstructed"),
     ) if r is not None]
+    # India, one city, three aggregation levels, one weather feed. Kept as its
+    # own panel: these rows are windows of the same meters, not independent
+    # supplies, and pooling them into the tiers above would double-count.
+    ib = _india_rows()
+    if ib:
+        def igroup(rs, name):
+            c = np.array([r["cov"] for r in rs])
+            return [name, f"{len(rs)}", f"\\textbf{{{c.mean():.3f}}}",
+                    f"{c.min():.3f}", f"{int((c < 0.85).sum())}"]
+        delhi = df[(df.tier == 2) & (df["id"].astype(str).str.contains("Delhi", case=False))]
+        rows.append(["\\midrule"])
+        rows.append(["\\emph{India, one city (I-BLEND + Delhi SLDC), windows}", "", "", "", ""])
+        rows.append(igroup([r for r in ib if r["level"] != "campus"], "\\quad buildings, native 15-min"))
+        rows.append(igroup([r for r in ib if r["level"] == "campus"], "\\quad campus feed (one HT consumer)"))
+        if not delhi.empty:
+            c = float(delhi[f"{OURS}_cov90"].iloc[0])
+            rows.append(["\\quad city (Delhi SLDC)", "1", f"\\textbf{{{c:.3f}}}", f"{c:.3f}", f"{int(c < 0.85)}"])
     table(OUT / "calibration.tex",
           ["Population", "$n$", "mean cov.", "worst", "$<0.85$"],
           rows, "lrrrr",
@@ -359,7 +484,10 @@ def calibration_table(df: pd.DataFrame) -> None:
           "replication: six Chinese provinces, a different country, a different "
           "year and a different data-generating process, reproduce the "
           "system-level failure to within 0.005 of the metered panel and contain "
-          "the worst row in the study (Heilongjiang, 0.565).",
+          "the worst row in the study (Heilongjiang, 0.565). The lower panel is "
+          "the same effect inside one city: building, campus and city demand in "
+          "Delhi, one weather feed, native 15-minute resolution throughout, and "
+          "coverage falls monotonically with each step up the ladder.",
           "tab:calibration")
 
 
@@ -435,7 +563,9 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     print("emitting LaTeX tables:")
     horizon_table()
+    horizon_panel_table()
     acceptance_table()
+    iblend_table()
     df = load_study()
     arm_table(df, "climate", "site", "Site",
               "Climate arm: demographic held fixed at Education, climate and "
