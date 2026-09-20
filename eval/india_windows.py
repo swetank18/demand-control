@@ -41,6 +41,18 @@ def main() -> None:
                 f"--end '{w['test_end']}' --valid-start '{w['valid_start'][:10]}' --valid-end '{w['valid_end']}' "
                 f"--skip-closed-loop"
             )
+    lines += [
+        "",
+        "# 3. bootstrap intervals on every horizon row. A fresh run above writes them;",
+        "#    this attaches them to a result produced before they existed.",
+    ]
+    for name, s in m.items():
+        for w in s["windows"]:
+            tag = f"@{w['test_june']}"
+            lines.append(
+                f"grep -q empirical_horizon_ci results/horizon_risk_{name}{tag}.json || "
+                f"$PY eval/horizon_risk.py --building {name} --tag {tag} --ci-only"
+            )
     lines.append('echo "india arm done $(date)"')
     out = ROOT / "reproduce_india.sh"
     out.write_text("\n".join(lines) + "\n")

@@ -172,7 +172,35 @@
       "copula_predicted": 0.05013333333333333,
       "n_origins": 2620,
       "blockmax_p95_predicted_kw": null,
-      "blockmax_realised_mean_kw": null
+      "blockmax_realised_mean_kw": null,
+      "block_days": 1,
+      "n_blocks": 30,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.03206863661196476,
+        0.07485047972180323
+      ],
+      "per_step_se": 0.010998475130470142,
+      "empirical_horizon_ci": [
+        0.03206863661196476,
+        0.07485047972180323
+      ],
+      "empirical_horizon_se": 0.010998475130470142,
+      "empirical_horizon_block_ci": [
+        0.03206863661196476,
+        0.07485047972180323
+      ],
+      "empirical_horizon_block_se": 0.010998475130470142,
+      "block_sensitivity": {
+        "2": [
+          0.03289297910807553,
+          0.07167955024595925
+        ],
+        "3": [
+          0.03300276958595452,
+          0.06995786920336584
+        ]
+      }
     },
     {
       "H": 4,
@@ -184,7 +212,35 @@
       "copula_predicted": 0.12865,
       "n_origins": 2620,
       "blockmax_p95_predicted_kw": 28.09119494152497,
-      "blockmax_realised_mean_kw": 19.542034379963823
+      "blockmax_realised_mean_kw": 19.542034379963823,
+      "block_days": 1,
+      "n_blocks": 30,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.033258574725114114,
+        0.07555410515112948
+      ],
+      "per_step_se": 0.01100908435281036,
+      "empirical_horizon_ci": [
+        0.08326950199122145,
+        0.14680440564914327
+      ],
+      "empirical_horizon_se": 0.01620494934571627,
+      "empirical_horizon_block_ci": [
+        0.04627723938077191,
+        0.10189347416370492
+      ],
+      "empirical_horizon_block_se": 0.013836905680863962,
+      "block_sensitivity": {
+        "2": [
+          0.08525800530002212,
+          0.1438942213137323
+        ],
+        "3": [
+          0.08325427783845633,
+          0.14458276098901096
+        ]
+      }
     },
     {
       "H": 8,
@@ -196,7 +252,35 @@
       "copula_predicted": 0.2088,
       "n_origins": 2620,
       "blockmax_p95_predicted_kw": 29.9749468333225,
-      "blockmax_realised_mean_kw": 21.562360874600202
+      "blockmax_realised_mean_kw": 21.562360874600202,
+      "block_days": 1,
+      "n_blocks": 30,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.03306111947451438,
+        0.07557859852955058
+      ],
+      "per_step_se": 0.01098867192986188,
+      "empirical_horizon_ci": [
+        0.1380720587210812,
+        0.22190693311463988
+      ],
+      "empirical_horizon_se": 0.02136260858217354,
+      "empirical_horizon_block_ci": [
+        0.08531357799944857,
+        0.1600450830174937
+      ],
+      "empirical_horizon_block_se": 0.01893749860672679,
+      "block_sensitivity": {
+        "2": [
+          0.14053802533497967,
+          0.2194724403634422
+        ],
+        "3": [
+          0.13572074290066705,
+          0.22204720707997408
+        ]
+      }
     },
     {
       "H": 16,
@@ -208,7 +292,35 @@
       "copula_predicted": 0.33735000000000004,
       "n_origins": 2620,
       "blockmax_p95_predicted_kw": 32.68437502217687,
-      "blockmax_realised_mean_kw": 24.232454189330124
+      "blockmax_realised_mean_kw": 24.232454189330124,
+      "block_days": 1,
+      "n_blocks": 30,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.033640788807000485,
+        0.07588508856803201
+      ],
+      "per_step_se": 0.010923170730572713,
+      "empirical_horizon_ci": [
+        0.22349989939260523,
+        0.34142858574721857
+      ],
+      "empirical_horizon_se": 0.02972578294560056,
+      "empirical_horizon_block_ci": [
+        0.15550385248221932,
+        0.2555050456071344
+      ],
+      "empirical_horizon_block_se": 0.025838341437295277,
+      "block_sensitivity": {
+        "2": [
+          0.2266398291478645,
+          0.3356298562179257
+        ],
+        "3": [
+          0.21961409359940576,
+          0.34484248093233655
+        ]
+      }
     },
     {
       "H": 32,
@@ -220,7 +332,35 @@
       "copula_predicted": 0.5230166666666667,
       "n_origins": 2620,
       "blockmax_p95_predicted_kw": 36.28234168309426,
-      "blockmax_realised_mean_kw": 28.21521783514248
+      "blockmax_realised_mean_kw": 28.21521783514248,
+      "block_days": 1,
+      "n_blocks": 30,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.03494093035385263,
+        0.07672787688564059
+      ],
+      "per_step_se": 0.01075925745460653,
+      "empirical_horizon_ci": [
+        0.3800474794919953,
+        0.5522869291600682
+      ],
+      "empirical_horizon_se": 0.044008105927431505,
+      "empirical_horizon_block_ci": [
+        0.2627482146366486,
+        0.39419558708838387
+      ],
+      "empirical_horizon_block_se": 0.03375424859157697,
+      "block_sensitivity": {
+        "2": [
+          0.37868846720707444,
+          0.5513844598081477
+        ],
+        "3": [
+          0.371256489649367,
+          0.5602702959238587
+        ]
+      }
     },
     {
       "H": 64,
@@ -232,7 +372,35 @@
       "copula_predicted": 0.743525,
       "n_origins": 2620,
       "blockmax_p95_predicted_kw": 39.801028222102325,
-      "blockmax_realised_mean_kw": 33.421519819471115
+      "blockmax_realised_mean_kw": 33.421519819471115,
+      "block_days": 1,
+      "n_blocks": 30,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.03713246398070505,
+        0.07493975791250518
+      ],
+      "per_step_se": 0.00966044929874125,
+      "empirical_horizon_ci": [
+        0.6094167336372494,
+        0.8116726422305536
+      ],
+      "empirical_horizon_se": 0.051786050647288674,
+      "empirical_horizon_block_ci": [
+        0.46929209138253086,
+        0.6687830318209416
+      ],
+      "empirical_horizon_block_se": 0.050641400703631226,
+      "block_sensitivity": {
+        "2": [
+          0.6075876101545786,
+          0.8130028223581347
+        ],
+        "3": [
+          0.6115374168515815,
+          0.8188059147491762
+        ]
+      }
     }
   ],
   "copula_marginals": {

@@ -34,4 +34,20 @@ $PY eval/comparative.py --arms india --out comparative_india --skip-done
 [ -f results/horizon_risk_IIITD_Girls@2017.json ] || $PY eval/horizon_risk.py --building IIITD_Girls --tag @2017 --start '2017-06-01' --end '2017-06-30 23:45' --valid-start '2017-04-01' --valid-end '2017-05-31 23:45' --skip-closed-loop
 [ -f models/IIITD_Campus@2017/forecast_test.parquet ] || $PY forecast/train.py --buildings IIITD_Campus --tag @2017 --train-start '2016-08-01 00:00:00' --train-end '2017-03-31 23:45' --valid-end '2017-05-31 23:45' --test-start '2017-06-01 00:00' --test-end '2017-06-30 23:45'
 [ -f results/horizon_risk_IIITD_Campus@2017.json ] || $PY eval/horizon_risk.py --building IIITD_Campus --tag @2017 --start '2017-06-01' --end '2017-06-30 23:45' --valid-start '2017-04-01' --valid-end '2017-05-31 23:45' --skip-closed-loop
+
+# 3. bootstrap intervals on every horizon row. A fresh run above writes them;
+#    this attaches them to a result produced before they existed.
+grep -q empirical_horizon_ci results/horizon_risk_IIITD_Academic@2015.json || $PY eval/horizon_risk.py --building IIITD_Academic --tag @2015 --ci-only
+grep -q empirical_horizon_ci results/horizon_risk_IIITD_Academic@2016.json || $PY eval/horizon_risk.py --building IIITD_Academic --tag @2016 --ci-only
+grep -q empirical_horizon_ci results/horizon_risk_IIITD_Academic@2017.json || $PY eval/horizon_risk.py --building IIITD_Academic --tag @2017 --ci-only
+grep -q empirical_horizon_ci results/horizon_risk_IIITD_Library@2014.json || $PY eval/horizon_risk.py --building IIITD_Library --tag @2014 --ci-only
+grep -q empirical_horizon_ci results/horizon_risk_IIITD_Library@2016.json || $PY eval/horizon_risk.py --building IIITD_Library --tag @2016 --ci-only
+grep -q empirical_horizon_ci results/horizon_risk_IIITD_Dining@2017.json || $PY eval/horizon_risk.py --building IIITD_Dining --tag @2017 --ci-only
+grep -q empirical_horizon_ci results/horizon_risk_IIITD_Facilities@2015.json || $PY eval/horizon_risk.py --building IIITD_Facilities --tag @2015 --ci-only
+grep -q empirical_horizon_ci results/horizon_risk_IIITD_Facilities@2016.json || $PY eval/horizon_risk.py --building IIITD_Facilities --tag @2016 --ci-only
+grep -q empirical_horizon_ci results/horizon_risk_IIITD_Facilities@2017.json || $PY eval/horizon_risk.py --building IIITD_Facilities --tag @2017 --ci-only
+grep -q empirical_horizon_ci results/horizon_risk_IIITD_Boys@2014.json || $PY eval/horizon_risk.py --building IIITD_Boys --tag @2014 --ci-only
+grep -q empirical_horizon_ci results/horizon_risk_IIITD_Girls@2014.json || $PY eval/horizon_risk.py --building IIITD_Girls --tag @2014 --ci-only
+grep -q empirical_horizon_ci results/horizon_risk_IIITD_Girls@2017.json || $PY eval/horizon_risk.py --building IIITD_Girls --tag @2017 --ci-only
+grep -q empirical_horizon_ci results/horizon_risk_IIITD_Campus@2017.json || $PY eval/horizon_risk.py --building IIITD_Campus --tag @2017 --ci-only
 echo "india arm done $(date)"

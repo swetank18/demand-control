@@ -172,7 +172,35 @@
       "copula_predicted": 0.049499999999999995,
       "n_origins": 2817,
       "blockmax_p95_predicted_kw": null,
-      "blockmax_realised_mean_kw": null
+      "blockmax_realised_mean_kw": null,
+      "block_days": 1,
+      "n_blocks": 31,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.036097652169216864,
+        0.04845509398920768
+      ],
+      "per_step_se": 0.0031206687636404847,
+      "empirical_horizon_ci": [
+        0.036097652169216864,
+        0.04845509398920768
+      ],
+      "empirical_horizon_se": 0.0031206687636404847,
+      "empirical_horizon_block_ci": [
+        0.036097652169216864,
+        0.04845509398920768
+      ],
+      "empirical_horizon_block_se": 0.0031206687636404847,
+      "block_sensitivity": {
+        "2": [
+          0.037316110513096516,
+          0.04736379204856279
+        ],
+        "3": [
+          0.03742080164732002,
+          0.046703296703296704
+        ]
+      }
     },
     {
       "H": 4,
@@ -184,7 +212,35 @@
       "copula_predicted": 0.13666666666666663,
       "n_origins": 2817,
       "blockmax_p95_predicted_kw": 11.549221439734731,
-      "blockmax_realised_mean_kw": 8.366352445225305
+      "blockmax_realised_mean_kw": 8.366352445225305,
+      "block_days": 1,
+      "n_blocks": 31,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.039139035854105324,
+        0.05292413612891089
+      ],
+      "per_step_se": 0.003514679891938544,
+      "empirical_horizon_ci": [
+        0.08496578404293964,
+        0.1229404738958035
+      ],
+      "empirical_horizon_se": 0.00960907912512795,
+      "empirical_horizon_block_ci": [
+        0.05275945852134675,
+        0.07099784057304385
+      ],
+      "empirical_horizon_block_se": 0.00458001669115093,
+      "block_sensitivity": {
+        "2": [
+          0.08890426602107826,
+          0.11710164835164835
+        ],
+        "3": [
+          0.08851285388870811,
+          0.11784638554216867
+        ]
+      }
     },
     {
       "H": 8,
@@ -196,7 +252,35 @@
       "copula_predicted": 0.22237500000000002,
       "n_origins": 2817,
       "blockmax_p95_predicted_kw": 12.756722053002568,
-      "blockmax_realised_mean_kw": 8.94869776084068
+      "blockmax_realised_mean_kw": 8.94869776084068,
+      "block_days": 1,
+      "n_blocks": 31,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.0415772767235427,
+        0.056222670856295676
+      ],
+      "per_step_se": 0.0037267557935468454,
+      "empirical_horizon_ci": [
+        0.13631216389367684,
+        0.18716885194422192
+      ],
+      "empirical_horizon_se": 0.013072830632027011,
+      "empirical_horizon_block_ci": [
+        0.08989682825846709,
+        0.12148655063552667
+      ],
+      "empirical_horizon_block_se": 0.007959654779222189,
+      "block_sensitivity": {
+        "2": [
+          0.13844388447747963,
+          0.1830719381537524
+        ],
+        "3": [
+          0.13762058034422106,
+          0.1858655922600954
+        ]
+      }
     },
     {
       "H": 16,
@@ -208,7 +292,35 @@
       "copula_predicted": 0.351825,
       "n_origins": 2817,
       "blockmax_p95_predicted_kw": 14.142503915756933,
-      "blockmax_realised_mean_kw": 9.685376005985079
+      "blockmax_realised_mean_kw": 9.685376005985079,
+      "block_days": 1,
+      "n_blocks": 31,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.0427965206067118,
+        0.058731951507446416
+      ],
+      "per_step_se": 0.004123315206734183,
+      "empirical_horizon_ci": [
+        0.2158972578965637,
+        0.29463407790854246
+      ],
+      "empirical_horizon_se": 0.01924872127431089,
+      "empirical_horizon_block_ci": [
+        0.15237364903259398,
+        0.20462985461382852
+      ],
+      "empirical_horizon_block_se": 0.013121215277571437,
+      "block_sensitivity": {
+        "2": [
+          0.21840436254373954,
+          0.2919704402118172
+        ],
+        "3": [
+          0.21394230769230768,
+          0.29831925055106534
+        ]
+      }
     },
     {
       "H": 32,
@@ -220,7 +332,35 @@
       "copula_predicted": 0.5207833333333334,
       "n_origins": 2817,
       "blockmax_p95_predicted_kw": 15.151399708114907,
-      "blockmax_realised_mean_kw": 10.558348579352872
+      "blockmax_realised_mean_kw": 10.558348579352872,
+      "block_days": 1,
+      "n_blocks": 31,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.042979710813851636,
+        0.06089358767384732
+      ],
+      "per_step_se": 0.0046144276489672705,
+      "empirical_horizon_ci": [
+        0.3471820068056726,
+        0.448
+      ],
+      "empirical_horizon_se": 0.025614822577134683,
+      "empirical_horizon_block_ci": [
+        0.27197460637480797,
+        0.36071157887698924
+      ],
+      "empirical_horizon_block_se": 0.022212604455458983,
+      "block_sensitivity": {
+        "2": [
+          0.34665369769422716,
+          0.45247729780286444
+        ],
+        "3": [
+          0.3482632085335695,
+          0.4544468782428796
+        ]
+      }
     },
     {
       "H": 64,
@@ -232,7 +372,35 @@
       "copula_predicted": 0.7054916666666667,
       "n_origins": 2817,
       "blockmax_p95_predicted_kw": 15.88401782723895,
-      "blockmax_realised_mean_kw": 11.815942754804498
+      "blockmax_realised_mean_kw": 11.815942754804498,
+      "block_days": 1,
+      "n_blocks": 31,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.044480604450992556,
+        0.059281970679289295
+      ],
+      "per_step_se": 0.0037858173398521524,
+      "empirical_horizon_ci": [
+        0.5537982894947814,
+        0.7119142658799027
+      ],
+      "empirical_horizon_se": 0.040414070455212406,
+      "empirical_horizon_block_ci": [
+        0.4421832525371512,
+        0.5837952926111872
+      ],
+      "empirical_horizon_block_se": 0.03524087376050284,
+      "block_sensitivity": {
+        "2": [
+          0.5461853668237316,
+          0.7249356528585271
+        ],
+        "3": [
+          0.5429206210456211,
+          0.7373362764113831
+        ]
+      }
     }
   ],
   "copula_marginals": {

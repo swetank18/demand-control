@@ -170,7 +170,35 @@
       "copula_predicted": 0.049499999999999995,
       "n_origins": 2817,
       "blockmax_p95_predicted_kw": null,
-      "blockmax_realised_mean_kw": null
+      "blockmax_realised_mean_kw": null,
+      "block_days": 1,
+      "n_blocks": 31,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.030892020201717954,
+        0.09479326386131534
+      ],
+      "per_step_se": 0.01656827349068441,
+      "empirical_horizon_ci": [
+        0.030892020201717954,
+        0.09479326386131534
+      ],
+      "empirical_horizon_se": 0.01656827349068441,
+      "empirical_horizon_block_ci": [
+        0.030892020201717954,
+        0.09479326386131534
+      ],
+      "empirical_horizon_block_se": 0.01656827349068441,
+      "block_sensitivity": {
+        "2": [
+          0.02687051621958828,
+          0.09257298287562597
+        ],
+        "3": [
+          0.025600361486240467,
+          0.09478412852688708
+        ]
+      }
     },
     {
       "H": 4,
@@ -182,7 +210,35 @@
       "copula_predicted": 0.09999166666666667,
       "n_origins": 2817,
       "blockmax_p95_predicted_kw": 149.18955387989098,
-      "blockmax_realised_mean_kw": 127.74398125753918
+      "blockmax_realised_mean_kw": 127.74398125753918,
+      "block_days": 1,
+      "n_blocks": 31,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.031078547492050784,
+        0.09546729181622397
+      ],
+      "per_step_se": 0.016698815377749105,
+      "empirical_horizon_ci": [
+        0.05191712738446655,
+        0.1343851484904821
+      ],
+      "empirical_horizon_se": 0.021422958487675073,
+      "empirical_horizon_block_ci": [
+        0.04200268817204301,
+        0.11940554781039854
+      ],
+      "empirical_horizon_block_se": 0.02002776845205479,
+      "block_sensitivity": {
+        "2": [
+          0.04649412218759601,
+          0.13409706396193813
+        ],
+        "3": [
+          0.04601441480206541,
+          0.13600569123203857
+        ]
+      }
     },
     {
       "H": 8,
@@ -194,7 +250,35 @@
       "copula_predicted": 0.14776666666666666,
       "n_origins": 2817,
       "blockmax_p95_predicted_kw": 158.95798676506612,
-      "blockmax_realised_mean_kw": 136.18431274916006
+      "blockmax_realised_mean_kw": 136.18431274916006,
+      "block_days": 1,
+      "n_blocks": 31,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.030586635473007124,
+        0.0955877058117141
+      ],
+      "per_step_se": 0.016768337206274936,
+      "empirical_horizon_ci": [
+        0.07592536543650841,
+        0.18033489791303298
+      ],
+      "empirical_horizon_se": 0.02714011269531701,
+      "empirical_horizon_block_ci": [
+        0.0628357561638544,
+        0.15977001404494376
+      ],
+      "empirical_horizon_block_se": 0.025110549345439166,
+      "block_sensitivity": {
+        "2": [
+          0.0674458792590908,
+          0.18522951056466405
+        ],
+        "3": [
+          0.06833330271858927,
+          0.18549079544825756
+        ]
+      }
     },
     {
       "H": 16,
@@ -206,7 +290,35 @@
       "copula_predicted": 0.22465000000000004,
       "n_origins": 2817,
       "blockmax_p95_predicted_kw": 175.31207869856536,
-      "blockmax_realised_mean_kw": 151.40296165895285
+      "blockmax_realised_mean_kw": 151.40296165895285,
+      "block_days": 1,
+      "n_blocks": 31,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.030436428612551542,
+        0.0949038996101927
+      ],
+      "per_step_se": 0.016737730580818354,
+      "empirical_horizon_ci": [
+        0.11369415183436252,
+        0.2544877036177388
+      ],
+      "empirical_horizon_se": 0.03579639152951021,
+      "empirical_horizon_block_ci": [
+        0.09992384453781515,
+        0.22993468392765548
+      ],
+      "empirical_horizon_block_se": 0.03363415310559586,
+      "block_sensitivity": {
+        "2": [
+          0.1021483583299554,
+          0.2588023725515409
+        ],
+        "3": [
+          0.10445313332875052,
+          0.25893111373250893
+        ]
+      }
     },
     {
       "H": 32,
@@ -218,7 +330,35 @@
       "copula_predicted": 0.34225000000000005,
       "n_origins": 2817,
       "blockmax_p95_predicted_kw": 198.45154837800982,
-      "blockmax_realised_mean_kw": 175.2000679754135
+      "blockmax_realised_mean_kw": 175.2000679754135,
+      "block_days": 1,
+      "n_blocks": 31,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.03147392683131721,
+        0.09725831696327002
+      ],
+      "per_step_se": 0.01697180008835216,
+      "empirical_horizon_ci": [
+        0.18147147959039492,
+        0.3756924214062577
+      ],
+      "empirical_horizon_se": 0.049653530290372686,
+      "empirical_horizon_block_ci": [
+        0.16043430259344527,
+        0.33936466596895454
+      ],
+      "empirical_horizon_block_se": 0.04613631173206834,
+      "block_sensitivity": {
+        "2": [
+          0.16024361631495837,
+          0.3864068098680999
+        ],
+        "3": [
+          0.16552954265345132,
+          0.3846251464271769
+        ]
+      }
     },
     {
       "H": 64,
@@ -230,7 +370,35 @@
       "copula_predicted": 0.4973749999999999,
       "n_origins": 2817,
       "blockmax_p95_predicted_kw": 228.0351708784563,
-      "blockmax_realised_mean_kw": 204.9223308896161
+      "blockmax_realised_mean_kw": 204.9223308896161,
+      "block_days": 1,
+      "n_blocks": 31,
+      "n_boot": 2000,
+      "per_step_ci": [
+        0.03643032259495918,
+        0.09072361635358145
+      ],
+      "per_step_se": 0.013862198009408782,
+      "empirical_horizon_ci": [
+        0.28300078328208006,
+        0.5346183581682932
+      ],
+      "empirical_horizon_se": 0.06476571500514401,
+      "empirical_horizon_block_ci": [
+        0.25156236407606525,
+        0.4990077315286778
+      ],
+      "empirical_horizon_block_se": 0.06360024738036905,
+      "block_sensitivity": {
+        "2": [
+          0.24999778132765355,
+          0.5607244716493721
+        ],
+        "3": [
+          0.2445458733322487,
+          0.5645964454698109
+        ]
+      }
     }
   ],
   "copula_marginals": {
@@ -514,5 +682,6 @@
     "marginal_tight_rate": 0.048970901348474094,
     "scenario_tight_rate": 0.0965223562810504,
     "tight_bill_delta": 3339.1938100878615
-  }
+  },
+  "tensor": "models/Fox_office_Gaylord/tensors/lightgbm_quantile.parquet"
 }

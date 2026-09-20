@@ -37,8 +37,9 @@ against a nominal $0.05$ on every window --- marginally, the forecaster does
 what it promised --- while the probability of breaching the ceiling
 \emph{somewhere} in the controller's 16-hour planning window is $0.39$ to
 $0.82$, median $0.57$: eight to sixteen times the level the constraint appears
-to promise, and not a constant, since one meter returns $0.39$, $0.64$ and
-$0.42$ in three successive Junes while its per-step rate does not move.
+to promise, with no window's day-block bootstrap lower bound under five times,
+and not a constant, since one meter returns $0.39$, $0.64$ and $0.42$ in three
+successive Junes while its per-step rate does not move.
 Neither textbook substitute recovers it: the independence calculation
 $1-(1-\alpha)^H$ overstates the risk by $1.7\times$ at the median because
 load errors are strongly autocorrelated, and the Boole/Bonferroni union bound
@@ -122,9 +123,9 @@ state.
 \begin{enumerate}
   \item A measured bracket on horizon risk for a demand ceiling on held-out
         meter data (Section~\ref{sec:horizon}), over fourteen windows in two
-        countries: claimed $0.05$, realised $0.39$--$0.82$ (median $0.57$),
-        independence calculation $0.87$--$0.99$, union bound vacuous on every
-        row. The common formulation is under-protected by a factor of eight to
+        countries: claimed $0.05$, realised $0.39$--$0.82$ (median $0.57$;
+        no $95\%$ lower bound under $0.28$), independence calculation
+        $0.87$--$0.99$, union bound vacuous on every row. The common formulation is under-protected by a factor of eight to
         sixteen, the usual correction is $1.7\times$ too conservative at the
         median, and the gap is a distribution rather than a number.
   \item A closed-loop demonstration that this risk level can be made an
@@ -352,13 +353,14 @@ are reported in Section~\ref{sec:calibration}.
 \eqref{eq:marginal} separately; it constrains the probability of breaching
 somewhere in the window only to the shaded region, which at $H=64$ spans
 $0.05$ to $0.983$. The per-step rate (bottom) is flat and well calibrated at
-every horizon, so nothing here is a broken forecaster. Held-out June 2017, one
-13{,}759\,m$^2$ office, $5{,}793$ forecast origins.}
+every horizon, so nothing here is a broken forecaster. The band around the
+realised curve is the $95\%$ day-block bootstrap interval. Held-out June 2017,
+one 13{,}759\,m$^2$ office, $2{,}817$ forecast origins.}
 \label{fig:horizon}
 \end{figure}
 
 Table~\ref{tab:horizon} and Figure~\ref{fig:horizon} report, for a
-13{,}759\,m$^2$ office on held-out June 2017 data over $5{,}793$ forecast
+13{,}759\,m$^2$ office on held-out June 2017 data over $2{,}817$ forecast
 origins, the per-step exceedance rate of the ceiling alongside the probability
 that the ceiling is breached at least once within a window of $H$ steps.
 
@@ -374,9 +376,13 @@ report about a model.
 \paragraph{The formulation is under-protected by a factor of eight.} The
 probability of breaching somewhere in the 16-hour window is $0.405$: $6.5\times$
 the per-step rate the forecaster actually delivers, and $8.1\times$ the $0.05$
-that \eqref{eq:marginal} appears to promise. A controller deployed on
+that \eqref{eq:marginal} appears to promise. That figure carries sampling
+error, and the naive kind would understate it: adjacent origins share 63 of
+their 64 steps, so the unit of replication is the day rather than the origin,
+and a day-block bootstrap puts the $95\%$ interval at $0.28$--$0.53$, between
+$5.7\times$ and $10.7\times$ nominal. A controller deployed on
 \eqref{eq:marginal} and described to an operator as a $95\%$ guarantee is
-running at roughly $60\%$.
+running at roughly $60\%$, and at no better than $72\%$.
 
 \paragraph{Neither standard substitute recovers it, and they fail in opposite
 directions.} This is the correction to the usual telling, and it matters. The
@@ -427,15 +433,20 @@ between eight and sixteen times the level the constraint appears to promise ---
 and it is not a constant of the formulation: the Academic building returns
 $0.393$, $0.636$ and $0.422$ in three successive Junes while its per-step rate
 stays within $0.002$ of $0.05$. The Phoenix figure of $0.405$ was at the mild
-end of the range. The gap is a property of how exceedances cluster in a given
-month, which marginal calibration says nothing about, and the practical reading
+end of the range. The intervals say the spread is not sampling noise: no
+window's lower bound falls under $0.28$, $5.7\times$ nominal, and 32 of the 91
+pairs of intervals are disjoint, the lowest and highest rows among them. Two-day
+blocks, which allow for a window opened late in one day running into the next,
+widen the intervals by $13\%$ and leave 20 pairs disjoint. The gap is a
+property of how exceedances cluster in a given month, which marginal calibration says nothing about, and the practical reading
 is that an operator cannot even be told a single corrected number: the
 correction is itself a random variable with a wide law.
 
 The copula is the one estimate that tracks it. Across the fourteen windows it
 predicts the realised value to a mean absolute error of $0.065$, against
-$0.382$ for the independence figure, and lands within $0.10$ on twelve. It is
-not exact --- it misses the two most extreme rows by $0.11$ and $0.13$ --- and
+$0.382$ for the independence figure, and lies inside the realised value's
+$95\%$ interval on twelve of the fourteen; the independence figure lies inside
+none. It is not exact --- it misses the two most extreme rows by $0.11$ and $0.13$ --- and
 Section~\ref{sec:dial} states its limits. But it is the only quantity in the
 table that moves with the truth, and that is the property the dial in the next
 section depends on.
@@ -452,7 +463,8 @@ constrains with a CVaR surrogate \citep{rockafellar2000cvar,nemirovski2006convex
 on the probability mass permitted to violate. The copula reproduces the calibrated marginals to
 within $4.6\%$ of mean interval width at $4{,}000$ paths per origin, so it adds
 dependence and disturbs nothing upstream, and it predicts horizon exceedance far
-closer than either substitute: $0.497$ against a realised $0.405$ at $H=64$,
+closer than either substitute: $0.497$ against a realised $0.405$ (interval
+$0.28$--$0.53$) at $H=64$,
 where \eqref{eq:marginal} implies $0.05$ and the independence figure is $0.983$.
 
 Table~\ref{tab:acceptance} is a closed-loop run over a real billing month at two

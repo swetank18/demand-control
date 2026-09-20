@@ -69,6 +69,13 @@ def esc(s: str) -> str:
     return "".join(ESC.get(c, c) for c in str(s))
 
 
+def ci(bounds, nd: int = 2) -> str:
+    """A bootstrap interval as one cell, or a dash for a result that predates them."""
+    if not bounds:
+        return "--"
+    return f"[{bounds[0]:.{nd}f}, {bounds[1]:.{nd}f}]"
+
+
 def table(path: Path, header: list[str], rows: list[list[str]], align: str,
           caption: str, label: str) -> None:
     """Wide tables get a smaller face and tighter columns.
@@ -113,6 +120,7 @@ def horizon_table() -> None:
             f"{r['H']}", f"{r['hours']:.2f}",
             f"{r['per_step_exceedance']:.3f}",
             f"\\textbf{{{r['empirical_horizon']:.3f}}}",
+            ci(r.get("empirical_horizon_ci")),
             f"{r.get('independence_bound', float('nan')):.3f}",
             f"{boole:.3f}",
             f"{r.get('copula_predicted', float('nan')):.3f}",
@@ -121,16 +129,20 @@ def horizon_table() -> None:
     #: The horizon at which the union bound reaches 1 and stops saying anything,
     #: computed from the measured per-step rate rather than asserted.
     boole_saturates = int(np.ceil(1.0 / last["per_step_exceedance"]))
+    lo, hi = last.get("empirical_horizon_ci", (float("nan"), float("nan")))
     table(OUT / "horizon.tex",
-          ["$H$", "hours", "per-step $\\hat\\alpha$", "realised",
+          ["$H$", "hours", "per-step $\\hat\\alpha$", "realised", "95\\% CI",
            "independent", "Boole $H\\hat\\alpha$", "copula"],
-          rows, "rrrrrrr",
+          rows, "rrrrcrrr",
           "Marginal versus horizon-level exceedance of the demand ceiling, "
           "held-out June 2017, "
-          f"{d['copula']['n_origins']:,} forecast origins. "
+          f"{last['n_origins']:,} forecast origins over {last.get('n_blocks', 30)} days. "
           "The per-step rate $\\hat\\alpha$ is well calibrated at every horizon "
           "against a nominal $0.05$. The realised probability of breaching "
-          "\\emph{somewhere} in the window is not that number. Neither substitute "
+          "\\emph{somewhere} in the window is not that number: at $H=64$ it is "
+          f"between ${lo / 0.05:.0f}$ and ${hi / 0.05:.0f}$ times the nominal level "
+          "(day-block bootstrap, 95\\% interval; adjacent origins share 63 of 64 "
+          "steps, so the day is the unit of replication). Neither substitute "
           "is usable: the independence calculation "
           f"$1-(1-\\hat\\alpha)^H$ overstates the risk by ${last['independence_bound'] / last['empirical_horizon']:.1f}\\times$ "
           "because load errors are strongly autocorrelated, and the "
@@ -205,7 +217,7 @@ def horizon_panel_table() -> None:
     """The bracket, replicated: one row per window, Fox first."""
     files = [RESULTS / "horizon_risk_Fox_office_Gaylord.json"] + \
             sorted(RESULTS.glob("horizon_risk_IIITD_*.json"))
-    rows, vals = [], []
+    rows, vals, cis, two_day = [], [], [], []
     for f in files:
         if not f.exists():
             continue
@@ -217,35 +229,68 @@ def horizon_panel_table() -> None:
         boole = min(1.0, 64 * r["per_step_exceedance"])
         rows.append([name, june, f"{r['per_step_exceedance']:.3f}",
                      f"\\textbf{{{r['empirical_horizon']:.3f}}}",
+                     ci(r.get("empirical_horizon_ci")),
                      f"{r['independence_bound']:.3f}", f"{boole:.2f}",
                      f"{r['copula_predicted']:.3f}", f"{d['copula']['corr_lag1']:.2f}"])
         vals.append((r["per_step_exceedance"], r["empirical_horizon"],
                      r["independence_bound"], r["copula_predicted"]))
+        cis.append(tuple(r.get("empirical_horizon_ci", (np.nan, np.nan))))
+        two_day.append(tuple(r.get("block_sensitivity", {}).get("2", (np.nan, np.nan))))
         if fox and len(files) > 1:
             rows.append(["\\midrule"])
     if len(vals) < 2:
         return
     ps, emp, ind, cop = (np.array([v[i] for v in vals]) for i in range(4))
     cop_err, ind_err = np.abs(cop - emp), np.abs(ind - emp)
+    lo, hi = np.array(cis).T
+    lo2, hi2 = np.array(two_day).T
+    n = len(vals)
+    #: The three statements the intervals licence, each computed rather than
+    #: asserted: the floor every window clears even at the bottom of its
+    #: interval; whether the spread across windows is wider than the
+    #: intervals (pairs whose intervals are disjoint); and which of the two
+    #: substitutes ever lands inside the realised interval.
+    floor_x = float(np.nanmin(lo) / 0.05)
+    disjoint = sum(1 for i in range(n) for j in range(i + 1, n)
+                   if hi[i] < lo[j] or hi[j] < lo[i])
+    cop_in = int(((cop >= lo) & (cop <= hi)).sum())
+    ind_in = int(((ind >= lo) & (ind <= hi)).sum())
+    widen = float(np.nanmean((hi2 - lo2) / (hi - lo)))
+    floor2_x = float(np.nanmin(lo2) / 0.05)
+    i_lo, i_hi = int(np.argmin(emp)), int(np.argmax(emp))
+    extremes_disjoint = bool(hi[i_lo] < lo[i_hi])
+    disjoint2 = sum(1 for i in range(n) for j in range(i + 1, n)
+                    if hi2[i] < lo2[j] or hi2[j] < lo2[i])
     table(OUT / "horizon_panel.tex",
-          ["Series", "June", "per-step $\\hat\\alpha$", "realised $H{=}64$",
+          ["Series", "June", "per-step $\\hat\\alpha$", "realised $H{=}64$", "95\\% CI",
            "independent", "Boole", "copula", "lag-1 $\\rho$"],
-          rows, "llrrrrrr",
+          rows, "llrrcrrrr",
           "The bracket of Table~\\ref{tab:horizon}, replicated over "
-          f"{len(vals)} windows: the Phoenix office of the original measurement and "
-          f"{len(vals) - 1} Indian windows at native 15-minute resolution. The per-step "
+          f"{n} windows: the Phoenix office of the original measurement and "
+          f"{n - 1} Indian windows at native 15-minute resolution. The per-step "
           f"rate is calibrated throughout (${ps.min():.3f}$--${ps.max():.3f}$ against a "
           "nominal $0.05$). The realised probability of breaching somewhere in the "
           f"16-hour window runs from ${emp.min():.3f}$ to ${emp.max():.3f}$, median "
           f"${np.median(emp):.3f}$ --- between ${emp.min() / 0.05:.0f}$ and "
-          f"${emp.max() / 0.05:.0f}$ times the level the constraint appears to promise, "
-          "and not a constant of the formulation: the same building returns "
-          "different values in different years while its per-step rate does not move. "
+          f"${emp.max() / 0.05:.0f}$ times the level the constraint appears to promise. "
+          "Intervals are day-block bootstrap, the day being the unit of replication "
+          "because adjacent origins share 63 of 64 steps. No window's lower bound "
+          f"falls under ${np.nanmin(lo):.2f}$, ${floor_x:.1f}\\times$ nominal. The "
+          f"spread across windows is not sampling noise: {disjoint} of "
+          f"{n * (n - 1) // 2} pairs of intervals are disjoint"
+          + (", the lowest and highest rows among them" if extremes_disjoint else "")
+          + ", and the same building returns different values in "
+          "different years while its per-step rate does not move. A 16-hour window "
+          "opened late in one day runs into the next, so two-day blocks are also "
+          f"reported: they widen the intervals by {100 * (widen - 1):.0f}\\%, and the "
+          f"floor becomes ${np.nanmin(lo2):.2f}$ (${floor2_x:.1f}\\times$) with "
+          f"{disjoint2} pairs disjoint. "
           f"The independence figure overstates realised risk by ${np.median(ind / emp):.2f}\\times$ "
-          "(median); the Boole bound is $1$ on every row. The copula predicts the "
+          f"(median) and lies inside the realised interval on {ind_in} of {n} windows; "
+          "the Boole bound is $1$ on every row. The copula predicts the "
           f"realised value to a mean absolute error of ${cop_err.mean():.3f}$ against "
-          f"${ind_err.mean():.3f}$ for independence, and lands within $0.10$ on "
-          f"{int((cop_err <= 0.10).sum())} of {len(vals)} windows.",
+          f"${ind_err.mean():.3f}$ for independence, and lies inside the interval on "
+          f"{cop_in} of {n} windows.",
           "tab:horizon-panel")
 
 def acceptance_table() -> None:

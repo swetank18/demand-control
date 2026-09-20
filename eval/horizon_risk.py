@@ -46,6 +46,7 @@ sys.path.insert(0, str(ROOT))
 from control.mpc import ChanceConstrainedMPC, MPCConfig
 from control.scenario_mpc import ScenarioMPC
 from eval.run_month import build_context, run_controller
+from forecast.conformal import block_bootstrap_means
 from forecast.sources import ScenarioForecast, TensorForecast
 from forecast.trajectories import (block_max, fit_ratio_copula, load_or_fit,
                                    marginal_check, path_exceedance)
@@ -67,8 +68,66 @@ def pivot_paths(tensor: pd.DataFrame, horizon: int = 64) -> dict[str, np.ndarray
     for col in ("actual", "q05", "q25", "q50", "q75", "q95"):
         p = tensor.pivot_table(index="origin", columns="horizon", values=col, aggfunc="first")
         out[col] = p.reindex(columns=range(1, horizon + 1)).to_numpy()
+    # the origin timestamps travel with the matrices, so a resampling scheme
+    # downstream can block by calendar day rather than by row position
+    out["origin"] = p.index.to_numpy()
     ok = ~np.isnan(out["actual"]).any(axis=1) & ~np.isnan(out["q95"]).any(axis=1)
     return {k: v[ok] for k, v in out.items()}
+
+
+BOOT_LEVEL = 0.95
+BOOT_N = 2000
+
+
+def horizon_bootstrap(piv: dict, H: int, block_days: int = 1, n_boot: int = BOOT_N,
+                      seed: int = 0, steps_per_block: int = 2) -> dict:
+    """Uncertainty on the horizon row, with the day as the unit of replication.
+
+    The realised horizon exceedance is a mean over ~2,800 origins, but adjacent
+    origins share 63 of their 64 steps, so a binomial interval on that count
+    would be several times too narrow and would declare the difference between
+    any two windows significant. The honest replicate is the day -- the same
+    convention the conformal audit uses -- so origins are resampled in
+    calendar-day blocks and the interval is read off the resampled means. A
+    16-hour window opened late in one day runs into the next, so day blocks
+    are not quite independent either; ``block_days`` lets the caller check
+    that widening the block does not move the interval, and the row records
+    that check.
+    """
+    y, q95 = piv["actual"], piv["q95"]
+    day = pd.DatetimeIndex(piv["origin"]).normalize()
+    if block_days > 1:
+        day = (day - day.min()).days // block_days
+    step = (y[:, :H] > q95[:, :H]).mean(axis=1)
+    emp = (y[:, :H] > q95[:, :H]).any(axis=1).astype(float)
+    m = (H // steps_per_block) * steps_per_block
+    if m >= steps_per_block:
+        yb = y[:, :m].reshape(len(y), -1, steps_per_block).mean(axis=2)
+        qb = q95[:, :m].reshape(len(y), -1, steps_per_block).mean(axis=2)
+        emp_block = (yb > qb).any(axis=1).astype(float)
+    else:
+        emp_block = emp
+    lo, hi = (1 - BOOT_LEVEL) / 2, 1 - (1 - BOOT_LEVEL) / 2
+    out = {"block_days": block_days, "n_blocks": int(len(np.unique(day))), "n_boot": n_boot}
+    for name, flags in (("per_step", step), ("empirical_horizon", emp),
+                        ("empirical_horizon_block", emp_block)):
+        b = block_bootstrap_means(flags, day, n_boot=n_boot, seed=seed)
+        out[f"{name}_ci"] = [float(np.quantile(b, lo)), float(np.quantile(b, hi))]
+        out[f"{name}_se"] = float(b.std(ddof=1))
+    return out
+
+
+def with_bootstrap(rows: list[dict], piv: dict, seed: int = 0) -> list[dict]:
+    """Attach the day-block interval to every horizon row, plus the widths the
+    same interval takes at two- and three-day blocks so the reader can see the
+    day block is not flattering the result."""
+    for r in rows:
+        b = horizon_bootstrap(piv, r["H"], block_days=1, seed=seed)
+        r.update(b)
+        r["block_sensitivity"] = {
+            str(k): horizon_bootstrap(piv, r["H"], block_days=k, seed=seed)["empirical_horizon_ci"]
+            for k in (2, 3)}
+    return rows
 
 
 def marginal_vs_joint(piv: dict, copula, n_paths: int = 400, seed: int = 0,
@@ -128,7 +187,7 @@ def marginal_vs_joint(piv: dict, copula, n_paths: int = 400, seed: int = 0,
             "blockmax_p95_predicted_kw": float(np.mean(blkmax_pred)) if blkmax_pred else None,
             "blockmax_realised_mean_kw": float(np.mean(blkmax_true)) if blkmax_true else None,
         })
-    return rows
+    return with_bootstrap(rows, piv, seed=seed)
 
 
 def copula_marginal_test(piv: dict, copula, n_paths: int = 4000, seed: int = 1,
@@ -553,6 +612,42 @@ def to_markdown(p: dict) -> str:
     return "\n".join(L)
 
 
+def add_intervals(path: Path) -> None:
+    """Bootstrap intervals for a result that was produced before they existed.
+
+    Re-reads the same tensor over the same window the file records, so the
+    point estimates it recomputes are the ones already in the file -- that is
+    asserted, not assumed -- and only the interval fields are added.
+    """
+    payload = json.loads(path.read_text())
+    if "tensor" not in payload:
+        # a result written before the file recorded its tensor: resolve it the
+        # way main() does, harness tensor first, and record the choice
+        key = f"{payload['building']}{payload.get('tag', '')}"
+        tp = MODELS / key / "tensors" / "lightgbm_quantile.parquet"
+        if not tp.exists():
+            tp = MODELS / key / "forecast_test.parquet"
+        payload["tensor"] = str(tp.relative_to(ROOT))
+    tensor = pd.read_parquet(ROOT / payload["tensor"])
+    start, end = payload["window"]
+    tensor = tensor[(tensor["target_time"] >= pd.Timestamp(start))
+                    & (tensor["target_time"] <= pd.Timestamp(end))]
+    piv = pivot_paths(tensor)
+    for r in payload["marginal_vs_joint"]:
+        H = r["H"]
+        emp = float(np.mean((piv["actual"][:, :H] > piv["q95"][:, :H]).any(axis=1)))
+        if abs(emp - r["empirical_horizon"]) > 1e-9 or piv["actual"].shape[0] != r["n_origins"]:
+            raise SystemExit(f"{path.name}: tensor no longer reproduces the H={H} row "
+                             f"({emp:.6f} vs {r['empirical_horizon']:.6f}); refusing to "
+                             "attach intervals to numbers it did not produce")
+    with_bootstrap(payload["marginal_vs_joint"], piv)
+    path.write_text(json.dumps(payload, indent=2, default=float))
+    h64 = next(r for r in payload["marginal_vs_joint"] if r["H"] == 64)
+    print(f"   {path.name}: H=64 realised {h64['empirical_horizon']:.3f} "
+          f"[{h64['empirical_horizon_ci'][0]:.3f}, {h64['empirical_horizon_ci'][1]:.3f}] "
+          f"over {h64['n_blocks']} days")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--building", default="Fox_office_Gaylord")
@@ -575,11 +670,20 @@ def main() -> None:
     ap.add_argument("--tag", default="", help="model-directory suffix from forecast/train.py --tag, e.g. @2016")
     ap.add_argument("--valid-start", default="2017-04-01", help="copula is fitted on this block, never on the test month")
     ap.add_argument("--valid-end", default="2017-05-31 23:45")
+    ap.add_argument("--ci-only", action="store_true",
+                    help="attach the day-block bootstrap intervals to an existing "
+                         "results/horizon_risk_<building><tag>.json without refitting "
+                         "the copula or re-running the closed loop; every other number "
+                         "in the file is left exactly as it was")
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
 
-    print(f"== horizon risk | {args.building} | {args.start} to {args.end}")
     model_key = f"{args.building}{args.tag}"
+    if args.ci_only:
+        add_intervals(args.out / f"horizon_risk_{model_key}.json")
+        return
+
+    print(f"== horizon risk | {args.building} | {args.start} to {args.end}")
     cop = load_or_fit(model_key, MODELS, ROOT / "data/cache",
                       valid_start=args.valid_start, valid_end=args.valid_end)
     print(f"   copula fitted on {cop.meta['n_origins']} validation origins, "
@@ -602,8 +706,9 @@ def main() -> None:
     mv = marginal_vs_joint(piv, cop)
     for r in mv:
         print(f"   H={r['H']:>2} ({r['hours']:4.1f} h)  per-step {r['per_step_exceedance']:.4f}  "
-              f"realised {r['empirical_horizon']:.4f}  independent {r['independence_bound']:.4f}  "
-              f"copula {r['copula_predicted']:.4f}")
+              f"realised {r['empirical_horizon']:.4f} "
+              f"[{r['empirical_horizon_ci'][0]:.3f}, {r['empirical_horizon_ci'][1]:.3f}]  "
+              f"independent {r['independence_bound']:.4f}  copula {r['copula_predicted']:.4f}")
 
     print("\n-- B2: do the sampled paths keep the calibrated marginals?")
     mc = copula_marginal_test(piv, cop)

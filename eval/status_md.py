@@ -53,15 +53,17 @@ def india_horizon() -> str:
     files = sorted(RESULTS.glob("horizon_risk_IIITD_*.json"))
     if not files:
         return "_horizon stage not started_\n"
-    out = ["| series | June | per-step α̂ | realised H=64 | independence | Boole | copula | lag-1 ρ |",
-           "|---|---|---|---|---|---|---|---|"]
+    out = ["| series | June | per-step α̂ | realised H=64 | 95% CI (day-block) | independence | Boole | copula | lag-1 ρ |",
+           "|---|---|---|---|---|---|---|---|---|"]
     vals = []
     for f in files:
         d = json.loads(f.read_text())
         r = [x for x in d["marginal_vs_joint"] if x["H"] == 64][0]
         name, june = d["building"].replace("IIITD_", ""), d["tag"].lstrip("@")
         boole = min(1.0, 64 * r["per_step_exceedance"])
-        out.append(f"| {name} | {june} | {r['per_step_exceedance']:.3f} | **{r['empirical_horizon']:.3f}** | "
+        ci = r.get("empirical_horizon_ci")
+        ci_s = f"[{ci[0]:.2f}, {ci[1]:.2f}]" if ci else "—"
+        out.append(f"| {name} | {june} | {r['per_step_exceedance']:.3f} | **{r['empirical_horizon']:.3f}** | {ci_s} | "
                    f"{r['independence_bound']:.3f} | {boole:.2f} | {r['copula_predicted']:.3f} | {d['copula']['corr_lag1']:.3f} |")
         vals.append(r["empirical_horizon"])
     import statistics as st

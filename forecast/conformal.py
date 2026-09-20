@@ -197,15 +197,18 @@ def rolling_coverage(hit: np.ndarray, window: int) -> np.ndarray:
     return s.rolling(window, min_periods=window).mean().to_numpy()
 
 
-def block_bootstrap_se(
+def block_bootstrap_means(
     hit: np.ndarray, block: np.ndarray, n_boot: int = 2000, seed: int = 0,
-) -> float:
-    """Standard error of a coverage rate, resampling whole blocks.
+) -> np.ndarray:
+    """The bootstrap distribution of a rate, resampling whole blocks.
 
     Coverage computed over 184,000 correlated rows has a naive standard error of
     0.0007, which would declare any model on earth miscalibrated. Neighbouring
     15-minute forecasts share almost all of their information, so the honest
-    unit of replication is the day, not the row. This resamples days.
+    unit of replication is the day, not the row. This resamples blocks (days,
+    or whatever label is passed) with replacement and returns the ``n_boot``
+    resampled means, so the caller can take a standard error or a percentile
+    interval from the same draw.
     """
     hit = np.asarray(hit, float)
     block = np.asarray(block)
@@ -217,5 +220,12 @@ def block_bootstrap_se(
     # magnitude cheaper, and the audit calls this on 180,000 rows
     rng = np.random.default_rng(seed)
     pick = rng.integers(0, len(keys), size=(n_boot, len(keys)))
-    means = s[pick].sum(axis=1) / np.maximum(n[pick].sum(axis=1), 1e-12)
-    return float(means.std(ddof=1))
+    return s[pick].sum(axis=1) / np.maximum(n[pick].sum(axis=1), 1e-12)
+
+
+def block_bootstrap_se(
+    hit: np.ndarray, block: np.ndarray, n_boot: int = 2000, seed: int = 0,
+) -> float:
+    """Standard error of a coverage rate, resampling whole blocks. See
+    :func:`block_bootstrap_means`; this is its standard deviation."""
+    return float(block_bootstrap_means(hit, block, n_boot, seed).std(ddof=1))

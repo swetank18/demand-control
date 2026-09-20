@@ -110,6 +110,13 @@ def fig_horizon() -> None:
             label=r"independence $1-(1-\hat\alpha)^{H}$ — not a bound")
     ax.plot(H, cop, color=COOL, ls="-.", lw=1.1, marker="^", ms=3.0,
             label="copula, predicted")
+    # the day-block bootstrap interval, drawn as a band so the substitutes can
+    # be read against it: independence never enters it, the copula does
+    if all("empirical_horizon_ci" in r for r in m):
+        lo = np.array([r["empirical_horizon_ci"][0] for r in m])
+        hi = np.array([r["empirical_horizon_ci"][1] for r in m])
+        ax.fill_between(H, lo, hi, color=INK, alpha=0.12, lw=0,
+                        label="95% interval, day-block bootstrap")
     ax.plot(H, emp, color=INK, lw=1.8, marker="o", ms=3.6,
             label="realised horizon exceedance")
     ax.plot(H, per, color=ACCENT, lw=1.2, marker="D", ms=2.8,
@@ -309,7 +316,8 @@ def fig_horizon_panel() -> None:
         label = "Phoenix office, 2017" if fox else \
             f"{d['building'].replace('IIITD_', '')}, {d.get('tag', '').lstrip('@')}"
         rows.append((label, fox, r["per_step_exceedance"], r["empirical_horizon"],
-                     r["independence_bound"], r["copula_predicted"]))
+                     r["independence_bound"], r["copula_predicted"],
+                     tuple(r.get("empirical_horizon_ci", (np.nan, np.nan)))))
     if len(rows) < 2:
         return
     rows.sort(key=lambda t: t[3])
@@ -319,10 +327,14 @@ def fig_horizon_panel() -> None:
     fig, ax = plt.subplots(figsize=(4.9, 0.20 * n + 1.15))
     ax.axvspan(0.0, 0.05, color=LIGHT, alpha=0.20, lw=0)
     ax.axvline(0.05, color=ACCENT, ls=":", lw=0.9)
-    for i, (label, fox, per, emp, ind, cop) in enumerate(rows):
+    for i, (label, fox, per, emp, ind, cop, (lo, hi)) in enumerate(rows):
         # the bracket, drawn as a hairline from the per-step rate to the
-        # independence figure, with the realised value on it
+        # independence figure, with the realised value on it and its day-block
+        # bootstrap interval as a heavier bar through it
         ax.plot([per, ind], [i, i], color=LIGHT, lw=0.7, zorder=1)
+        if np.isfinite(lo):
+            ax.plot([lo, hi], [i, i], color=INK, lw=1.6, solid_capstyle="butt",
+                    alpha=0.35, zorder=2)
         ax.plot(ind, i, marker="s", ms=3.0, color=MID, ls="none", zorder=2)
         ax.plot(cop, i, marker="^", ms=3.3, color=COOL, ls="none", zorder=3)
         ax.plot(per, i, marker="D", ms=2.9, color=ACCENT, ls="none", zorder=4)
@@ -349,6 +361,8 @@ def fig_horizon_panel() -> None:
                    label=r"realised per-step $\hat\alpha$ (nominal 0.05)"),
         plt.Line2D([], [], color=INK, marker="o", ms=3.8, ls="none",
                    label="realised horizon exceedance, $H=64$"),
+        plt.Line2D([], [], color=INK, lw=1.6, alpha=0.35,
+                   label="95% interval, day-block bootstrap"),
         plt.Line2D([], [], color=COOL, marker="^", ms=3.3, ls="none", label="copula, predicted"),
         plt.Line2D([], [], color=MID, marker="s", ms=3.0, ls="none",
                    label=r"independence $1-(1-\hat\alpha)^H$ -- not a bound"),
