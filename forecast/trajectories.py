@@ -516,7 +516,9 @@ def fit_from_models(
     from forecast.predict import QuantileModels
 
     cache, models = Path(cache), Path(models)
-    df = pd.read_parquet(cache / f"{building}.parquet")
+    # ``building`` may carry a window tag (IIITD_Academic@2016): the model dir
+    # has it, the cached series does not.
+    df = pd.read_parquet(cache / f"{building.split('@')[0]}.parquet")
     lead = pd.Timestamp(valid_start) - pd.Timedelta(days=10)
     tensor = QuantileModels(models / building).predict_tensor(
         df.loc[lead:valid_end], window_start=valid_start)

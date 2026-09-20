@@ -43,6 +43,7 @@ SITE_COUNTRY = {
     "Crow": "CA", "Moose": "CA",
     "Lamb": "GB", "Mouse": "GB", "Robin": "GB", "Shrew": "GB",
     "Wolf": "IE",
+    "IIITD": "IN",     # I-BLEND, data/iblend.py; the holidays library carries the lunisolar dates
 }
 
 

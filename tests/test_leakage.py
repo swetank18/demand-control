@@ -177,8 +177,27 @@ def test_trained_artefacts_used_the_frozen_split(d: Path):
     s = meta.get("splits", {})
     if not s:
         pytest.skip(f"{d.parent.name} carries no split record")
-    assert s["train_end"] == SPLIT.train_end
-    assert s["valid_end"] == SPLIT.valid_end
-    assert s["test_start"] == SPLIT.test_start
-    assert s["test_end"] == SPLIT.test_end
+    name = d.parent.name
+    if "@" in name:
+        # A window of a series with several admissible test months (the I-BLEND
+        # arm). The frozen split does not apply; the split the manifest declared
+        # for that window does, and the artefact must match it exactly.
+        series, june = name.split("@")
+        man = ROOT / "data/cache/manifest_iblend.json"
+        if not man.exists():
+            pytest.skip("no I-BLEND manifest to check the window against")
+        wins = json.loads(man.read_text())["series"][series]["windows"]
+        w = next((w for w in wins if str(w["test_june"]) == june), None)
+        assert w is not None, f"{name}: no admissible window for June {june} in the manifest"
+        assert s["train_end"] == w["train_end"]
+        assert s["valid_end"] == w["valid_end"]
+        assert s["test_start"] == w["test_start"]
+        assert s["test_end"] == w["test_end"]
+        if s.get("train_start") is not None:
+            assert pd.Timestamp(s["train_start"]) == pd.Timestamp(w["train_start"])
+    else:
+        assert s["train_end"] == SPLIT.train_end
+        assert s["valid_end"] == SPLIT.valid_end
+        assert s["test_start"] == SPLIT.test_start
+        assert s["test_end"] == SPLIT.test_end
     assert pd.Timestamp(s["valid_end"]) < pd.Timestamp(s["test_start"])

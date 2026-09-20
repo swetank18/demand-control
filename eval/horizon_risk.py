@@ -572,15 +572,28 @@ def main() -> None:
     ap.add_argument("--pv-kwp", type=float, default=150.0)
     ap.add_argument("--out", type=Path, default=RESULTS)
     ap.add_argument("--skip-closed-loop", action="store_true")
+    ap.add_argument("--tag", default="", help="model-directory suffix from forecast/train.py --tag, e.g. @2016")
+    ap.add_argument("--valid-start", default="2017-04-01", help="copula is fitted on this block, never on the test month")
+    ap.add_argument("--valid-end", default="2017-05-31 23:45")
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
 
     print(f"== horizon risk | {args.building} | {args.start} to {args.end}")
-    cop = load_or_fit(args.building, MODELS, ROOT / "data/cache")
+    model_key = f"{args.building}{args.tag}"
+    cop = load_or_fit(model_key, MODELS, ROOT / "data/cache",
+                      valid_start=args.valid_start, valid_end=args.valid_end)
     print(f"   copula fitted on {cop.meta['n_origins']} validation origins, "
           f"lag-1 error correlation {cop.meta['corr_lag1']:.3f}")
 
-    tensor = pd.read_parquet(MODELS / args.building / "tensors" / "lightgbm_quantile.parquet")
+    # The benchmark harness (eval/forecast_eval.py) writes tensors/<model>.parquet;
+    # forecast/train.py writes forecast_test.parquet with the identical schema.
+    # Prefer the harness tensor where it exists, so the Fox result is unchanged,
+    # and fall back to the trainer's -- which is the same boosters the copula
+    # above was fitted from, and is what the India windows have.
+    tensor_path = MODELS / model_key / "tensors" / "lightgbm_quantile.parquet"
+    if not tensor_path.exists():
+        tensor_path = MODELS / model_key / "forecast_test.parquet"
+    tensor = pd.read_parquet(tensor_path)
     tensor = tensor[(tensor["target_time"] >= pd.Timestamp(args.start))
                     & (tensor["target_time"] <= pd.Timestamp(args.end))]
     piv = pivot_paths(tensor)
@@ -638,6 +651,8 @@ def main() -> None:
 
     payload = {
         "building": args.building,
+        "tag": args.tag,
+        "tensor": str(tensor_path.relative_to(ROOT)),
         "window": [args.start, args.end],
         "copula": cop.meta,
         "config": {"scenarios": args.scenarios, "reduce_to": args.reduce_to,
@@ -647,10 +662,10 @@ def main() -> None:
         "closed_loop": closed,
         "acceptance": acceptance,
     }
-    (args.out / f"horizon_risk_{args.building}.json").write_text(
+    (args.out / f"horizon_risk_{model_key}.json").write_text(
         json.dumps(payload, indent=2, default=float))
     if closed:
-        figure(payload, args.out / f"horizon_risk_{args.building}.png")
+        figure(payload, args.out / f"horizon_risk_{model_key}.png")
         (args.out / "horizon_risk.md").write_text(to_markdown(payload) + "\n")
         print(f"\nwrote {args.out / 'horizon_risk.md'}")
 

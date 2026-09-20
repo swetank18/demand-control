@@ -160,6 +160,22 @@ def run_series(series_id: str, country: str, split, models=MODELS, seed: int = 0
     return out
 
 
+def iblend_split(w: dict):
+    """One admissible window of an I-BLEND series, as data/iblend.py recorded it.
+
+    The calendar position is the protocol's -- validate April-May, test June --
+    and the training block is the longest contiguous stretch that clears the
+    coverage floor, which is fifteen months where the meter allows and shorter
+    where it does not; the manifest carries the length and the table prints it.
+    """
+    return replace(
+        SPLIT,
+        train_start=w["train_start"], train_end=w["train_end"],
+        valid_start=w["valid_start"], valid_end=w["valid_end"],
+        test_start=w["test_start"], test_end=w["test_end"],
+    )
+
+
 def panel_rows() -> list[dict]:
     """Every series to run, with its arm, country and split."""
     spec = json.loads((ROOT / "data/comparative.json").read_text())
@@ -185,6 +201,16 @@ def panel_rows() -> list[dict]:
                 sp = SPLIT
             rows.append(dict(arm="national", id=name, site=name, usage="system demand",
                              country=m["country"], tier=2, split=sp))
+    # India, building and campus level: one row per admissible June, so a series
+    # with three test years contributes three rows and the table says which.
+    ib_path = CACHE / "manifest_iblend.json"
+    if ib_path.exists():
+        for name, m in json.loads(ib_path.read_text())["series"].items():
+            for w in m["windows"]:
+                rows.append(dict(arm="india", id=name, site="IIITD", usage=m["level"],
+                                 country="IN", tier=1, split=iblend_split(w),
+                                 tag=f"india/{name}@{w['test_june']}", test_june=w["test_june"],
+                                 train_months=w["train_months"], cooling_on_meter=m["cooling_on_meter"]))
     return rows
 
 
@@ -208,13 +234,15 @@ def main() -> None:
     path = RESULTS / f"{args.out}.json"
     store = json.loads(path.read_text()) if path.exists() else {}
 
+    for r in rows:
+        r.setdefault("tag", f"{r['arm']}/{r['id']}")
     if args.skip_done:
-        rows = [r for r in rows if f"{r['arm']}/{r['id']}" not in store]
+        rows = [r for r in rows if r["tag"] not in store]
         print(f"resuming: {len(rows)} series still to run", flush=True)
 
     for i, r in enumerate(rows, 1):
-        tag = f"{r['arm']}/{r['id']}"
-        print(f"[{i}/{len(rows)}] {tag}", flush=True)
+        tag = r["tag"]
+        print(f"[{i}/{len(rows)}] {tag}  ({r['split'].describe()})", flush=True)
         try:
             res = run_series(r["id"], r["country"], r["split"], models=tuple(args.models))
         except Exception as e:
@@ -223,6 +251,7 @@ def main() -> None:
             path.write_text(json.dumps(store, indent=2, default=str))
             continue
         res.update({k: r[k] for k in ("arm", "site", "usage", "country", "tier")})
+        res.update({k: r[k] for k in ("test_june", "train_months", "cooling_on_meter") if k in r})
         store[tag] = res
         path.write_text(json.dumps(store, indent=2, default=str))
         if "models" in res:

@@ -20,6 +20,7 @@ import pandas as pd
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from forecast.calendars import country_of_building
 from forecast.features import FEATURE_COLS, HORIZON_STEPS, build_supervised
 
 QUANTILES = (0.05, 0.25, 0.50, 0.75, 0.95)
@@ -58,11 +59,21 @@ def train_building(
     conformal: bool = True,
     adaptive: bool = True,
     adaptive_gamma: float = 0.35,
+    train_start: str | None = None,
+    tag: str = "",
 ) -> dict:
     df = pd.read_parquet(cache / f"{building}.parquet")
-    sup = build_supervised(df, weather_noise_c=weather_noise_c)
+    # Holidays are a function of country. For every BDG2 building this resolves
+    # to the frozen US set the existing results were produced with; for the
+    # I-BLEND series it resolves to India, whose calendar is largely lunisolar.
+    sup = build_supervised(df, weather_noise_c=weather_noise_c, country=country_of_building(building))
 
+    # A series with a long history (I-BLEND has 52 months) would otherwise train
+    # on all of it; train_start keeps the protocol's 15-month block, or the
+    # shorter block the manifest records for that window.
     tr = sup[sup.target_time <= train_end]
+    if train_start is not None:
+        tr = tr[tr.target_time >= train_start]
     va = sup[(sup.target_time > train_end) & (sup.target_time <= valid_end)]
     te = sup[(sup.target_time >= test_start) & (sup.target_time <= test_end)]
     if min(len(tr), len(va), len(te)) == 0:
@@ -171,7 +182,8 @@ def train_building(
     reports = [_report(yva, va_pred, "valid", va), _report(yte, te_pred, "test", te)]
 
     # --- persist -----------------------------------------------------------
-    out = MODELS / building
+    # tag keeps several test windows of one series apart (models/<building>@2016 ...)
+    out = MODELS / f"{building}{tag}"
     out.mkdir(parents=True, exist_ok=True)
     for q, m in models.items():
         m.save_model(str(out / f"q{int(q*100):02d}.txt"), num_iteration=m.best_iteration)
@@ -192,8 +204,8 @@ def train_building(
         "quantiles": list(quantiles),
         "features": FEATURE_COLS,
         "horizon_steps": HORIZON_STEPS,
-        "splits": {"train_end": train_end, "valid_end": valid_end,
-                   "test_start": test_start, "test_end": test_end,
+        "splits": {"train_start": train_start, "train_end": train_end, "valid_end": valid_end,
+                   "test_start": test_start, "test_end": test_end, "tag": tag,
                    "n_train": int(len(tr)), "n_valid": int(len(va)), "n_test": int(len(te))},
         "conformal": conformal,
         "adaptive_conformal": adaptive,
@@ -224,6 +236,8 @@ def main() -> None:
     ap.add_argument("--no-conformal", action="store_true")
     ap.add_argument("--no-adaptive", action="store_true")
     ap.add_argument("--adaptive-gamma", type=float, default=0.35)
+    ap.add_argument("--train-start", default=None, help="lower bound on the training block (default: none)")
+    ap.add_argument("--tag", default="", help="suffix on the model directory, e.g. @2016")
     args = ap.parse_args()
 
     manifest = json.loads((args.cache / "manifest.json").read_text())
@@ -233,6 +247,7 @@ def main() -> None:
             b, args.cache, args.train_end, args.valid_end, args.test_start, args.test_end,
             weather_noise_c=args.weather_noise_c, conformal=not args.no_conformal,
             adaptive=not args.no_adaptive, adaptive_gamma=args.adaptive_gamma,
+            train_start=args.train_start, tag=args.tag,
         )
         for r in meta["reports"]:
             print(

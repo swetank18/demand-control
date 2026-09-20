@@ -21,6 +21,7 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 
+from forecast.calendars import country_of_building
 from forecast.features import FEATURE_COLS, HORIZON_STEPS, build_supervised
 
 QUANTILES = (0.05, 0.25, 0.50, 0.75, 0.95)
@@ -31,6 +32,8 @@ class QuantileModels:
 
     def __init__(self, model_dir: str | Path):
         d = Path(model_dir)
+        # models/<building>[@tag]: the holiday calendar follows the building's country
+        self.country = country_of_building(d.name.split("@")[0])
         self.boosters = {q: lgb.Booster(model_file=str(d / f"q{int(q*100):02d}.txt")) for q in QUANTILES}
         self.shifts = json.loads((d / "conformal.json").read_text()) if (d / "conformal.json").exists() else {}
         meta = json.loads((d / "meta.json").read_text())
@@ -46,7 +49,7 @@ class QuantileModels:
     ) -> pd.DataFrame:
         """``df`` must carry enough history before ``window_start`` for the lags
         (at least 7 days). Returns the same shape as ``forecast_test.parquet``."""
-        sup = build_supervised(df, horizon_steps=self.horizon)
+        sup = build_supervised(df, horizon_steps=self.horizon, country=self.country)
         if window_start is not None:
             sup = sup[sup["target_time"] >= pd.Timestamp(window_start)]
         if sup.empty:
