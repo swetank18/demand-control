@@ -50,4 +50,8 @@ grep -q empirical_horizon_ci results/horizon_risk_IIITD_Boys@2014.json || $PY ev
 grep -q empirical_horizon_ci results/horizon_risk_IIITD_Girls@2014.json || $PY eval/horizon_risk.py --building IIITD_Girls --tag @2014 --ci-only
 grep -q empirical_horizon_ci results/horizon_risk_IIITD_Girls@2017.json || $PY eval/horizon_risk.py --building IIITD_Girls --tag @2017 --ci-only
 grep -q empirical_horizon_ci results/horizon_risk_IIITD_Campus@2017.json || $PY eval/horizon_risk.py --building IIITD_Campus --tag @2017 --ci-only
+
+# 4. what the copula's one free parameter contributes: likelihood-selected and
+#    fixed-from-Phoenix nu against the tail-matched one, every window (resumable)
+$PY eval/copula_df_check.py
 echo "india arm done $(date)"

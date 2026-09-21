@@ -293,6 +293,75 @@ def horizon_panel_table() -> None:
           f"{cop_in} of {n} windows.",
           "tab:horizon-panel")
 
+def copula_df_table() -> None:
+    """What the choice of the copula's one free parameter contributes: the
+    held-out prediction under the tail-matched nu, under a pseudo-likelihood
+    nu, and under nu held at the Phoenix value with no refitting."""
+    p = RESULTS / "copula_df_check.json"
+    if not p.exists():
+        return
+    d = json.loads(p.read_text())
+    W = d["windows"]
+
+    def nu(v):
+        return "Gauss." if v is None else f"{v:g}"
+
+    def cell(pred, ci):
+        inside = ci[0] <= pred <= ci[1]
+        return f"{pred:.3f}" if inside else f"{pred:.3f}$^\\dagger$"
+
+    rows = []
+    for w in W:
+        fox = w["building"].startswith("Fox")
+        name = "Phoenix office (BDG2)" if fox else esc(w["building"].replace("IIITD_", "IIIT-Delhi "))
+        june = "2017" if fox else w["tag"].lstrip("@")
+        ci = w["realised_ci"]["64"]
+        rows.append([name, june, f"\\textbf{{{w['realised']['64']:.3f}}}", ci_str(ci),
+                     nu(w["df_tail"]), cell(w["predicted"]["tail"]["64"], ci),
+                     nu(w["df_ml"]), cell(w["predicted"]["ml"]["64"], ci),
+                     cell(w["predicted"]["fixed"]["64"], ci)])
+        if fox and len(W) > 1:
+            rows.append(["\\midrule"])
+    ind = [w for w in W if not w["building"].startswith("Fox")]
+    n_ind = len(ind)
+
+    def stats(k, ws):
+        return (sum(w["inside_64"][k] for w in ws),
+                float(np.mean([w["abs_err_64"][k] for w in ws])),
+                sum(w["predicted"][k]["64"] > w["realised"]["64"] for w in ws))
+    t_in, t_mae, _ = stats("tail", W)
+    m_in, m_mae, m_over = stats("ml", W)
+    f_in, f_mae, _ = stats("fixed", ind)
+    ml_heavy = sum(1 for w in W if w["df_ml"] is not None and w["df_ml"] < 25)
+    table(OUT / "copula_df.tex",
+          ["Series", "June", "realised", "95\\% CI", "$\\nu_{\\mathrm{tail}}$", "copula",
+           "$\\nu_{\\mathrm{lik}}$", "copula", "copula, $\\nu{=}7$"],
+          rows, "llrcrrrrr",
+          "What selecting the copula's degrees of freedom contributes. Realised "
+          "horizon exceedance at $H=64$ on the held-out month with its day-block "
+          "bootstrap interval, and the copula's prediction under three choices of "
+          "$\\nu$: matched to horizon exceedance on the validation block (the paper's "
+          "choice; columns 5--6), maximising the $t$-copula pseudo-likelihood on the "
+          "same block (columns 7--8), and held at the Phoenix value $\\nu=7$ with no "
+          "refitting (last column). $\\dagger$ marks a prediction outside the "
+          f"realised interval. The tail-matched choice lies inside on {t_in} of {len(W)} "
+          f"windows (mean absolute error ${t_mae:.3f}$). The likelihood criterion "
+          f"selects $\\nu \\geq 25$ or the Gaussian on every window"
+          + (f" but {ml_heavy}" if ml_heavy else "")
+          + f", over-predicts on {m_over} of {len(W)} and lies inside on {m_in}: it is "
+          "dominated by the body of the distribution, where the families agree, and "
+          "cannot see the upper-tail dependence the horizon event is made of. The "
+          f"Phoenix value applied unchanged to the {n_ind} Indian windows lies inside on "
+          f"{f_in} of {n_ind} (mean absolute error ${f_mae:.3f}$); the per-window "
+          "selection buys accuracy, not the agreement itself. The independence figure "
+          "lies inside on none.",
+          "tab:copula-df")
+
+
+def ci_str(bounds) -> str:
+    return ci(bounds)
+
+
 def acceptance_table() -> None:
     """The closed-loop sweep. Commit violation is the acceptance metric; the
     against-target column is shown because omitting it would look like hiding it,
@@ -609,6 +678,7 @@ def main() -> None:
     print("emitting LaTeX tables:")
     horizon_table()
     horizon_panel_table()
+    copula_df_table()
     acceptance_table()
     iblend_table()
     df = load_study()

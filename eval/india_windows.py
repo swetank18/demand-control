@@ -53,6 +53,12 @@ def main() -> None:
                 f"grep -q empirical_horizon_ci results/horizon_risk_{name}{tag}.json || "
                 f"$PY eval/horizon_risk.py --building {name} --tag {tag} --ci-only"
             )
+    lines += [
+        "",
+        "# 4. what the copula's one free parameter contributes: likelihood-selected and",
+        "#    fixed-from-Phoenix nu against the tail-matched one, every window (resumable)",
+        "$PY eval/copula_df_check.py",
+    ]
     lines.append('echo "india arm done $(date)"')
     out = ROOT / "reproduce_india.sh"
     out.write_text("\n".join(lines) + "\n")
