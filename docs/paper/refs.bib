@@ -6,6 +6,7 @@
   number  = {1},
   pages   = {368},
   year    = {2020},
+  doi     = {10.1038/s41597-020-00712-x},
 }
 
 @inproceedings{ke2017lightgbm,
@@ -34,6 +35,7 @@
   author    = {Vovk, Vladimir and Gammerman, Alexander and Shafer, Glenn},
   publisher = {Springer},
   year      = {2005},
+  doi       = {10.1007/b106715},
 }
 
 @article{calafiore2006scenario,
@@ -44,6 +46,7 @@
   number  = {5},
   pages   = {742--753},
   year    = {2006},
+  doi     = {10.1109/TAC.2006.875041},
 }
 
 @article{elmachtoub2022spo,
@@ -54,6 +57,7 @@
   number  = {1},
   pages   = {9--26},
   year    = {2022},
+  doi     = {10.1287/mnsc.2020.3922},
 }
 
 @inproceedings{donti2017task,
@@ -71,13 +75,17 @@
   number  = {477},
   pages   = {359--378},
   year    = {2007},
+  doi     = {10.1198/016214506000001437},
 }
 
 @inproceedings{nweye2023citylearn,
-  title     = {CityLearn: A Tutorial on Reinforcement Learning Control for Grid-Interactive Efficient Buildings and Communities},
-  author    = {Nweye, Kingsley and Sankaranarayanan, Siva and Nagy, Zoltan},
-  booktitle = {Proceedings of the ACM International Conference on Systems for Energy-Efficient Built Environments (BuildSys)},
+  title     = {{CityLearn} v2: An {OpenAI} Gym environment for demand response control benchmarking in grid-interactive communities},
+  author    = {Nweye, Kingsley and Kaspar, Kathryn and Buscemi, Giacomo and Pinto, Giuseppe and Li, Han and Hong, Tianzhen and Ouf, Mohamed and Capozzoli, Alfonso and Nagy, Zoltan},
+  booktitle = {Proceedings of the 10th ACM International Conference on Systems for Energy-Efficient Buildings, Cities, and Transportation (BuildSys)},
+  address   = {Istanbul},
+  pages     = {274--275},
   year      = {2023},
+  doi       = {10.1145/3600100.3626257},
 }
 
 @misc{wu2023china,
@@ -99,6 +107,7 @@
   number  = {4},
   pages   = {969--996},
   year    = {2006},
+  doi     = {10.1137/050622328},
 }
 
 @inproceedings{berthet2020perturbed,
@@ -110,9 +119,14 @@
 }
 
 % ---------------------------------------------------------------------------
-% Added 2026-09-19 for the Related Work section. Entries marked CHECK carry a
-% volume/page/article number reconstructed from memory of the record rather
-% than copied from it; verify against Crossref before submission.
+% Added 2026-09-19 for the Related Work section. Every entry in this file was
+% checked on 2026-09-21 -- against Crossref by DOI, arXiv for preprints,
+% DataCite for the Zenodo dataset, and OpenAlex for the nine NeurIPS/ICML/
+% ICLR/TMLR papers Crossref does not index -- for title, authors, venue,
+% volume, pages and year, and carries the DOI where one exists. That pass
+% corrected two author lists (zhang2013scenario, xu2019adaptive), one title
+% (ono2008risk) and replaced one entry that could not be found anywhere
+% (nweye2023citylearn). eval/bibcheck.py re-runs the automated part.
 % ---------------------------------------------------------------------------
 
 @article{oldewurtel2012,
@@ -122,6 +136,7 @@
   volume  = {45},
   pages   = {15--27},
   year    = {2012},
+  doi     = {10.1016/j.enbuild.2011.09.022},
 }
 
 @article{oldewurtel2014,
@@ -132,24 +147,27 @@
   number  = {3},
   pages   = {1198--1205},
   year    = {2014},
+  doi     = {10.1109/TCST.2013.2272178},
 }
 
-@inproceedings{parisio2013,
+@inproceedings{zhang2013scenario,
   title     = {Scenario-based {MPC} for energy-efficient building climate control under weather and occupancy uncertainty},
-  author    = {Parisio, Alessandra and Varagnolo, Damiano and Molinari, Marco and Pattarello, Giorgio and Fabietti, Luca and Johansson, Karl H.},
+  author    = {Zhang, Xiaojing and Schildbach, Georg and Sturzenegger, David and Morari, Manfred},
   booktitle = {European Control Conference (ECC)},
+  address   = {Zurich},
   pages     = {1029--1034},
   year      = {2013},
-  note      = {CHECK pages},
+  doi       = {10.23919/ECC.2013.6669664},
 }
 
 @inproceedings{ono2008risk,
-  title     = {Iterative Risk Allocation: A new approach to robust Model Predictive Control with stochastic constraints},
+  title     = {Iterative Risk Allocation: A new approach to robust Model Predictive Control with a joint chance constraint},
   author    = {Ono, Masahiro and Williams, Brian C.},
-  booktitle = {IEEE Conference on Decision and Control (CDC)},
+  booktitle = {47th IEEE Conference on Decision and Control (CDC)},
+  address   = {Cancun},
   pages     = {3427--3432},
   year      = {2008},
-  note      = {CHECK pages},
+  doi       = {10.1109/CDC.2008.4739221},
 }
 
 @article{paulson2017joint,
@@ -160,7 +178,7 @@
   number  = {1},
   pages   = {126--139},
   year    = {2020},
-  note    = {CHECK volume; published online 2017},
+  doi     = {10.1080/00207179.2017.1323351},
 }
 
 @article{lindemann2023safe,
@@ -171,7 +189,7 @@
   number  = {8},
   pages   = {5116--5123},
   year    = {2023},
-  note    = {CHECK pages},
+  doi     = {10.1109/LRA.2023.3292071},
 }
 
 @misc{vogel2025conformalmpc,
@@ -194,12 +212,12 @@
 
 @article{xu2019adaptive,
   title   = {An adaptive optimal monthly peak building demand limiting strategy considering load uncertainty},
-  author  = {Xu, Lei and Tang, Hong and Wang, Shengwei and Xu, Xinhua},
+  author  = {Xu, Lei and Wang, Shengwei and Xiao, Fu},
   journal = {Applied Energy},
   volume  = {253},
   pages   = {113582},
   year    = {2019},
-  note    = {CHECK volume and article number},
+  doi     = {10.1016/j.apenergy.2019.113582},
 }
 
 @article{xu2020exploration,
@@ -209,6 +227,7 @@
   volume  = {119},
   pages   = {103349},
   year    = {2020},
+  doi     = {10.1016/j.autcon.2020.103349},
 }
 
 @misc{flamm2020peak,
@@ -274,6 +293,7 @@
   number  = {3},
   pages   = {914--938},
   year    = {2016},
+  doi     = {10.1016/j.ijforecast.2015.11.011},
 }
 
 @article{hong2016gefcom,
@@ -284,6 +304,7 @@
   number  = {3},
   pages   = {896--913},
   year    = {2016},
+  doi     = {10.1016/j.ijforecast.2016.02.001},
 }
 
 @inproceedings{emami2023buildingsbench,
@@ -291,6 +312,7 @@
   author    = {Emami, Patrick and Sahu, Abhijeet and Graf, Peter},
   booktitle = {Advances in Neural Information Processing Systems (NeurIPS), Datasets and Benchmarks Track},
   year      = {2023},
+  doi       = {10.52202/075280-0871},
 }
 
 @article{sevlian2018scaling,
@@ -300,7 +322,7 @@
   volume  = {98},
   pages   = {350--361},
   year    = {2018},
-  note    = {CHECK volume and pages},
+  doi     = {10.1016/j.ijepes.2017.10.032},
 }
 
 @article{rashid2019iblend,
@@ -322,6 +344,7 @@
   number  = {3},
   pages   = {21--41},
   year    = {2000},
+  doi     = {10.21314/JOR.2000.038},
 }
 
 @article{pinson2009scenarios,
@@ -332,6 +355,7 @@
   number  = {1},
   pages   = {51--62},
   year    = {2009},
+  doi     = {10.1002/we.284},
 }
 
 @article{angelopoulos2023gentle,
@@ -342,4 +366,5 @@
   number  = {4},
   pages   = {494--591},
   year    = {2023},
+  doi     = {10.1561/9781638281597},
 }
