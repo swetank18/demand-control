@@ -261,7 +261,7 @@ def fig_aci() -> None:
     when its audit has been run."""
     series = [("Fox_office_Gaylord", "Phoenix office (building), 2016\u201317"),
               ("IN_Delhi", "Delhi city (system demand), 2011\u201312")]
-    found = [(json.loads((RESULTS / f"conformal_audit_{k}.json").read_text()), title)
+    found = [(json.loads((RESULTS / f"conformal_audit_{k}.json").read_text()), title, k)
              for k, title in series if (RESULTS / f"conformal_audit_{k}.json").exists()]
     if not found:
         return
@@ -269,34 +269,47 @@ def fig_aci() -> None:
     n = len(found)
     fig, axes = plt.subplots(n, 1, figsize=(5.6, 2.1 * n + 0.5), sharey=True)
     axes = np.atleast_1d(axes)
-    for ax, (d, title) in zip(axes, found):
+    for ax, (d, title, key) in zip(axes, found):
         m = d["year"]["by_month"]
         x = np.arange(len(m))
         lab = [r["month"][2:] for r in m]
         ax.axhspan(0.85, 0.95, color=LIGHT, alpha=0.22, lw=0)
         ax.axhline(0.90, color=INK, lw=0.8, ls="--")
-        for key, col, ls, mk, name in (
+        for col_key, col, ls, mk, name in (
                 ("raw_cov90", LIGHT, (0, (1, 1.6)), "s", "raw LightGBM quantiles"),
                 ("split_cov90", MID, "--", "^", "split conformal"),
-                ("aci_cov90", ACCENT, "-", "o", "split + adaptive (ACI)")):
-            y = [r[key] for r in m]
-            ax.plot(x, y, color=col, ls=ls, lw=1.3 if key == "aci_cov90" else 1.0,
+                ("aci_cov90", ACCENT, "-", "o",
+                 r"split + adaptive (ACI), $\gamma=0.35$ in the series' units")):
+            y = [r[col_key] for r in m]
+            ax.plot(x, y, color=col, ls=ls, lw=1.3 if col_key == "aci_cov90" else 1.0,
                     marker=mk, ms=3.0, label=name)
         band = d["year"]["band_90"]
-        ax.set_title(
-            f"{title}   \u2014   share of the year inside 0.85\u20130.95:  "
-            f"raw {band['raw']['in_band_pct']:.0f}%   "
-            f"split {band['split']['in_band_pct']:.0f}%   "
-            f"ACI {band['aci']['in_band_pct']:.0f}%",
-            loc="left", fontsize=7.0, color=MID, pad=5)
+        title_line = (f"{title}   \u2014   in band:  raw {band['raw']['in_band_pct']:.0f}%   "
+                      f"split {band['split']['in_band_pct']:.0f}%   ACI {band['aci']['in_band_pct']:.0f}%")
+        # the same layer with its step carried over as a fraction of the
+        # interval width rather than as an absolute number: the honest transfer
+        rel = RESULTS / f"conformal_audit_{key}@rel.json"
+        if rel.exists():
+            dr = json.loads(rel.read_text())
+            y = [r["aci_cov90"] for r in dr["year"]["by_month"]]
+            ax.plot(x, y, color=COOL, ls="-", lw=1.3, marker="D", ms=2.8,
+                    label=f"ACI, step as fraction of width ($\\kappa={dr['gamma_rel']:.3f}$, the building's)")
+            title_line += f"   ACI at the building's $\\kappa$ {dr['year']['band_90']['aci']['in_band_pct']:.0f}%"
+        ax.set_title(title_line, loc="left", fontsize=6.8, color=MID, pad=5)
         ax.set_xticks(x)
         ax.set_xticklabels(lab, rotation=45, ha="right")
         ax.set_ylim(0.20, 1.02)
         ax.set_ylabel("coverage of the\nnominal 90% interval", linespacing=1.3)
         _despine(ax)
     axes[-1].set_xlabel("walk-forward test month (trained strictly on the past)")
-    axes[-1].legend(loc="lower center", bbox_to_anchor=(0.5, -0.62 if n == 1 else -0.95),
-                    frameon=False, ncol=3, handlelength=2.4, labelspacing=0.3,
+    handles, labels = [], []
+    for ax in axes:                     # one legend for the union of the panels' lines
+        for h, l in zip(*ax.get_legend_handles_labels()):
+            if l not in labels:
+                handles.append(h); labels.append(l)
+    axes[-1].legend(handles, labels, loc="lower center",
+                    bbox_to_anchor=(0.5, -0.62 if n == 1 else -0.88),
+                    frameon=False, ncol=2, handlelength=2.4, labelspacing=0.3,
                     borderpad=0.0, columnspacing=1.8)
     fig.subplots_adjust(hspace=0.55)
     _save(fig, "fig_aci")

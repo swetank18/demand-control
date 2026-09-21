@@ -307,11 +307,16 @@ def walk_forward_year(sup: pd.DataFrame, folds=AUDIT_FOLDS, gamma: float = 0.35,
               f"n={len(ev):>7}  split-conformal cov90={cov:.3f}")
 
     year = pd.concat(frames, ignore_index=True)
-    year = year.sort_values(["target_time", "horizon"]).reset_index(drop=True)
-
     # ACI runs once over the concatenated year, in time order, so the offsets
     # carry across fold boundaries exactly as they would in deployment. Resetting
     # them each month would be a different -- and easier -- experiment.
+    return apply_aci(year, gamma)
+
+
+def apply_aci(year: pd.DataFrame, gamma: float) -> pd.DataFrame:
+    """ACI over the concatenated year, in time order, at ``gamma``. Used by the
+    walk-forward study and again when a saved year is replayed at another step."""
+    year = year.sort_values(["target_time", "horizon"]).reset_index(drop=True)
     h = year["horizon"].to_numpy()
     y = year["y"].to_numpy()
     for q in QUANTILES:
@@ -319,6 +324,13 @@ def walk_forward_year(sup: pd.DataFrame, folds=AUDIT_FOLDS, gamma: float = 0.35,
                                     gamma=gamma, n_horizons=HORIZON_STEPS)
         year[f"aci_q{int(q*100):02d}"] = adj
     return year
+
+
+def split_width(year: pd.DataFrame, lead: int) -> float:
+    """Mean split-conformal 90% interval width at the audited lead: the unit
+    a relative ACI step is stated in."""
+    sl = year[year["horizon"] == lead]
+    return float((sl["split_q95"] - sl["split_q05"]).mean())
 
 
 def by_month(year: pd.DataFrame) -> list[dict]:
@@ -333,9 +345,12 @@ def by_month(year: pd.DataFrame) -> list[dict]:
     y = year.copy()
     y["month"] = pd.to_datetime(y["target_time"]).dt.to_period("M").astype(str)
     rows = []
-    for (fold, month), g in y.groupby(["fold", "month"]):
-        if len(g) < 5000:
-            continue
+    # One row per fold, named by the month most of it falls in. A fold is a
+    # calendar month except across a leap day, where the boundary the folds
+    # are stated on (the 28th) leaves 29 February in the next fold; grouping
+    # on (fold, month) would then report that one day as a month of its own.
+    for fold, g in y.groupby("fold"):
+        month = g["month"].mode().iloc[0]
         a = g["y"].to_numpy()
         r = {"fold": int(fold), "month": month, "n": int(len(g)),
              "mean_load_kw": float(a.mean()),
@@ -743,10 +758,22 @@ def main() -> None:
     ap.add_argument("--shift-years", type=int, default=0,
                     help="run the identical 2016-17 protocol this many years earlier; "
                          "5 puts it on Delhi's 2011-12 archive, as the benchmark does")
+    ap.add_argument("--gamma-rel", type=float, default=None,
+                    help="state the ACI step as this fraction of the mean split-conformal "
+                         "interval width at --lead, instead of the absolute --gamma. The "
+                         "step is in the units of the series, so an absolute value that "
+                         "moves a building's bound by 0.6%% of its interval per step moves a "
+                         "city's by 0.05%%; this is how the same layer is transferred across "
+                         "tiers. With --reuse the saved year is replayed at the new step and "
+                         "only the frozen-shift study is rerun")
+    ap.add_argument("--tag", default="",
+                    help="suffix on the output files, so a rerun at another step sits "
+                         "beside the original rather than over it")
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
+    key = f"{args.building}{args.tag}"
 
-    print(f"== conformal audit | {args.building}")
+    print(f"== conformal audit | {args.building}{'  ' + args.tag if args.tag else ''}")
     sup = supervised(args.building, args.cache)
 
     print("\n-- A1: six disjoint calibration blocks")
@@ -756,6 +783,8 @@ def main() -> None:
           f"bootstrap SE {robustness['block_bootstrap_se_90']:.4f}")
 
     print("\n-- A2: walk-forward year (twelve folds)")
+    # a saved year from the untagged run is the one to replay; the tagged file
+    # is what this run writes
     year_path = args.out / f"conformal_year_{args.building}.parquet"
     if args.reuse and year_path.exists():
         year = pd.read_parquet(year_path)
@@ -763,6 +792,14 @@ def main() -> None:
               f"{year['fold'].nunique()} folds)")
     else:
         year = walk_forward_year(sup, gamma=args.gamma, years_back=args.shift_years)
+    gamma = args.gamma
+    width = split_width(year, args.lead)
+    if args.gamma_rel is not None:
+        gamma = args.gamma_rel * width
+        print(f"   ACI step: {args.gamma_rel:g} x split width {width:.1f} = gamma {gamma:.3f}")
+        year = apply_aci(year, gamma)
+    elif args.reuse:
+        year = apply_aci(year, gamma)   # the saved columns may be from another step
     curves = coverage_curves(year, lead=args.lead)
     year_payload = {
         "folds": int(year["fold"].nunique()),
@@ -782,35 +819,41 @@ def main() -> None:
               f"[{b['min']:.3f}, {b['max']:.3f}]")
 
     print("\n-- A2: frozen model under a synthetic shift")
-    prev = args.out / f"conformal_audit_{args.building}.json"
-    if args.reuse and prev.exists():
+    prev = args.out / f"conformal_audit_{key}.json"
+    reusable = (args.reuse and prev.exists()
+                and abs(json.loads(prev.read_text()).get("gamma", -1) - gamma) < 1e-9)
+    if reusable:
         frozen = json.loads(prev.read_text())["frozen_shift"]
         print("   reusing the frozen-shift study from the previous run")
     else:
-        frozen = study_frozen_shift(args.building, args.cache, gamma=args.gamma, lead=args.lead,
+        frozen = study_frozen_shift(args.building, args.cache, gamma=gamma, lead=args.lead,
                                     years_back=args.shift_years)
     print(f"   post-shift P(y<=q95): split {frozen['post_shift_below_q95_split']:.4f}  "
           f"aci {frozen['post_shift_below_q95_aci']:.4f}")
 
     payload = {
         "building": args.building,
+        "tag": args.tag,
         "country": country_of(args.building, args.cache),
         "shift_years": args.shift_years,
-        "gamma": args.gamma,
+        "gamma": gamma,
+        "gamma_rel": args.gamma_rel if args.gamma_rel is not None else gamma / width,
+        "split_width_at_lead": width,
         "bands": {"coverage_90": list(BAND_90), "below_q95": list(BAND_Q95)},
         "split_robustness": robustness,
         "year": year_payload,
         "frozen_shift": frozen,
     }
-    (args.out / f"conformal_audit_{args.building}.json").write_text(
+    (args.out / f"conformal_audit_{key}.json").write_text(
         json.dumps(payload, indent=2, default=float))
-    figure(payload, args.out / f"conformal_audit_{args.building}.png")
+    figure(payload, args.out / f"conformal_audit_{key}.png")
     # the original building keeps the unsuffixed report the paper's
     # reproducibility block names; every other series gets its own
-    md = args.out / ("conformal_audit.md" if args.building == "Fox_office_Gaylord"
-                     else f"conformal_audit_{args.building}.md")
+    md = args.out / ("conformal_audit.md" if key == "Fox_office_Gaylord"
+                     else f"conformal_audit_{key}.md")
     md.write_text(to_markdown(payload) + "\n")
-    year.to_parquet(args.out / f"conformal_year_{args.building}.parquet")
+    if not args.tag:
+        year.to_parquet(args.out / f"conformal_year_{args.building}.parquet")
     print(f"\nwrote {md}")
 
 

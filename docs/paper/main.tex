@@ -57,7 +57,8 @@ demand series including the Delhi State Load Despatch Centre and ENTSO-E, and
 six Chinese provinces added late on an externally imposed constraint. Two
 findings follow. Distribution-free coverage degrades with aggregation level ---
 mean $0.901$ on buildings, $0.829$ on metered system demand --- and the
-adaptive layer, not split conformal, is what holds it. And forecast skill is
+adaptive layer, not split conformal, is what holds it, at both tiers once its
+step is stated in the interval's units rather than the series'. And forecast skill is
 uncorrelated with climate while available flexibility tracks it strongly, so
 deployment screening should ask how much load is weather-driven rather than how
 predictable it is; the null replicates on the Chinese panel it was not fitted
@@ -135,8 +136,10 @@ state.
   \item Evidence that conformal coverage degrades with aggregation level, from
         one protocol run over thirty supplies in eight countries and replicated
         inside a single city across building, campus and system demand,
-        together with the measurement showing that the adaptive layer and not
-        split conformal is what holds the level (Section~\ref{sec:calibration}).
+        together with the measurement, at building and at city scale, showing
+        that the adaptive layer and not split conformal is what holds the level
+        --- and that its one parameter transfers between tiers as a fraction of
+        the interval width, not as a number (Section~\ref{sec:calibration}).
   \item A null separating forecast skill from available flexibility as
         independent deployment axes, replicated on a panel it was not fitted to
         (Section~\ref{sec:axes}).
@@ -582,30 +585,66 @@ standard error is under $0.001$ and would pass any model ever built.}
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.86\textwidth]{fig_aci.pdf}
-\caption{The remedy, measured. Twelve monthly folds, each trained strictly on
-its own past and calibrated on the thirty days immediately before it. Raw
-quantiles are not calibrated out of sample at all. Split conformal --- the layer
-with the theorem attached --- narrows the failure and does not remove it,
-bottoming out at $0.447$ in a month whose ceiling was being defended against a
-bound reality broke through a third of the time. Adaptive conformal inference
-holds $0.867$--$0.928$ in every month of the year.}
+\caption{The remedy, measured at both tiers. Twelve monthly folds, each
+trained strictly on its own past and calibrated on the thirty days immediately
+before it. Top, the Phoenix office: raw quantiles are not calibrated out of
+sample at all; split conformal --- the layer with the theorem attached ---
+narrows the failure and does not remove it, bottoming out at $0.447$ in a month
+whose ceiling was being defended against a bound reality broke through a third
+of the time; adaptive conformal inference holds $0.867$--$0.928$ in every month.
+Bottom, the Delhi city feed under the identical protocol moved five years back
+onto its archive. Red is ACI at the building's step $\gamma=0.35$, a number in
+the series' units; blue is the same step carried over as the building's
+fraction of the interval width, $\kappa=0.006$, with nothing tuned on Delhi.}
 \label{fig:aci}
 \end{figure}
 
-\paragraph{The remedy, at building scale.} Figure~\ref{fig:aci} runs a
-walk-forward year. Split conformal ranges over $0.447$--$0.936$ by month and
-spends $52\%$ of the year inside a $0.85$--$0.95$ band; adaptive conformal
-inference \citep{gibbs2021adaptive} ranges over $0.867$--$0.928$ and spends
-$87\%$. Under a frozen model and a synthetic distribution shift the same
-ordering holds: split conformal settles at $0.770$ coverage and never recovers
-within the run, ACI at $0.885$. The layer with the finite-sample theorem is not
-the layer that delivers the level here, and that is worth stating plainly
-because it inverts the usual presentation order.
+\input{tables/aci}
 
-\paragraph{What remains open.} Whether the adaptive layer restores the level at
-\emph{system} scale --- the tier where the failure is systematic, and the tier
-India sits in --- is the obvious next experiment. We have the method and have not
-run it at that tier, and we decline to claim the result before we have.
+\paragraph{The remedy, at building scale.} Table~\ref{tab:aci} and
+Figure~\ref{fig:aci} run a walk-forward year. Split conformal ranges over
+$0.447$--$0.936$ by month and spends $52\%$ of the year inside a
+$0.85$--$0.95$ band; adaptive conformal inference \citep{gibbs2021adaptive}
+ranges over $0.867$--$0.928$ and spends $87\%$. Under a frozen model and a
+synthetic distribution shift the same ordering holds: split conformal settles at
+$0.770$ coverage and never recovers within the run, ACI at $0.885$. The layer
+with the finite-sample theorem is not the layer that delivers the level here,
+and that is worth stating plainly because it inverts the usual presentation
+order.
+
+\input{tables/aci_gamma}
+
+\paragraph{The remedy, at system scale.} The same audit on the Delhi city feed
+--- the tier where the failure is systematic, and the tier India sits in --- is
+the second and third rows of Table~\ref{tab:aci} and the lower panel of
+Figure~\ref{fig:aci}, the 2016--17 protocol moved five years back onto the
+2011--12 archive so that the calendar position is identical. Split conformal
+fails harder here than at the building. Six disjoint May calibration blocks
+give June coverage from $0.344$ to $0.728$, mean $0.524$ with a day-block
+bootstrap standard error of $0.044$; the walk-forward year ranges
+$0.628$--$0.980$ by month and spends $48\%$ in band; after the frozen shift it
+settles at $0.358$. The adaptive layer, carried over with the step it had at
+the building, $\gamma=0.35$, reaches $69\%$ in band and $0.733$ after the
+shift: better, and not the level.
+
+But $\gamma$ is a number in the units of the series. On a building whose
+intervals are $58$\,kW wide it moves the bound by $0.6\%$ of the interval per
+step; on a city whose intervals are $739$\,MW wide, by $0.05\%$. The same
+setting is a layer twelve times slower, and Table~\ref{tab:aci-gamma} shows
+that this is the whole of the difference: ACI replayed over the saved year at a
+grid of steps stated as a fraction $\kappa$ of the interval width, nothing
+retrained, reaches the level at the city as it does at the building. Carried
+over as the building's $\kappa=0.006$ rather than its $\gamma$ --- nothing
+tuned on Delhi --- the adaptive layer spends $100\%$ of the year in band with
+by-month coverage $0.874$--$0.935$, holds the monsoon June that the benchmark
+row reports at $0.762$ at $0.895$, and settles at $0.887$ after the shift,
+where the building settled at $0.885$. The level is restored at system scale.
+What did not transfer was the parameter's units, and a practitioner moving the
+layer from a building to a feeder would hit exactly this. One caveat is due:
+above $\kappa\approx0.01$ the interval is a fast tracker rather than a
+forecast interval, since the recursion pins the long-run exceedance rate
+whatever the model and the width it reports is no longer the forecaster's; the
+sweep is read for the transfer, not for the numbers at its top.
 
 \paragraph{Selection is regional, and we found that out the hard way.} The
 rule's final clause --- positive load--temperature correlation --- is a sanity
@@ -826,11 +865,13 @@ not, and nothing in this paper anticipates its result.
 an assumption failure, not a tuning failure: split conformal requires
 calibration and test blocks to be exchangeable
 \citep{vovk2005algorithmic,romano2019cqr}, and a Delhi May is not exchangeable
-with a Delhi June. Section~\ref{sec:calibration} shows that the adaptive layer
-fixes exactly this failure mode at building scale, holding $0.867$--$0.928$
-across a walk-forward year where split conformal falls to $0.447$. That is the
-strongest available reason to expect it to help at system scale, and it is not
-the same thing as having measured it there, which we have not.
+with a Delhi June. Section~\ref{sec:calibration} measures the remedy on this
+feed: across a walk-forward year the adaptive layer, with its step carried over
+from the building as a fraction of the interval width, holds $0.874$--$0.935$
+by month where split conformal falls to $0.628$, and holds this June at
+$0.895$. The $0.762$ of Table~\ref{tab:calibration} is the benchmark row under
+the step the building used, and it is a units artefact as much as a monsoon
+one.
 
 \paragraph{3. Indian load carries calendar structure the model does not encode.}
 A large share of Indian public holidays are lunisolar --- Diwali, Holi, Eid ---
@@ -923,7 +964,8 @@ vacuous four hours in. That risk level can be turned into an operator-set
 parameter, at a measured price of \rupee{3{,}339} on a billing month and with
 its inexactness and resolution floor stated. Alongside it, distribution-free
 coverage degrades with aggregation level and it is the adaptive layer rather
-than the one with the theorem that holds it; and forecast skill and available
+than the one with the theorem that holds it, at the city as at the building
+once its step is carried over in the interval's units; and forecast skill and available
 flexibility are independent axes, only one of which tracks climate.
 
 For India the benchmark returns a divided verdict, and both halves matter. India

@@ -1,0 +1,20 @@
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lrrrrrr}
+\toprule
+$\kappa$ & in band & by month & width & in band & by month & width \\
+\midrule
+0 (split only) & 52.2\% & 0.447--0.936 & 58 & 48.1\% & 0.628--0.980 & 739 \\
+0.001 & 61.4\% & 0.785--1.000 & 67 & 72.9\% & 0.825--0.960 & 756 \\
+0.002 & 81.8\% & 0.816--0.992 & 64 & 89.7\% & 0.840--0.956 & 735 \\
+0.005 & 85.2\% & 0.860--0.941 & 61 & 99.6\% & 0.869--0.939 & 698 \\
+0.01 & 93.1\% & 0.878--0.932 & 59 & 100.0\% & 0.882--0.921 & 672 \\
+0.02 & 100.0\% & 0.890--0.924 & 53 & 100.0\% & 0.894--0.908 & 629 \\
+0.05 & 100.0\% & 0.896--0.909 & 46 & 100.0\% & 0.897--0.904 & 560 \\
+0.1 & 100.0\% & 0.897--0.906 & 41 & 100.0\% & 0.898--0.902 & 495 \\
+\bottomrule
+\end{tabular}
+\caption{ACI replayed over the saved walk-forward year at a grid of step sizes, stated as a fraction $\kappa$ of the mean split-conformal interval width at the audited lead (58, 739 in the series' units for the Phoenix office and Delhi city respectively; left block Phoenix, right block Delhi). Nothing is retrained: ACI is a pass over the saved split-conformal predictions in time order. In band is the share of the rolling 30-day coverage curve inside $0.85$--$0.95$; by month is the range of monthly coverage; width is the mean adaptive interval. The audit's absolute default $\gamma=0.35$ is $\kappa = 0.0060, 0.0005$ on the two series. Above $\kappa \approx 0.01$ the interval is a fast tracker rather than a forecast interval: the recursion pins the long-run rate whatever the model, and the width it reports is no longer the forecaster's.}
+\label{tab:aci-gamma}
+\end{table}
