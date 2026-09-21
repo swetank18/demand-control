@@ -68,6 +68,11 @@ class Tariff:
     billing_demand_floor_pct: float = 0.0   # % of contract demand billed as floor
     fixed_charge: float = 0.0               # flat INR per month
     electricity_duty_pct: float = 0.0       # % on energy charge
+    #: Delhi bills energy per kVAh rather than per kWh, so the reactive
+    #: component is priced inside the energy charge instead of by a
+    #: power-factor rule. With a constant power factor kVAh = kWh / pf, which
+    #: is what ``rate_for`` applies when this is set.
+    energy_per_kvah: bool = False
     currency: str = "INR"
     notes: str = ""
 
@@ -78,8 +83,13 @@ class Tariff:
                 return w
         raise ValueError(f"no ToD window covers minute {minute_of_day}; tariff is not a partition of the day")
 
-    def rate_for(self, minute_of_day: int) -> float:
-        return self.energy_rate * self.window_for(minute_of_day).multiplier
+    def rate_for(self, minute_of_day: int, power_factor: float = 1.0) -> float:
+        """INR per kWh at this minute. For a per-kVAh tariff the kWh price is
+        the kVAh price divided by the power factor the energy is drawn at."""
+        rate = self.energy_rate * self.window_for(minute_of_day).multiplier
+        if self.energy_per_kvah:
+            rate /= min(max(float(power_factor), 0.5), 1.0)
+        return rate
 
     def validate(self) -> None:
         """A tariff must partition the day, or the bill is ambiguous."""
@@ -112,6 +122,7 @@ class Tariff:
             billing_demand_floor_pct=float(d.get("billing_demand_floor_pct", 0.0)),
             fixed_charge=float(d.get("fixed_charge", 0.0)),
             electricity_duty_pct=float(d.get("electricity_duty_pct", 0.0)),
+            energy_per_kvah=bool(d.get("energy_per_kvah", False)),
             currency=d.get("currency", "INR"),
             notes=d.get("notes", ""),
         )

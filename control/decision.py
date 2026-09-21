@@ -66,7 +66,7 @@ class DecisionLoss:
         self.a = 1.0 - DT_H * self.ua / self.cap_c
         self.b = DT_H * p.cop / self.cap_c
         self.steps_per_block = max(1, self.tariff.billing_interval_minutes // 15)
-        self._price = np.array([self.tariff.rate_for(ts.hour * 60 + ts.minute)
+        self._price = np.array([self.tariff.rate_for(ts.hour * 60 + ts.minute, p.power_factor)
                                 for ts in self.index])
         band = p.comfort.band_series(self.index)
         self._t_lo = band["t_lo"].to_numpy()

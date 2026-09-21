@@ -1,0 +1,27 @@
+{
+  "state": "Delhi",
+  "category": "Non-Domestic, above 3 kVA, HT supply at 11 kV (educational campus, one HT consumer)",
+  "order_ref": "DERC Electricity Tariff Schedule for FY 2021-22 (BRPL, BYPL, TPDDL & NDMC), w.e.f. 1 October 2021, annexed to the Tariff Order press note of 30 September 2021; rates and ToD slots identical to the FY 2020-21 schedule and not revised since (the true-up orders of 31 December 2025 still apply 'the Tariff Schedule issued by the Commission'). Maximum demand per DERC (Supply Code and Performance Standards) Regulations, 2017: highest average kVA over thirty consecutive minutes.",
+  "energy_rate": 9.316,
+  "energy_per_kvah": true,
+  "tod_windows": [
+    {"name": "night",    "start": "01:00", "end": "04:00", "multiplier": 1.00},
+    {"name": "offpeak",  "start": "04:00", "end": "10:00", "multiplier": 0.80},
+    {"name": "normal",   "start": "10:00", "end": "14:00", "multiplier": 1.00},
+    {"name": "peak",     "start": "14:00", "end": "17:00", "multiplier": 1.20},
+    {"name": "evening",  "start": "17:00", "end": "22:00", "multiplier": 1.00},
+    {"name": "latepeak", "start": "22:00", "end": "01:00", "multiplier": 1.20}
+  ],
+  "demand_charge_per_kva": 282.5,
+  "billing_interval_minutes": 30,
+  "contract_demand_kva": 1000.0,
+  "billing_demand_floor_pct": 0.0,
+  "fixed_charge": 0.0,
+  "electricity_duty_pct": 5.0,
+  "power_factor": {
+    "target": 0.0, "penalty_pct_per_point": 0.0,
+    "rebate_threshold": 1.0, "rebate_pct_per_point": 0.0, "max_rebate_pct": 0.0
+  },
+  "currency": "INR",
+  "notes": "Encoded from the published schedule. Energy: Rs 8.50/kVAh, less the 3% rebate for supply at 11 kV, plus the 8% (accumulated deficit) and 5% (pension trust) surcharges the schedule levies on basic energy and fixed charges: 8.50 x 0.97 x 1.13 = 9.316 Rs/kVAh; billed per kVAh, so the engine divides by the power factor and no separate power-factor rule applies. Fixed: Rs 250/kVA/month x 1.13 = 282.5 on the month's maximum demand (30-minute average kVA); the schedule states no minimum billing demand, only a 30% surcharge on demand above sanctioned load, which is not modelled. ToD is the May-September schedule (peak 14:00-17:00 and 22:00-01:00 at +20%, off-peak 04:00-10:00 at -20%), the season every Indian window in the study sits in; outside those months every multiplier is 1.0 and this file does not encode that. Electricity tax 5% on energy. PPAC (power purchase adjustment, a percentage that changes quarterly and was in the range of 30-45% during 2024-25) is not encoded, so absolute bills are understated by that factor and every comparison in the paper is within-tariff. Contract demand 1000 kVA is a placeholder for the campus (observed peak 842 kW); it only matters for the excess-demand surcharge, which is not modelled. VERIFY AGAINST THE CURRENT ORDER BEFORE QUOTING COMMERCIALLY."
+}

@@ -75,10 +75,16 @@ class Bill:
 # price vectors (also consumed by the optimizer)
 # ---------------------------------------------------------------------------
 
-def price_series(index: pd.DatetimeIndex, tariff: Tariff) -> pd.Series:
+def _hhmm(s: str) -> int:
+    h, m = s.split(":")
+    return int(h) * 60 + int(m)
+
+
+def price_series(index: pd.DatetimeIndex, tariff: Tariff, power_factor: float = 1.0) -> pd.Series:
     """INR/kWh at each timestamp."""
     minutes = index.hour * 60 + index.minute
-    return pd.Series([tariff.rate_for(int(m)) for m in minutes], index=index, name="price")
+    return pd.Series([tariff.rate_for(int(m), power_factor) for m in minutes],
+                     index=index, name="price")
 
 
 def window_series(index: pd.DatetimeIndex, tariff: Tariff) -> pd.Series:
@@ -125,9 +131,11 @@ def compute_bill(
     power_kw = power_kw.sort_index().astype(float)
     dt_h = _infer_dt_hours(power_kw.index)
     imp = power_kw.clip(lower=0.0)
+    pf_scalar = float(np.mean(power_factor)) if not np.isscalar(power_factor) else float(power_factor)
+    pf_scalar = min(max(pf_scalar, 0.5), 1.0)
 
     # --- energy charge, split by ToD window --------------------------------
-    price = price_series(power_kw.index, tariff)
+    price = price_series(power_kw.index, tariff, pf_scalar)
     window = window_series(power_kw.index, tariff)
     kwh = imp * dt_h
     charge = kwh * price
@@ -138,7 +146,7 @@ def compute_bill(
         energy_by_window[w.name] = {
             "kwh": float(kwh[m].sum()),
             "charge": float(charge[m].sum()),
-            "rate": tariff.energy_rate * w.multiplier,
+            "rate": tariff.rate_for(_hhmm(w.start), pf_scalar),
             "multiplier": w.multiplier,
         }
     energy_kwh = float(kwh.sum())
@@ -146,8 +154,6 @@ def compute_bill(
 
     # --- demand charge -----------------------------------------------------
     blocks = demand_blocks(imp, tariff)
-    pf_scalar = float(np.mean(power_factor)) if not np.isscalar(power_factor) else float(power_factor)
-    pf_scalar = min(max(pf_scalar, 0.5), 1.0)
     kva_blocks = blocks / pf_scalar
     if len(kva_blocks):
         peak_kva = float(kva_blocks.max())

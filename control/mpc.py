@@ -336,7 +336,7 @@ class ChanceConstrainedMPC:
         sol_gain = sim.exog["solar_gain_kw"].to_numpy()[k0 : k0 + H]
         q_int = p.internal_gain_fraction * base_exp + occ_gain + sol_gain
 
-        price = np.array([self.tariff.rate_for(ts.hour * 60 + ts.minute) for ts in idx])
+        price = np.array([self.tariff.rate_for(ts.hour * 60 + ts.minute, p.power_factor) for ts in idx])
         band = p.comfort.band_series(idx)
         t_lo, t_hi = band["t_lo"].to_numpy(), band["t_hi"].to_numpy()
 

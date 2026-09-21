@@ -146,3 +146,45 @@ def test_second_state_loads_and_shifts_the_incentive():
     assert mh.window_for(noon).name == "solar"      # midday is cheap in MH, not in TN
     w = _week(150.0)
     assert compute_bill(w, tn, 0.95).total != compute_bill(w, mh, 0.95).total
+
+
+# ---------------------------------------------------------------------------
+# Delhi: energy billed per kVAh, two peak windows, no demand floor
+# ---------------------------------------------------------------------------
+
+def test_derc_order_loads_and_partitions_the_day():
+    from tariff.schema import Tariff
+    t = Tariff.load("tariff/orders/derc_2021.json")
+    assert t.energy_per_kvah and t.billing_interval_minutes == 30
+    assert sorted(w.name for w in t.tod_windows if w.multiplier == 1.2) == ["latepeak", "peak"]
+    # 03:00 is night at the base rate, 07:00 off-peak, 15:00 peak, 23:30 late peak
+    assert t.rate_for(3 * 60) == t.energy_rate
+    assert abs(t.rate_for(7 * 60) - 0.8 * t.energy_rate) < 1e-9
+    assert abs(t.rate_for(15 * 60) - 1.2 * t.energy_rate) < 1e-9
+    assert abs(t.rate_for(23 * 60 + 30) - 1.2 * t.energy_rate) < 1e-9
+
+
+def test_per_kvah_energy_is_kwh_over_power_factor():
+    import numpy as np
+    import pandas as pd
+    from tariff.bill import compute_bill
+    from tariff.schema import Tariff
+    t = Tariff.load("tariff/orders/derc_2021.json")
+    idx = pd.date_range("2017-06-01", periods=96, freq="15min")
+    load = pd.Series(100.0, index=idx)   # flat 100 kW for a day
+    b95 = compute_bill(load, t, power_factor=0.95)
+    b100 = compute_bill(load, t, power_factor=1.0)
+    # per kVAh: the same kWh costs 1/0.95 more at pf 0.95, and nothing else moves it
+    assert abs(b95.energy_charge / b100.energy_charge - 1 / 0.95) < 1e-9
+    assert b95.pf_adjustment == 0.0 and b100.pf_adjustment == 0.0
+    # the rate a per-kWh tariff would print is the kVAh rate over the pf
+    assert abs(t.rate_for(12 * 60, 0.95) - t.energy_rate / 0.95) < 1e-9
+    # no billing-demand floor: billed kVA is the 30-minute maximum over pf
+    assert abs(b95.billed_demand_kva - 100.0 / 0.95) < 1e-9
+
+
+def test_per_kwh_tariffs_are_untouched_by_the_flag():
+    from tariff.schema import Tariff
+    t = Tariff.load("tariff/orders/tnerc_2026.json")
+    assert not t.energy_per_kvah
+    assert t.rate_for(12 * 60, 0.8) == t.rate_for(12 * 60)
