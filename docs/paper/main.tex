@@ -55,10 +55,14 @@ electricity supplies in eight countries: eighteen buildings across eight usage
 classes from the Building Data Genome Project 2, six metered national or city
 demand series including the Delhi State Load Despatch Centre and ENTSO-E, and
 six Chinese provinces added late on an externally imposed constraint. Two
-findings follow. Distribution-free coverage degrades with aggregation level ---
-mean $0.901$ on buildings, $0.829$ on metered system demand --- and the
-adaptive layer, not split conformal, is what holds it, at both tiers once its
-step is stated in the interval's units rather than the series'. And forecast skill is
+findings follow. Distribution-free coverage appeared to degrade with
+aggregation level --- $0.901$ on buildings against $0.829$ on metered system
+demand --- and does not: the adaptive layer's step is a number in the units of
+the series, and at system scale it did not move. Under split conformal alone
+the tiers are within $0.03$ of each other and eleven of eighteen buildings
+miss $0.85$, so the exchangeability failure is universal; with the step stated
+as a fraction of the interval width the same layer holds $0.90$--$0.93$ at
+every tier and no supply in the study misses $0.85$. And forecast skill is
 uncorrelated with climate while available flexibility tracks it strongly, so
 deployment screening should ask how much load is weather-driven rather than how
 predictable it is; the null replicates on the Chinese panel it was not fitted
@@ -133,13 +137,17 @@ state.
         operator-set parameter rather than an emergent property of horizon
         length, with its exactness and resolution floor measured and its price
         stated (Section~\ref{sec:dial}).
-  \item Evidence that conformal coverage degrades with aggregation level, from
-        one protocol run over thirty supplies in eight countries and replicated
-        inside a single city across building, campus and system demand,
-        together with the measurement, at building and at city scale, showing
-        that the adaptive layer and not split conformal is what holds the level
-        --- and that its one parameter transfers between tiers as a fraction of
-        the interval width, not as a number (Section~\ref{sec:calibration}).
+  \item A finding made and then unmade by its own audit. One protocol over
+        thirty supplies in eight countries, replicated inside a single city
+        across building, campus and system demand, showed conformal coverage
+        degrading with aggregation. The audit of the adaptive layer at system
+        scale showed why: its step is stated in the units of the series and had
+        stopped moving. Re-read without that confound, split conformal fails at
+        every tier alike and the adaptive layer, with its step as a fraction of
+        the interval width, holds the level at every tier
+        (Section~\ref{sec:calibration}). What transfers across scales is not
+        the number but the fraction, and a practitioner moving the layer from a
+        building to a feeder will hit exactly this.
   \item A null separating forecast skill from available flexibility as
         independent deployment axes, replicated on a panel it was not fitted to
         (Section~\ref{sec:axes}).
@@ -531,7 +539,7 @@ risk level which was previously an \emph{emergent property of horizon length}
 incumbent marginal controller --- is now a parameter with a monotone and
 conservative response, at a cost of \rupee{3{,}339} on the month.
 
-\section{Calibration degrades with aggregation}
+\section{What degrades with aggregation, and what does not}
 \label{sec:calibration}
 
 One protocol --- 15 months train, 2 months validate, 1 month test, temporal
@@ -545,29 +553,56 @@ thirty supplies. Tables~\ref{tab:climate}--\ref{tab:china} give the five arms.
 \input{tables/china}
 
 \input{tables/calibration}
+\input{tables/aci_step}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.92\textwidth]{fig_calibration.pdf}
-\caption{One dot per supply. The nominal $90\%$ interval very nearly holds on
-individual buildings and fails systematically once demand is aggregated to
-system level, on both the metered panel and the reconstructed one. The two
-populations of system demand share no country, no year and no
-data-generating process, and their means differ by $0.005$.}
+\caption{One dot per supply, twice. Top, as the benchmark calibrated it: the
+nominal $90\%$ interval very nearly holds on individual buildings and fails
+once demand is aggregated to system level, on the metered panel and the
+reconstructed one alike, two populations sharing no country, no year and no
+data-generating process whose means differ by $0.005$. Bottom, the same
+supplies with the adaptive layer's step stated as a fraction of the interval
+width rather than as a number in the series' units: every tier is at the level
+and the ladder is gone.}
 \label{fig:calibration}
 \end{figure}
 
-Table~\ref{tab:calibration} and Figure~\ref{fig:calibration} are the consistent
-finding. A nominal $90\%$ interval holds at building level (mean $0.901$; one
-row of eighteen below $0.85$) and fails at system level (mean $0.829$ metered,
-$0.824$ reconstructed; five of six and two of six below $0.85$ respectively).
-Delhi is the worst metered row in the study at $0.762$ and Heilongjiang the
-worst row anywhere at $0.565$.
+Table~\ref{tab:calibration} and the upper panel of Figure~\ref{fig:calibration}
+are the benchmark's own reading, and they were the third contribution of the
+first draft of this paper. A nominal $90\%$ interval holds at building level
+(mean $0.901$; one row of eighteen below $0.85$) and fails at system level
+(mean $0.829$ metered, $0.824$ reconstructed; five of six and two of six below
+$0.85$ respectively); Delhi is the worst metered row at $0.762$ and
+Heilongjiang the worst row anywhere at $0.565$. The audit of the adaptive layer
+at system scale, later in this section, is where that reading came apart.
+Every row of the benchmark was calibrated with split conformal and an adaptive
+layer whose step, $\gamma=0.35$, is a number in the units of the series: on a
+building whose intervals are tens of kilowatts wide it is a working layer, and
+on a grid whose intervals are thousands of megawatts wide it is one that does
+not move. The building rows carried a remedy the system rows did not, and the
+ladder measured the remedy's absence.
+
+Table~\ref{tab:aci-step} is the same measurement without the confound: the
+paper's forecaster refitted once on every supply and the same predictions
+calibrated three ways. Under split conformal alone the tiers sit within $0.03$
+of each other --- $0.820$ on buildings, $0.791$ on metered system demand,
+$0.785$ reconstructed --- and eleven of the eighteen buildings are below
+$0.85$. The exchangeability failure is universal, not a property of
+aggregation. Under the adaptive layer with its step stated as a fraction of the
+interval width --- $\kappa=0.006$, the width read from the validation block so
+that nothing from the test month is used --- every tier is at the level,
+$0.898$, $0.914$ and $0.925$, and no supply in the study is below $0.85$:
+Heilongjiang is $0.937$ and Delhi $0.904$. The building--system gap is
+$+0.029$, $+0.073$ and $-0.016$ under the three calibrations. What degraded
+with aggregation was the step.
 
 This is consequential rather than curious, because the controller's $q95$ is
-read from the same object. Too narrow an interval yields too narrow a demand
-ceiling, and the safety property degrades precisely on the load the project
-targets.
+read from the same object, and the consequence has changed sign since the first
+draft. The hazard is not a tier the guarantee cannot reach. It is a parameter
+that goes quietly inert when the layer is moved to a larger meter, while the
+coverage it reports looks like a property of the meter.
 
 \paragraph{The mechanism.} Split conformal guarantees coverage when the
 calibration and test blocks are exchangeable
@@ -748,12 +783,17 @@ inference is one a reader would otherwise make on our behalf.
 
 \paragraph{What survives.} Coverage is a property of interval width against
 realised error and does not run through the baseline, so the tier-2 result can be
-read on this arm --- and it replicates: mean $0.824$ against $0.829$ on the
-metered panel, on an error process unlike any other in the study, with the worst
-row anywhere at $0.565$. That two populations sharing no country, no year and no
-data-generating process land within $0.005$ of each other is stronger evidence
-for the aggregation effect than a larger metered sample would have been. The null
-of Section~\ref{sec:axes} replicates too. The wider coverage spread on this panel
+read on this arm --- and it replicates twice over. Under the benchmark's
+calibration the six provinces average $0.824$ against $0.829$ on the metered
+panel, on an error process unlike any other in the study, with the worst row
+anywhere at $0.565$; under the adaptive step stated in the interval's units
+they average $0.925$ against $0.914$, and the worst row, Heilongjiang, is
+$0.937$ (Table~\ref{tab:aci-step}). Two populations sharing no country, no
+year and no data-generating process landing within $0.005$ of each other under
+the inert layer and within $0.011$ under the working one is stronger evidence
+for both readings than a larger metered sample would have been: the failure is
+universal, and so is the remedy. The null of Section~\ref{sec:axes} replicates
+too. The wider coverage spread on this panel under the benchmark's calibration
 ($0.565$--$0.960$ against $0.762$--$0.911$) is consistent with the three-month
 calibration history and is not separately identified.
 
@@ -787,8 +827,10 @@ the controller can be relied upon, India is last among metered supplies. Skill
 over a seasonal-naive baseline is $+0.097$, against $+0.713$ for Germany,
 $+0.636$ for France and $+0.619$ for Spain --- a model that needs no training at
 all is nearly as good on Delhi as ours. And coverage of the nominal $90\%$
-interval is $0.762$, the worst metered figure anywhere in the study, against
-$0.911$ for Ireland.
+interval is $0.762$ under the benchmark's calibration, the worst metered figure
+anywhere in the study against $0.911$ for Ireland --- and $0.904$ once the
+adaptive step is stated in the interval's units (Table~\ref{tab:aci-step}),
+which is the reading that stands.
 
 The second of these is the serious one. The controller's $q95$ is read from the
 same object as that interval, so an interval that is too narrow yields a demand
@@ -811,17 +853,22 @@ levied on, returns $+0.083$: a model that needs no training is nearly as good.
 That is India's skill verdict, and it no longer rests on a decade-old city
 archive.
 
-The calibration column says something the city-level row could not. Coverage
-holds at building scale, $0.897$--$0.941$ on every window, exactly as it did on
-the eighteen BDG2 buildings; it is $0.873$ on the campus feed, and $0.762$ on
-the city. Table~\ref{tab:calibration} carries this as its lower panel: one
-city, one weather feed, three levels of aggregation, and coverage falls with
-each step up the ladder. The aggregation effect of Section~\ref{sec:calibration}
-therefore reproduces inside a single city with nothing else varying, which is
-the cleanest form of the evidence we have for it, and the campus row is the one
-that matters for control: the per-step exceedance of its $q95$ is $0.079$
-against a nominal $0.05$, the only window in Table~\ref{tab:horizon-panel}
-that is over the line.
+The calibration column says something the city-level row could not, and it
+says it twice. Under the benchmark's calibration coverage holds at building
+scale, $0.897$--$0.941$ on every window, exactly as it did on the eighteen BDG2
+buildings; it is $0.873$ on the campus feed, and $0.762$ on the city.
+Table~\ref{tab:calibration} carries this as its lower panel: one city, one
+weather feed, three levels of aggregation, and coverage falling with each step
+up the ladder --- which reproduced the first draft's aggregation effect inside
+a single city with nothing else varying, and reproduced its confound with it.
+Under the adaptive step stated in the interval's units the same three levels
+read $0.908$, $0.888$ and $0.904$ (Table~\ref{tab:aci-step}): flat within
+$0.02$, in a city where the step the building used was one sixth of the
+building's on the campus feed and one twentieth on the city. The campus row is
+the one that matters for control: the per-step exceedance of its $q95$ is
+$0.079$ against a nominal $0.05$ under the benchmark's calibration, the only
+window in Table~\ref{tab:horizon-panel} that is over the line, and the horizon
+arm has not been rerun at the relative step.
 
 \paragraph{What this arm cannot say.} Six of the seven buildings are on a
 central chiller that is not on their meter, so the building rows are
@@ -869,9 +916,12 @@ with a Delhi June. Section~\ref{sec:calibration} measures the remedy on this
 feed: across a walk-forward year the adaptive layer, with its step carried over
 from the building as a fraction of the interval width, holds $0.874$--$0.935$
 by month where split conformal falls to $0.628$, and holds this June at
-$0.895$. The $0.762$ of Table~\ref{tab:calibration} is the benchmark row under
-the step the building used, and it is a units artefact as much as a monsoon
-one.
+$0.895$; on the benchmark's own June, refitted and recalibrated
+(Table~\ref{tab:aci-step}), it is $0.904$. The $0.762$ of
+Table~\ref{tab:calibration} is the benchmark row under the step the building
+used, and it is a units artefact rather than a monsoon one: the monsoon breaks
+exchangeability, which split conformal cannot survive anywhere, and the layer
+that survives it had been switched off by its units.
 
 \paragraph{3. Indian load carries calendar structure the model does not encode.}
 A large share of Indian public holidays are lunisolar --- Diwali, Holi, Eid ---
@@ -962,10 +1012,12 @@ figure usually quoted as the conservative correction is not a bound and
 overstates the risk by $2.4\times$; and the correction that is a bound is
 vacuous four hours in. That risk level can be turned into an operator-set
 parameter, at a measured price of \rupee{3{,}339} on a billing month and with
-its inexactness and resolution floor stated. Alongside it, distribution-free
-coverage degrades with aggregation level and it is the adaptive layer rather
-than the one with the theorem that holds it, at the city as at the building
-once its step is carried over in the interval's units; and forecast skill and available
+its inexactness and resolution floor stated. Alongside it, a finding this
+paper first made and then unmade: distribution-free coverage does not degrade
+with aggregation level. Split conformal fails at every tier alike, and the
+adaptive layer holds the level at every tier once its step is stated in the
+interval's units rather than the series' --- the ladder the first draft
+reported was that parameter going inert as the meters grew. And forecast skill and available
 flexibility are independent axes, only one of which tracks climate.
 
 For India the benchmark returns a divided verdict, and both halves matter. India
@@ -992,7 +1044,11 @@ python eval/comparative.py     # run the protocol over the thirty supplies
 python eval/china_audit.py     # audit the China arm against its own data
 python eval/horizon_risk.py    # the bracket, the copula and the closed loop
 python eval/conformal_audit.py # the walk-forward calibration year, building tier
-python eval/conformal_audit.py --building IN_Delhi --shift-years 5   # and system tier
+python eval/conformal_audit.py --building IN_Delhi --shift-years 5   # system tier
+python eval/conformal_audit.py --building IN_Delhi --shift-years 5 \
+       --reuse --gamma-rel 0.006 --tag @rel   # step as a fraction of width
+python eval/aci_gamma.py       # the adaptive step swept, both tiers
+python eval/aci_step_check.py  # the ladder re-read under three calibrations
 python eval/paper_tables.py    # emit every table in this paper
 python eval/paper_figures.py   # emit every figure in this paper
 \end{verbatim}

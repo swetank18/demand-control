@@ -399,6 +399,82 @@ def aci_gamma_table() -> None:
           "tab:aci-gamma")
 
 
+def aci_step_table() -> None:
+    """The aggregation ladder of Table calibration, re-read with the same
+    forecaster under three calibrations of the same predictions: split
+    conformal alone, ACI at the absolute step every benchmark row used, and
+    ACI at the building's step as a fraction of the interval width."""
+    p = RESULTS / "aci_step_check.json"
+    if not p.exists():
+        return
+    rows_in = [v for v in json.loads(p.read_text()).values() if "calib" in v]
+    if not rows_in:
+        return
+    seen, uniq = set(), []
+    for v in rows_in:                       # a building in two arms is one supply
+        k = (v["id"], v.get("test_june"))
+        if k not in seen:
+            seen.add(k); uniq.append(v)
+
+    def pop(name, pred):
+        g = [v for v in uniq if pred(v)]
+        if not g:
+            return None
+        cov = {c: np.array([v["calib"][c]["coverage_90"] for v in g]) for c in ("split", "aci_abs", "aci_rel")}
+        kap = np.median([v["kappa_of_abs"] for v in g])
+        return [name, f"{len(g)}", f"{kap:.4f}",
+                f"{cov['split'].mean():.3f}", f"{cov['aci_abs'].mean():.3f}",
+                f"\\textbf{{{cov['aci_rel'].mean():.3f}}}", f"{cov['aci_rel'].min():.3f}",
+                f"{int((cov['aci_rel'] < 0.85).sum())}"], cov
+
+    specs = [
+        ("Buildings (BDG2), metered", lambda v: v["tier"] == 1 and v["arm"] != "india"),
+        ("System demand, metered", lambda v: v["arm"] == "national" and not v["id"].startswith("CN_")),
+        ("System demand, reconstructed", lambda v: v["arm"] == "national" and v["id"].startswith("CN_")),
+    ]
+    india = [
+        ("\\quad buildings, native 15-min", lambda v: v["arm"] == "india" and v["usage"] != "campus"),
+        ("\\quad campus feed (one HT consumer)", lambda v: v["arm"] == "india" and v["usage"] == "campus"),
+        ("\\quad city (Delhi SLDC)", lambda v: v["id"] == "IN_Delhi"),
+    ]
+    rows, covs = [], {}
+    for name, pred in specs:
+        r = pop(name, pred)
+        if r:
+            rows.append(r[0]); covs[name] = r[1]
+    ind = [(n, pop(n, pr)) for n, pr in india]
+    if any(r for _, r in ind):
+        rows.append(["\\midrule"])
+        rows.append(["\\emph{India, one city, windows}"] + [""] * 7)
+        for n, r in ind:
+            if r:
+                rows.append(r[0]); covs[n] = r[1]
+    b = covs.get("Buildings (BDG2), metered"); m = covs.get("System demand, metered")
+    gap = ""
+    if b is not None and m is not None:
+        gap = (f" The building--system gap is ${b['split'].mean() - m['split'].mean():+.3f}$ under split "
+               f"conformal alone, ${b['aci_abs'].mean() - m['aci_abs'].mean():+.3f}$ under the absolute "
+               f"step the benchmark used, and ${b['aci_rel'].mean() - m['aci_rel'].mean():+.3f}$ under "
+               "the step stated in the interval's units.")
+    n_rows = sum(1 for r in rows if len(r) > 1 and not r[0].startswith("\\emph"))
+    table(OUT / "aci_step.tex",
+          ["Population", "$n$", "$\\kappa$ of $\\gamma{=}0.35$", "split", "ACI $\\gamma{=}0.35$",
+           "ACI $\\kappa{=}0.006$", "worst", "$<0.85$"],
+          rows, "lrrrrrrr",
+          "The ladder of Table~\\ref{tab:calibration} re-read without the confound. The "
+          "paper's forecaster refitted once per supply and the same predictions "
+          "calibrated three ways: split conformal alone; split plus ACI at the absolute "
+          "step $\\gamma=0.35$ every benchmark row used; and split plus ACI at the "
+          "building audit's step as a fraction of the interval width, $\\kappa=0.006$, "
+          "the width taken from the validation block so that nothing from the test month "
+          "is used. The third column is what the absolute step amounted to on each "
+          "population, as a fraction of its interval (median): a working adaptive layer "
+          "on buildings and a nearly inert one on system demand. Mean coverage of the "
+          "nominal $0.90$ interval on the test month, then the worst row and the count "
+          "below $0.85$ under the relative step." + gap,
+          "tab:aci-step")
+
+
 def copula_df_table() -> None:
     """What the choice of the copula's one free parameter contributes: the
     held-out prediction under the tail-matched nu, under a pseudo-likelihood
@@ -699,15 +775,20 @@ def calibration_table(df: pd.DataFrame) -> None:
           ["Population", "$n$", "mean cov.", "worst", "$<0.85$"],
           rows, "lrrrr",
           "Empirical coverage of the nominal 90\\% interval after conformal "
-          "calibration. The guarantee very nearly holds on individual buildings "
-          "and fails systematically on system-level demand. The third row is the "
-          "replication: six Chinese provinces, a different country, a different "
-          "year and a different data-generating process, reproduce the "
+          "calibration, \\emph{as the benchmark calibrated it}: split conformal "
+          "plus an adaptive layer at the step $\\gamma=0.35$ in the units of each "
+          "series. Read this way the guarantee very nearly holds on individual "
+          "buildings and fails systematically on system-level demand. The third "
+          "row is the replication: six Chinese provinces, a different country, a "
+          "different year and a different data-generating process, reproduce the "
           "system-level failure to within 0.005 of the metered panel and contain "
           "the worst row in the study (Heilongjiang, 0.565). The lower panel is "
           "the same effect inside one city: building, campus and city demand in "
           "Delhi, one weather feed, native 15-minute resolution throughout, and "
-          "coverage falls monotonically with each step up the ladder.",
+          "coverage falls monotonically with each step up the ladder. "
+          "Table~\\ref{tab:aci-step} re-reads every row of this table with the "
+          "adaptive step stated in the interval's units, and the ladder does not "
+          "survive it.",
           "tab:calibration")
 
 
@@ -787,6 +868,7 @@ def main() -> None:
     copula_df_table()
     aci_table()
     aci_gamma_table()
+    aci_step_table()
     acceptance_table()
     iblend_table()
     df = load_study()

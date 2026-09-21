@@ -105,6 +105,11 @@ if [ "${PAPER:-1}" = "1" ]; then
   # the same audit at system scale: the Delhi city feed, the 2016-17 protocol
   # moved back five years onto its 2011-12 archive, as the benchmark does
   [ -f data/cache/IN_Delhi.parquet ] && $PY eval/conformal_audit.py --building IN_Delhi --shift-years 5
+  # the same, with the adaptive step carried over from the building as a fraction of
+  # the interval width; then the step swept, and the benchmark's ladder re-read under it
+  [ -f data/cache/IN_Delhi.parquet ] && $PY eval/conformal_audit.py --building IN_Delhi --shift-years 5 --reuse --gamma-rel 0.006 --tag @rel
+  $PY eval/aci_gamma.py
+  $PY eval/aci_step_check.py
 
   step "P6/6  paper      (tables, figures, Overleaf bundle)"
   $PY eval/paper_tables.py

@@ -156,9 +156,11 @@ def _study():
 
 
 def fig_calibration(df) -> None:
-    """One dot per supply. The tier effect is the whole finding, so the figure
-    is built to make a reader see three populations rather than read three
-    means."""
+    """One dot per supply, twice: as the benchmark calibrated it, and with the
+    adaptive step stated in the interval's units. The tier effect was the
+    whole finding of the first draft; the second panel is where it went, so
+    the two are drawn to the same axis for a reader to see one ladder and one
+    flat line rather than read six means."""
     pops = [
         ("Buildings\n(BDG2, metered)", df[df.tier == 1], INK),
         ("System demand\n(metered)",
@@ -166,44 +168,53 @@ def fig_calibration(df) -> None:
         ("System demand\n(reconstructed)",
          df[(df.tier == 2) & (df.reconstructed.astype(bool))], COOL),
     ]
-    fig, ax = plt.subplots(figsize=(5.6, 2.5))
-    ax.axvspan(0.50, 0.85, color=LIGHT, alpha=0.20, lw=0)
-    ax.axvline(0.90, color=INK, lw=0.9, ls="--")
-    ax.annotate("nominal 0.90", xy=(0.905, 2.72), fontsize=6.8, color=INK,
-                ha="left")
-    ax.annotate("below 0.85", xy=(0.70, 2.72), fontsize=6.8, color=MID,
-                ha="center")
+    # the same supplies under the relative step, if the check has been run
+    rel = {}
+    p = RESULTS / "aci_step_check.json"
+    if p.exists():
+        for v in json.loads(p.read_text()).values():
+            if "calib" in v and v["arm"] != "india":
+                rel[v["id"]] = v["calib"]["aci_rel"]["coverage_90"]
+    panels = [("as the benchmark calibrated it: ACI step $\\gamma=0.35$ in the series' units",
+               lambda g: g[f"{OURS}_cov90"].dropna().to_numpy())]
+    if rel:
+        panels.append(("the same supplies, step as a fraction of the interval width, $\\kappa=0.006$",
+                       lambda g: np.array([rel[i] for i in g["id"] if i in rel])))
 
+    fig, axes = plt.subplots(len(panels), 1, figsize=(5.6, 2.3 * len(panels) + 0.3), sharex=True)
+    axes = np.atleast_1d(axes)
     rng = np.random.default_rng(0)
-    for i, (name, g, col) in enumerate(pops):
-        c = g[f"{OURS}_cov90"].dropna().to_numpy()
-        y = i + rng.uniform(-0.15, 0.15, len(c))
-        ax.scatter(c, y, s=18, facecolor="none", edgecolor=col, linewidths=0.9,
-                   zorder=3, clip_on=False)
-        ax.plot([c.mean(), c.mean()], [i - 0.26, i + 0.26], color=col, lw=1.8,
-                zorder=4)
-        # The means go in a column of their own on the right, where they can be
-        # read off against each other instead of hunting for them in the cloud.
-        ax.text(1.005, i, f"mean {c.mean():.3f}", transform=ax.get_yaxis_transform(),
-                va="center", ha="left", fontsize=7.2, color=col)
-
-    for label, gid, i in (("Delhi", "IN_Delhi", 1),
-                          ("Heilongjiang", "CN_Heilongjiang", 2)):
-        row = df[df.id == gid]
-        if row.empty:
-            continue
-        x = float(row[f"{OURS}_cov90"].iloc[0])
-        ax.annotate(label, xy=(x, i - 0.16), xytext=(x, i - 0.52), ha="center",
-                    fontsize=6.8, color=pops[i][2],
-                    arrowprops=dict(arrowstyle="-", lw=0.6, color=pops[i][2]))
-
-    ax.set_yticks(range(len(pops)))
-    ax.set_yticklabels([p[0] for p in pops], linespacing=1.3)
-    ax.set_ylim(-0.75, 3.05)  # buildings at the bottom, aggregation upward
-    ax.set_xlim(0.53, 0.99)
-    ax.set_xlabel("empirical coverage of the nominal 90% interval")
-    _despine(ax, keep=("bottom",))
-    ax.tick_params(axis="y", length=0)
+    for ax, (title, pick) in zip(axes, panels):
+        ax.axvspan(0.50, 0.85, color=LIGHT, alpha=0.20, lw=0)
+        ax.axvline(0.90, color=INK, lw=0.9, ls="--")
+        ax.annotate("nominal 0.90", xy=(0.905, 2.72), fontsize=6.8, color=INK, ha="left")
+        ax.annotate("below 0.85", xy=(0.70, 2.72), fontsize=6.8, color=MID, ha="center")
+        for i, (name, g, col) in enumerate(pops):
+            c = pick(g)
+            y = i + rng.uniform(-0.15, 0.15, len(c))
+            ax.scatter(c, y, s=18, facecolor="none", edgecolor=col, linewidths=0.9,
+                       zorder=3, clip_on=False)
+            ax.plot([c.mean(), c.mean()], [i - 0.26, i + 0.26], color=col, lw=1.8, zorder=4)
+            ax.text(1.005, i, f"mean {c.mean():.3f}", transform=ax.get_yaxis_transform(),
+                    va="center", ha="left", fontsize=7.2, color=col)
+        for label, gid, i in (("Delhi", "IN_Delhi", 1), ("Heilongjiang", "CN_Heilongjiang", 2)):
+            row = df[df.id == gid]
+            if row.empty:
+                continue
+            x = float(pick(row)[0]) if len(pick(row)) else float("nan")
+            if np.isfinite(x):
+                ax.annotate(label, xy=(x, i - 0.16), xytext=(x, i - 0.52), ha="center",
+                            fontsize=6.8, color=pops[i][2],
+                            arrowprops=dict(arrowstyle="-", lw=0.6, color=pops[i][2]))
+        ax.set_title(title, loc="left", fontsize=7.0, color=MID, pad=4)
+        ax.set_yticks(range(len(pops)))
+        ax.set_yticklabels([p_[0] for p_ in pops], linespacing=1.3)
+        ax.set_ylim(-0.75, 3.05)
+        ax.set_xlim(0.53, 0.99)
+        _despine(ax, keep=("bottom",))
+        ax.tick_params(axis="y", length=0)
+    axes[-1].set_xlabel("empirical coverage of the nominal 90% interval")
+    fig.subplots_adjust(hspace=0.45)
     _save(fig, "fig_calibration")
 
 

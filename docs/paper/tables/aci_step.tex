@@ -1,0 +1,21 @@
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lrrrrrrr}
+\toprule
+Population & $n$ & $\kappa$ of $\gamma{=}0.35$ & split & ACI $\gamma{=}0.35$ & ACI $\kappa{=}0.006$ & worst & $<0.85$ \\
+\midrule
+Buildings (BDG2), metered & 18 & 0.0113 & 0.820 & 0.901 & \textbf{0.898} & 0.862 & 0 \\
+System demand, metered & 6 & 0.0001 & 0.791 & 0.829 & \textbf{0.914} & 0.902 & 0 \\
+System demand, reconstructed & 6 & 0.0001 & 0.785 & 0.824 & \textbf{0.925} & 0.902 & 0 \\
+\midrule
+\emph{India, one city, windows} &  &  &  &  &  &  &  \\
+\quad buildings, native 15-min & 12 & 0.0338 & 0.868 & 0.910 & \textbf{0.908} & 0.874 & 0 \\
+\quad campus feed (one HT consumer) & 1 & 0.0016 & 0.819 & 0.873 & \textbf{0.888} & 0.888 & 0 \\
+\quad city (Delhi SLDC) & 1 & 0.0006 & 0.605 & 0.762 & \textbf{0.904} & 0.904 & 0 \\
+\bottomrule
+\end{tabular}
+\caption{The ladder of Table~\ref{tab:calibration} re-read without the confound. The paper's forecaster refitted once per supply and the same predictions calibrated three ways: split conformal alone; split plus ACI at the absolute step $\gamma=0.35$ every benchmark row used; and split plus ACI at the building audit's step as a fraction of the interval width, $\kappa=0.006$, the width taken from the validation block so that nothing from the test month is used. The third column is what the absolute step amounted to on each population, as a fraction of its interval (median): a working adaptive layer on buildings and a nearly inert one on system demand. Mean coverage of the nominal $0.90$ interval on the test month, then the worst row and the count below $0.85$ under the relative step. The building--system gap is $+0.029$ under split conformal alone, $+0.073$ under the absolute step the benchmark used, and $-0.016$ under the step stated in the interval's units.}
+\label{tab:aci-step}
+\end{table}

@@ -1,0 +1,1751 @@
+{
+  "national/CN_Hainan": {
+    "id": "CN_Hainan",
+    "arm": "national",
+    "usage": "system demand",
+    "country": "CN",
+    "tier": 2,
+    "tag": "national/CN_Hainan",
+    "median_load": 3786.953247,
+    "valid_width_lead4": 1520.3537419192376,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 9.122122451515425,
+    "kappa_of_abs": 0.00023020958238190878,
+    "fit_seconds": 72.4,
+    "calib": {
+      "split": {
+        "coverage_90": 0.9593858506944445,
+        "below_q95": 0.9593858506944445,
+        "pinball_mean": 100.68984270519513,
+        "calibration_error": 0.11204644097222223,
+        "mean_width": 1509.9975424641461
+      },
+      "aci_abs": {
+        "coverage_90": 0.9596245659722222,
+        "below_q95": 0.9600694444444444,
+        "pinball_mean": 93.8776957842218,
+        "calibration_error": 0.08166015624999999,
+        "mean_width": 1486.3431056492975
+      },
+      "aci_rel": {
+        "coverage_90": 0.9548990885416667,
+        "below_q95": 0.9751139322916667,
+        "pinball_mean": 57.19915522597181,
+        "calibration_error": 0.0765256076388889,
+        "mean_width": 1208.139730990079
+      }
+    }
+  },
+  "climate/Fox_education_Kris": {
+    "id": "Fox_education_Kris",
+    "arm": "climate",
+    "usage": "Education",
+    "country": "US",
+    "tier": 1,
+    "tag": "climate/Fox_education_Kris",
+    "median_load": 66.6955311828432,
+    "valid_width_lead4": 32.74195428990313,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.19645172573941877,
+    "kappa_of_abs": 0.010689649032584838,
+    "fit_seconds": 307.6,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8476399739583333,
+        "below_q95": 0.8970648871527778,
+        "pinball_mean": 3.9092638436043985,
+        "calibration_error": 0.05773328993055554,
+        "mean_width": 35.15541995690143
+      },
+      "aci_abs": {
+        "coverage_90": 0.8841471354166667,
+        "below_q95": 0.9423448350694444,
+        "pinball_mean": 3.4842370425499487,
+        "calibration_error": 0.007839626736111093,
+        "mean_width": 41.275669039640505
+      },
+      "aci_rel": {
+        "coverage_90": 0.8727918836805556,
+        "below_q95": 0.9344780815972222,
+        "pinball_mean": 3.5584371073920615,
+        "calibration_error": 0.013755425347222206,
+        "mean_width": 39.082565787148965
+      }
+    }
+  },
+  "climate/Bull_education_Dakota": {
+    "id": "Bull_education_Dakota",
+    "arm": "climate",
+    "usage": "Education",
+    "country": "US",
+    "tier": 1,
+    "tag": "climate/Bull_education_Dakota",
+    "median_load": 44.461922442434975,
+    "valid_width_lead4": 17.055403509915426,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.10233242105949256,
+    "kappa_of_abs": 0.020521355580741436,
+    "fit_seconds": 253.5,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8893934461805556,
+        "below_q95": 0.9707465277777778,
+        "pinball_mean": 1.3695600687359648,
+        "calibration_error": 0.0412858072916667,
+        "mean_width": 23.55817801474891
+      },
+      "aci_abs": {
+        "coverage_90": 0.9059353298611111,
+        "below_q95": 0.9533365885416667,
+        "pinball_mean": 1.060625948099463,
+        "calibration_error": 0.011303168402777794,
+        "mean_width": 21.15789678678385
+      },
+      "aci_rel": {
+        "coverage_90": 0.9066569010416666,
+        "below_q95": 0.9582790798611112,
+        "pinball_mean": 1.2030927034287946,
+        "calibration_error": 0.010852864583333352,
+        "mean_width": 22.423444683556713
+      }
+    }
+  },
+  "climate/Rat_education_Lonnie": {
+    "id": "Rat_education_Lonnie",
+    "arm": "climate",
+    "usage": "Education",
+    "country": "US",
+    "tier": 1,
+    "tag": "climate/Rat_education_Lonnie",
+    "median_load": 38.445087370986826,
+    "valid_width_lead4": 35.03475616236596,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.21020853697419575,
+    "kappa_of_abs": 0.009990079519262276,
+    "fit_seconds": 168.2,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8509602864583333,
+        "below_q95": 0.9608072916666667,
+        "pinball_mean": 3.3323003608264834,
+        "calibration_error": 0.048696831597222226,
+        "mean_width": 42.41078685604515
+      },
+      "aci_abs": {
+        "coverage_90": 0.9002821180555556,
+        "below_q95": 0.9585123697916667,
+        "pinball_mean": 2.9639234291394607,
+        "calibration_error": 0.011215277777777788,
+        "mean_width": 46.176336206416465
+      },
+      "aci_rel": {
+        "coverage_90": 0.8934299045138889,
+        "below_q95": 0.9587999131944445,
+        "pinball_mean": 3.0769557853393015,
+        "calibration_error": 0.012505425347222232,
+        "mean_width": 45.25865087667002
+      }
+    }
+  },
+  "climate/Hog_education_Robert": {
+    "id": "Hog_education_Robert",
+    "arm": "climate",
+    "usage": "Education",
+    "country": "US",
+    "tier": 1,
+    "tag": "climate/Hog_education_Robert",
+    "median_load": 430.64256228402195,
+    "valid_width_lead4": 148.70446346170104,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.8922267807702062,
+    "kappa_of_abs": 0.0023536616981920167,
+    "fit_seconds": 277.4,
+    "calib": {
+      "split": {
+        "coverage_90": 0.9083333333333333,
+        "below_q95": 0.9746744791666667,
+        "pinball_mean": 11.139099264261011,
+        "calibration_error": 0.045117187500000024,
+        "mean_width": 164.6405381013347
+      },
+      "aci_abs": {
+        "coverage_90": 0.9163736979166667,
+        "below_q95": 0.9642523871527777,
+        "pinball_mean": 10.792340925697069,
+        "calibration_error": 0.010307074652777777,
+        "mean_width": 163.50144430579724
+      },
+      "aci_rel": {
+        "coverage_90": 0.9122667100694445,
+        "below_q95": 0.9575358072916667,
+        "pinball_mean": 10.403264007152803,
+        "calibration_error": 0.010332031249999998,
+        "mean_width": 156.88742448367395
+      }
+    }
+  },
+  "climate/Bear_education_Leonel": {
+    "id": "Bear_education_Leonel",
+    "arm": "climate",
+    "usage": "Education",
+    "country": "US",
+    "tier": 1,
+    "tag": "climate/Bear_education_Leonel",
+    "median_load": 56.23734137602632,
+    "valid_width_lead4": 29.152831174122234,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.1749169870447334,
+    "kappa_of_abs": 0.012005695018420047,
+    "fit_seconds": 180.0,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8031901041666667,
+        "below_q95": 0.8957953559027778,
+        "pinball_mean": 3.350482797033134,
+        "calibration_error": 0.03561523437499999,
+        "mean_width": 26.950514077573775
+      },
+      "aci_abs": {
+        "coverage_90": 0.8727864583333333,
+        "below_q95": 0.9379503038194444,
+        "pinball_mean": 3.0330481070543382,
+        "calibration_error": 0.008574218749999984,
+        "mean_width": 31.924020988527108
+      },
+      "aci_rel": {
+        "coverage_90": 0.8624945746527778,
+        "below_q95": 0.9328776041666667,
+        "pinball_mean": 3.1171818677934033,
+        "calibration_error": 0.013139105902777785,
+        "mean_width": 31.13021384648075
+      }
+    }
+  },
+  "climate/Robin_education_Kiera": {
+    "id": "Robin_education_Kiera",
+    "arm": "climate",
+    "usage": "Education",
+    "country": "GB",
+    "tier": 1,
+    "tag": "climate/Robin_education_Kiera",
+    "median_load": 66.6725042712945,
+    "valid_width_lead4": 34.610140330414005,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.20766084198248402,
+    "kappa_of_abs": 0.010112643192389312,
+    "fit_seconds": 190.3,
+    "calib": {
+      "split": {
+        "coverage_90": 0.7604275173611111,
+        "below_q95": 0.8874294704861111,
+        "pinball_mean": 2.609908604455979,
+        "calibration_error": 0.0553244357638889,
+        "mean_width": 35.19187286764328
+      },
+      "aci_abs": {
+        "coverage_90": 0.9104058159722223,
+        "below_q95": 0.9504774305555556,
+        "pinball_mean": 2.060619056461209,
+        "calibration_error": 0.006297743055555557,
+        "mean_width": 43.626606270609976
+      },
+      "aci_rel": {
+        "coverage_90": 0.8938151041666667,
+        "below_q95": 0.9440646701388888,
+        "pinball_mean": 2.191201992966188,
+        "calibration_error": 0.0033409288194444593,
+        "mean_width": 43.23373115872802
+      }
+    }
+  },
+  "climate/Wolf_education_Eulalia": {
+    "id": "Wolf_education_Eulalia",
+    "arm": "climate",
+    "usage": "Education",
+    "country": "IE",
+    "tier": 1,
+    "tag": "climate/Wolf_education_Eulalia",
+    "median_load": 48.82383456376279,
+    "valid_width_lead4": 53.19178713322775,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.3191507227993665,
+    "kappa_of_abs": 0.006579963164677402,
+    "fit_seconds": 142.6,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8013237847222222,
+        "below_q95": 0.9455023871527778,
+        "pinball_mean": 4.260440825798813,
+        "calibration_error": 0.11795030381944442,
+        "mean_width": 58.6088756060746
+      },
+      "aci_abs": {
+        "coverage_90": 0.9184353298611111,
+        "below_q95": 0.9636284722222223,
+        "pinball_mean": 3.451300278814833,
+        "calibration_error": 0.010939670138888892,
+        "mean_width": 61.08595123610609
+      },
+      "aci_rel": {
+        "coverage_90": 0.9181857638888888,
+        "below_q95": 0.9644476996527778,
+        "pinball_mean": 3.4783086778586054,
+        "calibration_error": 0.011029730902777785,
+        "mean_width": 61.38091067913014
+      }
+    }
+  },
+  "office/Fox_office_Gaylord": {
+    "id": "Fox_office_Gaylord",
+    "arm": "office",
+    "usage": "Office",
+    "country": "US",
+    "tier": 1,
+    "tag": "office/Fox_office_Gaylord",
+    "median_load": 97.21,
+    "valid_width_lead4": 28.778785282244016,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.1726727116934641,
+    "kappa_of_abs": 0.01216173638211004,
+    "fit_seconds": 221.1,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8223470052083334,
+        "below_q95": 0.8935546875,
+        "pinball_mean": 2.760079542448745,
+        "calibration_error": 0.03396918402777777,
+        "mean_width": 31.92936097835158
+      },
+      "aci_abs": {
+        "coverage_90": 0.8880696614583333,
+        "below_q95": 0.93818359375,
+        "pinball_mean": 2.4191162326298095,
+        "calibration_error": 0.00810329861111109,
+        "mean_width": 38.585409172042745
+      },
+      "aci_rel": {
+        "coverage_90": 0.8757107204861111,
+        "below_q95": 0.9282009548611111,
+        "pinball_mean": 2.574000446664158,
+        "calibration_error": 0.011151258680555562,
+        "mean_width": 36.864904933424135
+      }
+    }
+  },
+  "office/Rat_office_Jill": {
+    "id": "Rat_office_Jill",
+    "arm": "office",
+    "usage": "Office",
+    "country": "US",
+    "tier": 1,
+    "tag": "office/Rat_office_Jill",
+    "median_load": 404.5429951011977,
+    "valid_width_lead4": 253.0172140677635,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 1.518103284406581,
+    "kappa_of_abs": 0.001383305089693472,
+    "fit_seconds": 184.1,
+    "calib": {
+      "split": {
+        "coverage_90": 0.6096299913194444,
+        "below_q95": 0.9512152777777778,
+        "pinball_mean": 43.12066286632688,
+        "calibration_error": 0.19756727430555557,
+        "mean_width": 299.52960993148827
+      },
+      "aci_abs": {
+        "coverage_90": 0.8239040798611111,
+        "below_q95": 0.9507486979166667,
+        "pinball_mean": 34.038479011944005,
+        "calibration_error": 0.08738932291666666,
+        "mean_width": 344.6763741302054
+      },
+      "aci_rel": {
+        "coverage_90": 0.8783528645833333,
+        "below_q95": 0.9506618923611111,
+        "pinball_mean": 30.42766078488929,
+        "calibration_error": 0.031258680555555564,
+        "mean_width": 395.70815177038145
+      }
+    }
+  },
+  "office/Hog_office_Mari": {
+    "id": "Hog_office_Mari",
+    "arm": "office",
+    "usage": "Office",
+    "country": "US",
+    "tier": 1,
+    "tag": "office/Hog_office_Mari",
+    "median_load": 37.173,
+    "valid_width_lead4": 23.479048757362527,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.14087429254417516,
+    "kappa_of_abs": 0.01490690715867471,
+    "fit_seconds": 203.7,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8210340711805556,
+        "below_q95": 0.980712890625,
+        "pinball_mean": 3.582559049635787,
+        "calibration_error": 0.15699218750000005,
+        "mean_width": 45.882133354903445
+      },
+      "aci_abs": {
+        "coverage_90": 0.91396484375,
+        "below_q95": 0.9638943142361112,
+        "pinball_mean": 3.009111503480399,
+        "calibration_error": 0.02966362847222226,
+        "mean_width": 51.32637398243286
+      },
+      "aci_rel": {
+        "coverage_90": 0.9020779079861111,
+        "below_q95": 0.9600857204861111,
+        "pinball_mean": 3.1346682118463916,
+        "calibration_error": 0.030678168402777782,
+        "mean_width": 50.99111881245322
+      }
+    }
+  },
+  "office/Robin_office_Wai": {
+    "id": "Robin_office_Wai",
+    "arm": "office",
+    "usage": "Office",
+    "country": "GB",
+    "tier": 1,
+    "tag": "office/Robin_office_Wai",
+    "median_load": 148.74990524716432,
+    "valid_width_lead4": 226.27561642284638,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 1.3576536985370784,
+    "kappa_of_abs": 0.0015467861961138006,
+    "fit_seconds": 191.4,
+    "calib": {
+      "split": {
+        "coverage_90": 0.9207682291666667,
+        "below_q95": 1.0,
+        "pinball_mean": 22.897560783464336,
+        "calibration_error": 0.12117838541666667,
+        "mean_width": 272.10215289191007
+      },
+      "aci_abs": {
+        "coverage_90": 0.9304090711805556,
+        "below_q95": 0.9941623263888889,
+        "pinball_mean": 20.321878812529725,
+        "calibration_error": 0.03298177083333335,
+        "mean_width": 255.98720903387976
+      },
+      "aci_rel": {
+        "coverage_90": 0.9224446614583334,
+        "below_q95": 0.9755805121527777,
+        "pinball_mean": 18.797826909094162,
+        "calibration_error": 0.010967881944444435,
+        "mean_width": 238.7699333335228
+      }
+    }
+  },
+  "office/Wolf_office_Nadia": {
+    "id": "Wolf_office_Nadia",
+    "arm": "office",
+    "usage": "Office",
+    "country": "IE",
+    "tier": 1,
+    "tag": "office/Wolf_office_Nadia",
+    "median_load": 62.14601851851852,
+    "valid_width_lead4": 23.78223292809271,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.14269339756855626,
+    "kappa_of_abs": 0.014716868725415739,
+    "fit_seconds": 128.6,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8900282118055556,
+        "below_q95": 0.9415093315972223,
+        "pinball_mean": 2.268590978132906,
+        "calibration_error": 0.04700629340277775,
+        "mean_width": 30.26530355226024
+      },
+      "aci_abs": {
+        "coverage_90": 0.9124403211805555,
+        "below_q95": 0.9518934461805556,
+        "pinball_mean": 2.0196691287064223,
+        "calibration_error": 0.0054199218750000154,
+        "mean_width": 30.538130919981814
+      },
+      "aci_rel": {
+        "coverage_90": 0.9111219618055556,
+        "below_q95": 0.9510145399305555,
+        "pinball_mean": 2.1409122480121545,
+        "calibration_error": 0.005819227430555553,
+        "mean_width": 31.69222019124376
+      }
+    }
+  },
+  "demographic/Rat_education_Lonnie": {
+    "id": "Rat_education_Lonnie",
+    "arm": "demographic",
+    "usage": "Education",
+    "country": "US",
+    "tier": 1,
+    "tag": "demographic/Rat_education_Lonnie",
+    "median_load": 38.445087370986826,
+    "valid_width_lead4": 35.03475616236596,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.21020853697419575,
+    "kappa_of_abs": 0.009990079519262276,
+    "fit_seconds": 167.7,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8509602864583333,
+        "below_q95": 0.9608072916666667,
+        "pinball_mean": 3.3323003608264834,
+        "calibration_error": 0.048696831597222226,
+        "mean_width": 42.41078685604515
+      },
+      "aci_abs": {
+        "coverage_90": 0.9002821180555556,
+        "below_q95": 0.9585123697916667,
+        "pinball_mean": 2.9639234291394607,
+        "calibration_error": 0.011215277777777788,
+        "mean_width": 46.176336206416465
+      },
+      "aci_rel": {
+        "coverage_90": 0.8934299045138889,
+        "below_q95": 0.9587999131944445,
+        "pinball_mean": 3.0769557853393015,
+        "calibration_error": 0.012505425347222232,
+        "mean_width": 45.25865087667002
+      }
+    }
+  },
+  "demographic/Rat_assembly_Viola": {
+    "id": "Rat_assembly_Viola",
+    "arm": "demographic",
+    "usage": "Entertainment/public assembly",
+    "country": "US",
+    "tier": 1,
+    "tag": "demographic/Rat_assembly_Viola",
+    "median_load": 38.1,
+    "valid_width_lead4": 40.048006927874695,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.24028804156724817,
+    "kappa_of_abs": 0.008739511073056391,
+    "fit_seconds": 130.3,
+    "calib": {
+      "split": {
+        "coverage_90": 0.9267415364583333,
+        "below_q95": 0.97080078125,
+        "pinball_mean": 2.3744581569705123,
+        "calibration_error": 0.0361349826388889,
+        "mean_width": 37.86329958902694
+      },
+      "aci_abs": {
+        "coverage_90": 0.9188042534722223,
+        "below_q95": 0.9632921006944445,
+        "pinball_mean": 2.0376858525396666,
+        "calibration_error": 0.007571614583333353,
+        "mean_width": 31.597190704311792
+      },
+      "aci_rel": {
+        "coverage_90": 0.9237684461805555,
+        "below_q95": 0.9678385416666667,
+        "pinball_mean": 2.132646350021831,
+        "calibration_error": 0.008776041666666689,
+        "mean_width": 32.58183447473232
+      }
+    }
+  },
+  "demographic/Rat_health_Tanya": {
+    "id": "Rat_health_Tanya",
+    "arm": "demographic",
+    "usage": "Healthcare",
+    "country": "US",
+    "tier": 1,
+    "tag": "demographic/Rat_health_Tanya",
+    "median_load": 44.55941750743388,
+    "valid_width_lead4": 16.04995462675768,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.09629972776054607,
+    "kappa_of_abs": 0.021806915230557573,
+    "fit_seconds": 125.5,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8357042100694444,
+        "below_q95": 0.958349609375,
+        "pinball_mean": 2.099686702998911,
+        "calibration_error": 0.06394531249999999,
+        "mean_width": 22.49071496613903
+      },
+      "aci_abs": {
+        "coverage_90": 0.9021158854166667,
+        "below_q95": 0.9524739583333334,
+        "pinball_mean": 1.7016400529624245,
+        "calibration_error": 0.002256944444444446,
+        "mean_width": 26.046412220890677
+      },
+      "aci_rel": {
+        "coverage_90": 0.8850802951388889,
+        "below_q95": 0.9526475694444444,
+        "pinball_mean": 1.9334281786233383,
+        "calibration_error": 0.010432942708333327,
+        "mean_width": 25.803173751138768
+      }
+    }
+  },
+  "demographic/Rat_lodging_Christine": {
+    "id": "Rat_lodging_Christine",
+    "arm": "demographic",
+    "usage": "Lodging/residential",
+    "country": "US",
+    "tier": 1,
+    "tag": "demographic/Rat_lodging_Christine",
+    "median_load": 45.453154749550684,
+    "valid_width_lead4": 27.701599612902353,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.1662095976774141,
+    "kappa_of_abs": 0.012634649438691015,
+    "fit_seconds": 186.7,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8984537760416667,
+        "below_q95": 0.9231662326388889,
+        "pinball_mean": 2.3884561657263492,
+        "calibration_error": 0.09550455729166665,
+        "mean_width": 28.43404722223415
+      },
+      "aci_abs": {
+        "coverage_90": 0.9005479600694445,
+        "below_q95": 0.9464463975694445,
+        "pinball_mean": 2.1018282029442115,
+        "calibration_error": 0.004955512152777777,
+        "mean_width": 26.62127434595379
+      },
+      "aci_rel": {
+        "coverage_90": 0.9017361111111111,
+        "below_q95": 0.9432834201388889,
+        "pinball_mean": 2.1664346347692027,
+        "calibration_error": 0.010124782986111101,
+        "mean_width": 26.79528751231017
+      }
+    }
+  },
+  "demographic/Rat_office_Jill": {
+    "id": "Rat_office_Jill",
+    "arm": "demographic",
+    "usage": "Office",
+    "country": "US",
+    "tier": 1,
+    "tag": "demographic/Rat_office_Jill",
+    "median_load": 404.5429951011977,
+    "valid_width_lead4": 253.0172140677635,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 1.518103284406581,
+    "kappa_of_abs": 0.001383305089693472,
+    "fit_seconds": 184.0,
+    "calib": {
+      "split": {
+        "coverage_90": 0.6096299913194444,
+        "below_q95": 0.9512152777777778,
+        "pinball_mean": 43.12066286632688,
+        "calibration_error": 0.19756727430555557,
+        "mean_width": 299.52960993148827
+      },
+      "aci_abs": {
+        "coverage_90": 0.8239040798611111,
+        "below_q95": 0.9507486979166667,
+        "pinball_mean": 34.038479011944005,
+        "calibration_error": 0.08738932291666666,
+        "mean_width": 344.6763741302054
+      },
+      "aci_rel": {
+        "coverage_90": 0.8783528645833333,
+        "below_q95": 0.9506618923611111,
+        "pinball_mean": 30.42766078488929,
+        "calibration_error": 0.031258680555555564,
+        "mean_width": 395.70815177038145
+      }
+    }
+  },
+  "demographic/Rat_public_Michelle": {
+    "id": "Rat_public_Michelle",
+    "arm": "demographic",
+    "usage": "Public services",
+    "country": "US",
+    "tier": 1,
+    "tag": "demographic/Rat_public_Michelle",
+    "median_load": 46.39032202842719,
+    "valid_width_lead4": 26.270756152944667,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.157624536917668,
+    "kappa_of_abs": 0.013322798855211817,
+    "fit_seconds": 162.2,
+    "calib": {
+      "split": {
+        "coverage_90": 0.6459798177083333,
+        "below_q95": 0.9166178385416667,
+        "pinball_mean": 4.02443801927315,
+        "calibration_error": 0.0973708767361111,
+        "mean_width": 34.03533168509709
+      },
+      "aci_abs": {
+        "coverage_90": 0.88740234375,
+        "below_q95": 0.9527289496527778,
+        "pinball_mean": 3.680420541424831,
+        "calibration_error": 0.009864366319444437,
+        "mean_width": 46.03637748704874
+      },
+      "aci_rel": {
+        "coverage_90": 0.8702094184027778,
+        "below_q95": 0.94541015625,
+        "pinball_mean": 3.751953404053579,
+        "calibration_error": 0.011630859374999993,
+        "mean_width": 43.70947916336096
+      }
+    }
+  },
+  "demographic/Rat_retail_Jeffrey": {
+    "id": "Rat_retail_Jeffrey",
+    "arm": "demographic",
+    "usage": "Retail",
+    "country": "US",
+    "tier": 1,
+    "tag": "demographic/Rat_retail_Jeffrey",
+    "median_load": 57.06,
+    "valid_width_lead4": 43.72118716722506,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.26232712300335037,
+    "kappa_of_abs": 0.008005272104376257,
+    "fit_seconds": 134.4,
+    "calib": {
+      "split": {
+        "coverage_90": 0.6973470052083334,
+        "below_q95": 0.9885199652777777,
+        "pinball_mean": 6.175135342313665,
+        "calibration_error": 0.14819986979166666,
+        "mean_width": 53.30233616874729
+      },
+      "aci_abs": {
+        "coverage_90": 0.8974555121527777,
+        "below_q95": 0.9724392361111112,
+        "pinball_mean": 4.733883772884856,
+        "calibration_error": 0.014751519097222257,
+        "mean_width": 70.231235224957
+      },
+      "aci_rel": {
+        "coverage_90": 0.8905707465277778,
+        "below_q95": 0.9754828559027777,
+        "pinball_mean": 4.840256070454309,
+        "calibration_error": 0.020183376736111102,
+        "mean_width": 71.60105871510588
+      }
+    }
+  },
+  "demographic/Rat_warehouse_Eloisa": {
+    "id": "Rat_warehouse_Eloisa",
+    "arm": "demographic",
+    "usage": "Warehouse/storage",
+    "country": "US",
+    "tier": 1,
+    "tag": "demographic/Rat_warehouse_Eloisa",
+    "median_load": 55.8568119266055,
+    "valid_width_lead4": 17.241572402317026,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.10344943441390216,
+    "kappa_of_abs": 0.020299772656058035,
+    "fit_seconds": 263.9,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8317654079861111,
+        "below_q95": 0.9977973090277777,
+        "pinball_mean": 2.8332103778803885,
+        "calibration_error": 0.23989474826388885,
+        "mean_width": 26.227038775005035
+      },
+      "aci_abs": {
+        "coverage_90": 0.9424913194444444,
+        "below_q95": 0.9745876736111111,
+        "pinball_mean": 1.1888698672592664,
+        "calibration_error": 0.04734700520833334,
+        "mean_width": 19.803958192268915
+      },
+      "aci_rel": {
+        "coverage_90": 0.9395887586805556,
+        "below_q95": 0.9871636284722223,
+        "pinball_mean": 1.4091188469609979,
+        "calibration_error": 0.051343315972222234,
+        "mean_width": 22.61979042524379
+      }
+    }
+  },
+  "national/IN_Delhi": {
+    "id": "IN_Delhi",
+    "arm": "national",
+    "usage": "system demand",
+    "country": "IN",
+    "tier": 2,
+    "tag": "national/IN_Delhi",
+    "median_load": 2962.4804802,
+    "valid_width_lead4": 568.1549621478943,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 3.4089297728873658,
+    "kappa_of_abs": 0.0006160291176140301,
+    "fit_seconds": 216.3,
+    "calib": {
+      "split": {
+        "coverage_90": 0.6050238715277778,
+        "below_q95": 0.6084906684027778,
+        "pinball_mean": 87.75330206959623,
+        "calibration_error": 0.26804361979166663,
+        "mean_width": 859.7782234626965
+      },
+      "aci_abs": {
+        "coverage_90": 0.7616102430555556,
+        "below_q95": 0.7655002170138889,
+        "pinball_mean": 65.43653587058022,
+        "calibration_error": 0.16500434027777774,
+        "mean_width": 918.607896839234
+      },
+      "aci_rel": {
+        "coverage_90": 0.9036024305555556,
+        "below_q95": 0.9100802951388889,
+        "pinball_mean": 51.88225280358391,
+        "calibration_error": 0.037032335069444436,
+        "mean_width": 871.245475658463
+      }
+    }
+  },
+  "national/GB_UKM": {
+    "id": "GB_UKM",
+    "arm": "national",
+    "usage": "system demand",
+    "country": "GB",
+    "tier": 2,
+    "tag": "national/GB_UKM",
+    "median_load": 38485.67219129555,
+    "valid_width_lead4": 4369.702335126394,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 26.218214010758366,
+    "kappa_of_abs": 8.009698902977477e-05,
+    "fit_seconds": 263.6,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8122121567605144,
+        "below_q95": 0.9870144681960376,
+        "pinball_mean": 401.4840995974399,
+        "calibration_error": 0.20267857142857143,
+        "mean_width": 3998.292069531798
+      },
+      "aci_abs": {
+        "coverage_90": 0.8216403806047967,
+        "below_q95": 0.9860260253736531,
+        "pinball_mean": 378.93243162494036,
+        "calibration_error": 0.1794078032672923,
+        "mean_width": 4039.992795259961
+      },
+      "aci_rel": {
+        "coverage_90": 0.9030185523114356,
+        "below_q95": 0.9558187782412235,
+        "pinball_mean": 276.78820272825624,
+        "calibration_error": 0.009296793534932244,
+        "mean_width": 4581.165024342468
+      }
+    }
+  },
+  "national/IE": {
+    "id": "IE",
+    "arm": "national",
+    "usage": "system demand",
+    "country": "IE",
+    "tier": 2,
+    "tag": "national/IE",
+    "median_load": 3190.0,
+    "valid_width_lead4": 304.55774544396974,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 1.8273464726638184,
+    "kappa_of_abs": 0.0011492073514327691,
+    "fit_seconds": 281.4,
+    "calib": {
+      "split": {
+        "coverage_90": 0.9029968282933611,
+        "below_q95": 0.9153469325686479,
+        "pinball_mean": 18.17294858668561,
+        "calibration_error": 0.10356599756690998,
+        "mean_width": 294.2623069100643
+      },
+      "aci_abs": {
+        "coverage_90": 0.9106979927007299,
+        "below_q95": 0.9348822558220369,
+        "pinball_mean": 16.62390163489045,
+        "calibration_error": 0.023650938477580798,
+        "mean_width": 288.99018735080176
+      },
+      "aci_rel": {
+        "coverage_90": 0.9175682134167535,
+        "below_q95": 0.9501379475147723,
+        "pinball_mean": 14.945382807003085,
+        "calibration_error": 0.009540971498088285,
+        "mean_width": 276.1490546218208
+      }
+    }
+  },
+  "national/DE": {
+    "id": "DE",
+    "arm": "national",
+    "usage": "system demand",
+    "country": "DE",
+    "tier": 2,
+    "tag": "national/DE",
+    "median_load": 55514.68104931193,
+    "valid_width_lead4": 5537.23246443798,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 33.22339478662788,
+    "kappa_of_abs": 6.320847142463694e-05,
+    "fit_seconds": 305.3,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8334473844282239,
+        "below_q95": 0.9621621915189433,
+        "pinball_mean": 387.7578277165254,
+        "calibration_error": 0.05306960375391032,
+        "mean_width": 4961.625051961392
+      },
+      "aci_abs": {
+        "coverage_90": 0.8372273635731665,
+        "below_q95": 0.9618363312478276,
+        "pinball_mean": 386.4652951358636,
+        "calibration_error": 0.040915015641293025,
+        "mean_width": 5023.476348882423
+      },
+      "aci_rel": {
+        "coverage_90": 0.9112139381299965,
+        "below_q95": 0.9617277111574557,
+        "pinball_mean": 329.72318950946124,
+        "calibration_error": 0.0071754431699687345,
+        "mean_width": 6177.075809378018
+      }
+    }
+  },
+  "national/FR": {
+    "id": "FR",
+    "arm": "national",
+    "usage": "system demand",
+    "country": "FR",
+    "tier": 2,
+    "tag": "national/FR",
+    "median_load": 53531.71825541687,
+    "valid_width_lead4": 5012.342081348124,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 30.074052488088746,
+    "kappa_of_abs": 6.98276363264224e-05,
+    "fit_seconds": 346.4,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8233945950643031,
+        "below_q95": 0.8402904501216545,
+        "pinball_mean": 349.8148535226702,
+        "calibration_error": 0.11739767987486967,
+        "mean_width": 4948.359527157059
+      },
+      "aci_abs": {
+        "coverage_90": 0.8291514598540146,
+        "below_q95": 0.8463514511644074,
+        "pinball_mean": 342.80906775828333,
+        "calibration_error": 0.10666275634341327,
+        "mean_width": 4979.001383468087
+      },
+      "aci_rel": {
+        "coverage_90": 0.9018020072992701,
+        "below_q95": 0.9400580031282586,
+        "pinball_mean": 241.76308694114664,
+        "calibration_error": 0.015829205769899206,
+        "mean_width": 5074.473941306142
+      }
+    }
+  },
+  "national/ES": {
+    "id": "ES",
+    "arm": "national",
+    "usage": "system demand",
+    "country": "ES",
+    "tier": 2,
+    "tag": "national/ES",
+    "median_load": 28843.19067035504,
+    "valid_width_lead4": 3256.0586702877895,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 19.53635202172674,
+    "kappa_of_abs": 0.00010749192058294973,
+    "fit_seconds": 291.8,
+    "calib": {
+      "split": {
+        "coverage_90": 0.7710994525547445,
+        "below_q95": 0.7710994525547445,
+        "pinball_mean": 241.95095194508912,
+        "calibration_error": 0.1836559350017379,
+        "mean_width": 4862.222920320262
+      },
+      "aci_abs": {
+        "coverage_90": 0.8132005995828988,
+        "below_q95": 0.8132005995828988,
+        "pinball_mean": 226.5436403945476,
+        "calibration_error": 0.14829466458116092,
+        "mean_width": 4921.362298825688
+      },
+      "aci_rel": {
+        "coverage_90": 0.9468739137990962,
+        "below_q95": 0.9532173270768162,
+        "pinball_mean": 151.340487094668,
+        "calibration_error": 0.023907064650677802,
+        "mean_width": 4260.3489017390275
+      }
+    }
+  },
+  "national/CN_Guangdong": {
+    "id": "CN_Guangdong",
+    "arm": "national",
+    "usage": "system demand",
+    "country": "CN",
+    "tier": 2,
+    "tag": "national/CN_Guangdong",
+    "median_load": 72804.50841477273,
+    "valid_width_lead4": 37562.80717610532,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 225.37684305663194,
+    "kappa_of_abs": 9.317727462676007e-06,
+    "fit_seconds": 61.3,
+    "calib": {
+      "split": {
+        "coverage_90": 0.9183430989583333,
+        "below_q95": 0.9216471354166667,
+        "pinball_mean": 3127.270390836901,
+        "calibration_error": 0.19357964409722223,
+        "mean_width": 36562.14421477571
+      },
+      "aci_abs": {
+        "coverage_90": 0.9188313802083333,
+        "below_q95": 0.9221516927083333,
+        "pinball_mean": 3097.3163802349413,
+        "calibration_error": 0.19154730902777778,
+        "mean_width": 36547.1839364554
+      },
+      "aci_rel": {
+        "coverage_90": 0.9177029079861111,
+        "below_q95": 0.94375,
+        "pinball_mean": 1459.6153864775943,
+        "calibration_error": 0.016885850694444447,
+        "mean_width": 30332.07266081835
+      }
+    }
+  },
+  "national/CN_Shanghai": {
+    "id": "CN_Shanghai",
+    "arm": "national",
+    "usage": "system demand",
+    "country": "CN",
+    "tier": 2,
+    "tag": "national/CN_Shanghai",
+    "median_load": 17208.319551203327,
+    "valid_width_lead4": 3240.7657159556798,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 19.444594295734078,
+    "kappa_of_abs": 0.00010799916768953703,
+    "fit_seconds": 58.2,
+    "calib": {
+      "split": {
+        "coverage_90": 0.894482421875,
+        "below_q95": 0.9089138454861111,
+        "pinball_mean": 353.44465209264496,
+        "calibration_error": 0.039047309027777755,
+        "mean_width": 4762.305914672186
+      },
+      "aci_abs": {
+        "coverage_90": 0.8942491319444444,
+        "below_q95": 0.9088758680555555,
+        "pinball_mean": 352.33820620325383,
+        "calibration_error": 0.030091145833333333,
+        "mean_width": 4727.872832841324
+      },
+      "aci_rel": {
+        "coverage_90": 0.9015082465277777,
+        "below_q95": 0.9287489149305556,
+        "pinball_mean": 245.04182636639266,
+        "calibration_error": 0.03724609375,
+        "mean_width": 4171.572184970103
+      }
+    }
+  },
+  "national/CN_Yunnan": {
+    "id": "CN_Yunnan",
+    "arm": "national",
+    "usage": "system demand",
+    "country": "CN",
+    "tier": 2,
+    "tag": "national/CN_Yunnan",
+    "median_load": 19602.10351670813,
+    "valid_width_lead4": 1955.2260090303391,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 11.731356054182035,
+    "kappa_of_abs": 0.0001790074387224301,
+    "fit_seconds": 71.8,
+    "calib": {
+      "split": {
+        "coverage_90": 0.6031412760416667,
+        "below_q95": 0.9993869357638889,
+        "pinball_mean": 228.78942667346578,
+        "calibration_error": 0.27393337673611107,
+        "mean_width": 2274.375613545125
+      },
+      "aci_abs": {
+        "coverage_90": 0.702685546875,
+        "below_q95": 0.9990125868055556,
+        "pinball_mean": 197.90503577095646,
+        "calibration_error": 0.20797960069444446,
+        "mean_width": 2405.912469401026
+      },
+      "aci_rel": {
+        "coverage_90": 0.90966796875,
+        "below_q95": 0.9783854166666667,
+        "pinball_mean": 143.17504976773796,
+        "calibration_error": 0.020107421875000014,
+        "mean_width": 2471.0126048286693
+      }
+    }
+  },
+  "national/CN_Beijing": {
+    "id": "CN_Beijing",
+    "arm": "national",
+    "usage": "system demand",
+    "country": "CN",
+    "tier": 2,
+    "tag": "national/CN_Beijing",
+    "median_load": 12764.76721135104,
+    "valid_width_lead4": 5027.285509498435,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 30.163713056990613,
+    "kappa_of_abs": 6.962007615018447e-05,
+    "fit_seconds": 67.5,
+    "calib": {
+      "split": {
+        "coverage_90": 0.9064561631944444,
+        "below_q95": 0.9064561631944444,
+        "pinball_mean": 389.9250251209904,
+        "calibration_error": 0.06878146701388886,
+        "mean_width": 7593.736255750363
+      },
+      "aci_abs": {
+        "coverage_90": 0.9049587673611111,
+        "below_q95": 0.9049587673611111,
+        "pinball_mean": 387.45311566740156,
+        "calibration_error": 0.06264431423611111,
+        "mean_width": 7537.864968390919
+      },
+      "aci_rel": {
+        "coverage_90": 0.9282823350694445,
+        "below_q95": 0.9450086805555555,
+        "pinball_mean": 302.7795091654999,
+        "calibration_error": 0.016300998263888887,
+        "mean_width": 5879.232039225524
+      }
+    }
+  },
+  "national/CN_Heilongjiang": {
+    "id": "CN_Heilongjiang",
+    "arm": "national",
+    "usage": "system demand",
+    "country": "CN",
+    "tier": 2,
+    "tag": "national/CN_Heilongjiang",
+    "median_load": 11168.18155011363,
+    "valid_width_lead4": 1018.0335432610462,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 6.108201259566278,
+    "kappa_of_abs": 0.00034380006662536094,
+    "fit_seconds": 92.8,
+    "calib": {
+      "split": {
+        "coverage_90": 0.42619900173611114,
+        "below_q95": 0.9998046875,
+        "pinball_mean": 262.8416801771866,
+        "calibration_error": 0.37958984375000004,
+        "mean_width": 1460.5562732305573
+      },
+      "aci_abs": {
+        "coverage_90": 0.5649739583333333,
+        "below_q95": 0.9997504340277777,
+        "pinball_mean": 191.5834036202936,
+        "calibration_error": 0.3200021701388889,
+        "mean_width": 1591.9330599405412
+      },
+      "aci_rel": {
+        "coverage_90": 0.9367567274305556,
+        "below_q95": 0.9987521701388888,
+        "pinball_mean": 77.21041019503966,
+        "calibration_error": 0.04855251736111111,
+        "mean_width": 1477.3462406838985
+      }
+    }
+  },
+  "india/IIITD_Academic@2015": {
+    "id": "IIITD_Academic",
+    "arm": "india",
+    "usage": "building",
+    "country": "IN",
+    "tier": 1,
+    "tag": "india/IIITD_Academic@2015",
+    "median_load": 18.899311522666668,
+    "valid_width_lead4": 15.241280399873592,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.09144768239924156,
+    "kappa_of_abs": 0.022963949931851056,
+    "fit_seconds": 214.4,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8547797309027778,
+        "below_q95": 0.9648763020833333,
+        "pinball_mean": 1.4274582608137325,
+        "calibration_error": 0.08012478298611113,
+        "mean_width": 18.250220779432734
+      },
+      "aci_abs": {
+        "coverage_90": 0.9033365885416667,
+        "below_q95": 0.9522406684027778,
+        "pinball_mean": 1.211082685707348,
+        "calibration_error": 0.004452039930555561,
+        "mean_width": 19.092774496483745
+      },
+      "aci_rel": {
+        "coverage_90": 0.9014105902777778,
+        "below_q95": 0.9549858940972222,
+        "pinball_mean": 1.3143375254213296,
+        "calibration_error": 0.007198350694444447,
+        "mean_width": 19.363220950513064
+      }
+    },
+    "test_june": 2015,
+    "train_months": 13,
+    "cooling_on_meter": false
+  },
+  "india/IIITD_Academic@2016": {
+    "id": "IIITD_Academic",
+    "arm": "india",
+    "usage": "building",
+    "country": "IN",
+    "tier": 1,
+    "tag": "india/IIITD_Academic@2016",
+    "median_load": 18.899311522666668,
+    "valid_width_lead4": 12.842975961775291,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.07705785577065175,
+    "kappa_of_abs": 0.027252250649826747,
+    "fit_seconds": 168.2,
+    "calib": {
+      "split": {
+        "coverage_90": 0.9000325520833333,
+        "below_q95": 0.9338433159722223,
+        "pinball_mean": 1.3105141333883101,
+        "calibration_error": 0.05854709201388887,
+        "mean_width": 15.16112397393821
+      },
+      "aci_abs": {
+        "coverage_90": 0.9104817708333334,
+        "below_q95": 0.9495985243055556,
+        "pinball_mean": 1.1463617281994776,
+        "calibration_error": 0.0037879774305555336,
+        "mean_width": 15.739839921421627
+      },
+      "aci_rel": {
+        "coverage_90": 0.9019097222222222,
+        "below_q95": 0.9451768663194444,
+        "pinball_mean": 1.2464253542364883,
+        "calibration_error": 0.0043608940972222066,
+        "mean_width": 15.90973273155429
+      }
+    },
+    "test_june": 2016,
+    "train_months": 15,
+    "cooling_on_meter": false
+  },
+  "india/IIITD_Academic@2017": {
+    "id": "IIITD_Academic",
+    "arm": "india",
+    "usage": "building",
+    "country": "IN",
+    "tier": 1,
+    "tag": "india/IIITD_Academic@2017",
+    "median_load": 18.899311522666668,
+    "valid_width_lead4": 13.322283477246037,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.07993370086347622,
+    "kappa_of_abs": 0.02627177244785302,
+    "fit_seconds": 193.5,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8576931423611112,
+        "below_q95": 0.9554633246527777,
+        "pinball_mean": 1.1224831699494393,
+        "calibration_error": 0.12005425347222223,
+        "mean_width": 15.120471051614249
+      },
+      "aci_abs": {
+        "coverage_90": 0.9092013888888889,
+        "below_q95": 0.9525553385416666,
+        "pinball_mean": 0.8531471436277431,
+        "calibration_error": 0.004347873263888871,
+        "mean_width": 15.121995134096435
+      },
+      "aci_rel": {
+        "coverage_90": 0.9082465277777778,
+        "below_q95": 0.9530164930555556,
+        "pinball_mean": 0.9679368407429016,
+        "calibration_error": 0.003563368055555584,
+        "mean_width": 16.085851949112943
+      }
+    },
+    "test_june": 2017,
+    "train_months": 15,
+    "cooling_on_meter": false
+  },
+  "india/IIITD_Library@2014": {
+    "id": "IIITD_Library",
+    "arm": "india",
+    "usage": "building",
+    "country": "IN",
+    "tier": 1,
+    "tag": "india/IIITD_Library@2014",
+    "median_load": 6.1949160332772015,
+    "valid_width_lead4": 8.660813080561814,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.051964878483370884,
+    "kappa_of_abs": 0.04041191014565759,
+    "fit_seconds": 58.7,
+    "calib": {
+      "split": {
+        "coverage_90": 0.7622961960215071,
+        "below_q95": 0.9782264772560468,
+        "pinball_mean": 0.7876701921173013,
+        "calibration_error": 0.13356982477886692,
+        "mean_width": 10.084733264435553
+      },
+      "aci_abs": {
+        "coverage_90": 0.9224960448844454,
+        "below_q95": 0.9628844345136159,
+        "pinball_mean": 0.5530661761876934,
+        "calibration_error": 0.015054882325118663,
+        "mean_width": 8.248280362631641
+      },
+      "aci_rel": {
+        "coverage_90": 0.9282751346913922,
+        "below_q95": 0.9693648437797313,
+        "pinball_mean": 0.6789532247262526,
+        "calibration_error": 0.012946031021153742,
+        "mean_width": 9.19849974962614
+      }
+    },
+    "test_june": 2014,
+    "train_months": 7,
+    "cooling_on_meter": false
+  },
+  "india/IIITD_Library@2016": {
+    "id": "IIITD_Library",
+    "arm": "india",
+    "usage": "building",
+    "country": "IN",
+    "tier": 1,
+    "tag": "india/IIITD_Library@2016",
+    "median_load": 6.1949160332772015,
+    "valid_width_lead4": 13.02641335428143,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.07815848012568859,
+    "kappa_of_abs": 0.026868485628468438,
+    "fit_seconds": 91.0,
+    "calib": {
+      "split": {
+        "coverage_90": 0.9490505642361111,
+        "below_q95": 0.9979275173611111,
+        "pinball_mean": 1.3311559584605386,
+        "calibration_error": 0.19303059895833335,
+        "mean_width": 17.934658525631768
+      },
+      "aci_abs": {
+        "coverage_90": 0.9414225260416667,
+        "below_q95": 0.9615342881944444,
+        "pinball_mean": 0.7692511605404929,
+        "calibration_error": 0.016672092013888907,
+        "mean_width": 11.525111259468751
+      },
+      "aci_rel": {
+        "coverage_90": 0.9644476996527778,
+        "below_q95": 0.978857421875,
+        "pinball_mean": 0.9130037441495477,
+        "calibration_error": 0.028432074652777785,
+        "mean_width": 14.22766909332147
+      }
+    },
+    "test_june": 2016,
+    "train_months": 7,
+    "cooling_on_meter": false
+  },
+  "india/IIITD_Dining@2017": {
+    "id": "IIITD_Dining",
+    "arm": "india",
+    "usage": "building",
+    "country": "IN",
+    "tier": 1,
+    "tag": "india/IIITD_Dining@2017",
+    "median_load": 16.32106595094452,
+    "valid_width_lead4": 17.242478695266183,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.1034548721715971,
+    "kappa_of_abs": 0.020298705666725883,
+    "fit_seconds": 77.0,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8676161518011649,
+        "below_q95": 0.9313870525746915,
+        "pinball_mean": 1.4777946067937395,
+        "calibration_error": 0.034162140326551536,
+        "mean_width": 18.078290915223203
+      },
+      "aci_abs": {
+        "coverage_90": 0.9006971018685824,
+        "below_q95": 0.9481677193250613,
+        "pinball_mean": 1.3233731849702342,
+        "calibration_error": 0.0026448383345979804,
+        "mean_width": 18.845636402618897
+      },
+      "aci_rel": {
+        "coverage_90": 0.8973125822247212,
+        "below_q95": 0.9450124735925585,
+        "pinball_mean": 1.4214404660475757,
+        "calibration_error": 0.004366576230846066,
+        "mean_width": 19.062557370837908
+      }
+    },
+    "test_june": 2017,
+    "train_months": 9,
+    "cooling_on_meter": false
+  },
+  "india/IIITD_Facilities@2015": {
+    "id": "IIITD_Facilities",
+    "arm": "india",
+    "usage": "building",
+    "country": "IN",
+    "tier": 1,
+    "tag": "india/IIITD_Facilities@2015",
+    "median_load": 8.086361335047432,
+    "valid_width_lead4": 5.261909995696706,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.03157145997418023,
+    "kappa_of_abs": 0.06651577094367576,
+    "fit_seconds": 99.9,
+    "calib": {
+      "split": {
+        "coverage_90": 0.83046875,
+        "below_q95": 0.8518012152777777,
+        "pinball_mean": 0.5268949319241881,
+        "calibration_error": 0.11457356770833334,
+        "mean_width": 5.664300289666615
+      },
+      "aci_abs": {
+        "coverage_90": 0.9023817274305556,
+        "below_q95": 0.9505316840277778,
+        "pinball_mean": 0.3590195103477213,
+        "calibration_error": 0.0036697048611111227,
+        "mean_width": 6.265297126799788
+      },
+      "aci_rel": {
+        "coverage_90": 0.8836968315972222,
+        "below_q95": 0.9269856770833333,
+        "pinball_mean": 0.45824952253657314,
+        "calibration_error": 0.013618706597222214,
+        "mean_width": 6.4548109927834645
+      }
+    },
+    "test_june": 2015,
+    "train_months": 10,
+    "cooling_on_meter": true
+  },
+  "india/IIITD_Facilities@2016": {
+    "id": "IIITD_Facilities",
+    "arm": "india",
+    "usage": "building",
+    "country": "IN",
+    "tier": 1,
+    "tag": "india/IIITD_Facilities@2016",
+    "median_load": 8.086361335047432,
+    "valid_width_lead4": 6.320042357394025,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.03792025414436415,
+    "kappa_of_abs": 0.055379375676260056,
+    "fit_seconds": 30.0,
+    "calib": {
+      "split": {
+        "coverage_90": 0.79453125,
+        "below_q95": 0.8072916666666666,
+        "pinball_mean": 0.6823941714729317,
+        "calibration_error": 0.09588216145833334,
+        "mean_width": 6.632806794851655
+      },
+      "aci_abs": {
+        "coverage_90": 0.8974283854166667,
+        "below_q95": 0.9461805555555556,
+        "pinball_mean": 0.47306632076191396,
+        "calibration_error": 0.0019639756944444158,
+        "mean_width": 7.059059702284027
+      },
+      "aci_rel": {
+        "coverage_90": 0.8744194878472222,
+        "below_q95": 0.9186848958333333,
+        "pinball_mean": 0.6018095143053368,
+        "calibration_error": 0.013432074652777775,
+        "mean_width": 7.534334503623993
+      }
+    },
+    "test_june": 2016,
+    "train_months": 5,
+    "cooling_on_meter": true
+  },
+  "india/IIITD_Facilities@2017": {
+    "id": "IIITD_Facilities",
+    "arm": "india",
+    "usage": "building",
+    "country": "IN",
+    "tier": 1,
+    "tag": "india/IIITD_Facilities@2017",
+    "median_load": 8.086361335047432,
+    "valid_width_lead4": 5.540457842007431,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.03324274705204459,
+    "kappa_of_abs": 0.06317167461257808,
+    "fit_seconds": 138.2,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8883379816134697,
+        "below_q95": 0.9506358086104633,
+        "pinball_mean": 0.43804829922946686,
+        "calibration_error": 0.017075769684514998,
+        "mean_width": 5.929386950100815
+      },
+      "aci_abs": {
+        "coverage_90": 0.9029080292923197,
+        "below_q95": 0.951647013412055,
+        "pinball_mean": 0.3448600647519188,
+        "calibration_error": 0.0029008530001793957,
+        "mean_width": 5.237179253601245
+      },
+      "aci_rel": {
+        "coverage_90": 0.8898112961362191,
+        "below_q95": 0.9483415697595399,
+        "pinball_mean": 0.4230364360063499,
+        "calibration_error": 0.0048620466567720596,
+        "mean_width": 5.829916897632967
+      }
+    },
+    "test_june": 2017,
+    "train_months": 15,
+    "cooling_on_meter": true
+  },
+  "india/IIITD_Boys@2014": {
+    "id": "IIITD_Boys",
+    "arm": "india",
+    "usage": "building",
+    "country": "IN",
+    "tier": 1,
+    "tag": "india/IIITD_Boys@2014",
+    "median_load": 27.779273082403357,
+    "valid_width_lead4": 14.873532816310089,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.08924119689786053,
+    "kappa_of_abs": 0.023531732798289545,
+    "fit_seconds": 56.6,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8854952695461049,
+        "below_q95": 1.0,
+        "pinball_mean": 0.8738205028380222,
+        "calibration_error": 0.11631911386275973,
+        "mean_width": 17.525344008358992
+      },
+      "aci_abs": {
+        "coverage_90": 0.9147158191383447,
+        "below_q95": 0.9631900505415948,
+        "pinball_mean": 0.66660910744371,
+        "calibration_error": 0.008115924682686916,
+        "mean_width": 13.322138915383281
+      },
+      "aci_rel": {
+        "coverage_90": 0.921869984603583,
+        "below_q95": 0.9749903432367294,
+        "pinball_mean": 0.7475593065890463,
+        "calibration_error": 0.008334194734751854,
+        "mean_width": 14.362591627766113
+      }
+    },
+    "test_june": 2014,
+    "train_months": 7,
+    "cooling_on_meter": false
+  },
+  "india/IIITD_Girls@2014": {
+    "id": "IIITD_Girls",
+    "arm": "india",
+    "usage": "building",
+    "country": "IN",
+    "tier": 1,
+    "tag": "india/IIITD_Girls@2014",
+    "median_load": 12.686959363258199,
+    "valid_width_lead4": 7.12964616993083,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.04277787701958498,
+    "kappa_of_abs": 0.049090795203290655,
+    "fit_seconds": 80.1,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8782685443281923,
+        "below_q95": 0.9956484579676791,
+        "pinball_mean": 0.5117128067962913,
+        "calibration_error": 0.11921940374377855,
+        "mean_width": 6.977362172641368
+      },
+      "aci_abs": {
+        "coverage_90": 0.9052101197093013,
+        "below_q95": 0.9532279057296235,
+        "pinball_mean": 0.3495667414985605,
+        "calibration_error": 0.003597088544663381,
+        "mean_width": 6.041742411362346
+      },
+      "aci_rel": {
+        "coverage_90": 0.910466603730372,
+        "below_q95": 0.9664445276146958,
+        "pinball_mean": 0.4402544080414173,
+        "calibration_error": 0.008376858063759308,
+        "mean_width": 6.5278770516411075
+      }
+    },
+    "test_june": 2014,
+    "train_months": 6,
+    "cooling_on_meter": false
+  },
+  "india/IIITD_Girls@2017": {
+    "id": "IIITD_Girls",
+    "arm": "india",
+    "usage": "building",
+    "country": "IN",
+    "tier": 1,
+    "tag": "india/IIITD_Girls@2017",
+    "median_load": 12.686959363258199,
+    "valid_width_lead4": 5.1990808723019555,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 0.031194485233811735,
+    "kappa_of_abs": 0.06731959140405394,
+    "fit_seconds": 73.8,
+    "calib": {
+      "split": {
+        "coverage_90": 0.9416028446389497,
+        "below_q95": 0.9919584245076587,
+        "pinball_mean": 0.3564616957652972,
+        "calibration_error": 0.03130306345733044,
+        "mean_width": 5.365765089873467
+      },
+      "aci_abs": {
+        "coverage_90": 0.9077899343544857,
+        "below_q95": 0.9532877461706784,
+        "pinball_mean": 0.2667137372118395,
+        "calibration_error": 0.002596280087527361,
+        "mean_width": 4.0504774998429856
+      },
+      "aci_rel": {
+        "coverage_90": 0.9084135667396062,
+        "below_q95": 0.9592177242888402,
+        "pinball_mean": 0.34010396932903975,
+        "calibration_error": 0.004787746170678331,
+        "mean_width": 4.565483420203891
+      }
+    },
+    "test_june": 2017,
+    "train_months": 8,
+    "cooling_on_meter": false
+  },
+  "india/IIITD_Campus@2017": {
+    "id": "IIITD_Campus",
+    "arm": "india",
+    "usage": "campus",
+    "country": "IN",
+    "tier": 1,
+    "tag": "india/IIITD_Campus@2017",
+    "median_load": 170.05320305046482,
+    "valid_width_lead4": 225.319068134019,
+    "gamma_abs": 0.35,
+    "kappa": 0.006,
+    "gamma_rel": 1.351914408804114,
+    "kappa_of_abs": 0.0015533527761255482,
+    "fit_seconds": 127.2,
+    "calib": {
+      "split": {
+        "coverage_90": 0.8185317494788047,
+        "below_q95": 0.9258165392633774,
+        "pinball_mean": 22.209847905063285,
+        "calibration_error": 0.09364011466296038,
+        "mean_width": 270.06865195823787
+      },
+      "aci_abs": {
+        "coverage_90": 0.8731215253648367,
+        "below_q95": 0.9294703353022933,
+        "pinball_mean": 21.046984761344103,
+        "calibration_error": 0.01335215427380122,
+        "mean_width": 284.3604118232522
+      },
+      "aci_rel": {
+        "coverage_90": 0.8881384642112579,
+        "below_q95": 0.9363055941626129,
+        "pinball_mean": 20.360377757803867,
+        "calibration_error": 0.004250998957609439,
+        "mean_width": 291.91755899057495
+      }
+    },
+    "test_june": 2017,
+    "train_months": 8,
+    "cooling_on_meter": true
+  }
+}
