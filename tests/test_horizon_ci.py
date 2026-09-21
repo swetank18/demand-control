@@ -98,3 +98,18 @@ def test_with_bootstrap_annotates_every_row_and_moves_no_point_estimate():
                   "empirical_horizon_se", "n_blocks", "block_sensitivity"):
             assert k in r
         assert set(r["block_sensitivity"]) == {"2", "3"}
+
+
+def test_audit_shift_moves_whole_years_and_keeps_the_shape():
+    from eval.conformal_audit import shift_years
+    assert shift_years("2017-03-31 23:45", 5) == "2012-03-31 23:45:00"
+    assert shift_years("2016-06-30 23:45", 5) == "2011-06-30 23:45:00"
+    assert shift_years("2017-06-01", 0) == "2017-06-01"
+
+
+def test_audit_country_from_prefix(tmp_path):
+    from eval.conformal_audit import country_of
+    assert country_of("IN_Delhi", tmp_path) == "IN"
+    assert country_of("CN_Hainan", tmp_path) == "CN"
+    assert country_of("Fox_office_Gaylord", tmp_path) == "US"
+    assert country_of("IIITD_Campus", tmp_path) == "IN"

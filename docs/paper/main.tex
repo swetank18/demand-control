@@ -577,7 +577,7 @@ from $0.710$ to $0.861$ with a block-bootstrap standard error of $0.031$,
 failing every acceptance criterion stated in advance.\footnote{The bootstrap
 resamples thirty whole test days rather than $184{,}320$ overlapping 15-minute
 forecasts, because those are not $184{,}320$ independent observations. The naive
-standard error is $0.0007$ and would pass any model ever built.}
+standard error is under $0.001$ and would pass any model ever built.}
 
 \begin{figure}[t]
 \centering
@@ -949,7 +949,8 @@ python eval/comparative.py     # run the protocol over the thirty supplies
 ./reproduce_india.sh           # the Indian arm: benchmark and horizon gap per window
 python eval/china_audit.py     # audit the China arm against its own data
 python eval/horizon_risk.py    # the bracket, the copula and the closed loop
-python eval/conformal_audit.py # the walk-forward calibration year
+python eval/conformal_audit.py # the walk-forward calibration year, building tier
+python eval/conformal_audit.py --building IN_Delhi --shift-years 5   # and system tier
 python eval/paper_tables.py    # emit every table in this paper
 python eval/paper_figures.py   # emit every figure in this paper
 \end{verbatim}

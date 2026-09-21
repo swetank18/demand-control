@@ -293,6 +293,53 @@ def horizon_panel_table() -> None:
           f"{cop_in} of {n} windows.",
           "tab:horizon-panel")
 
+AUDIT_SERIES = (("Fox_office_Gaylord", "Phoenix office, building", "2016--17"),
+                ("IN_Delhi", "Delhi city, system", "2011--12"))
+
+
+def aci_table() -> None:
+    """The conformal audit, one row per tier it has been run at: the monthly
+    range and in-band share of the walk-forward year for split conformal and
+    for ACI, and post-shift coverage under the frozen model."""
+    rows, found = [], []
+    for key, name, years in AUDIT_SERIES:
+        p = RESULTS / f"conformal_audit_{key}.json"
+        if not p.exists():
+            continue
+        d = json.loads(p.read_text())
+        m = d["year"]["by_month"]
+        b = d["year"]["band_90"]
+        f = d["frozen_shift"]
+        sp = [r["split_cov90"] for r in m]
+        ac = [r["aci_cov90"] for r in m]
+        rows.append([name, years,
+                     f"{min(sp):.3f}--{max(sp):.3f}", f"{b['split']['in_band_pct']:.0f}\\%",
+                     f"{min(ac):.3f}--{max(ac):.3f}", f"{b['aci']['in_band_pct']:.0f}\\%",
+                     f"{f['post_shift_cov90_split']:.3f}", f"{f['post_shift_cov90_aci']:.3f}"])
+        found.append((name, d, sp, ac))
+    if not rows:
+        return
+    tiers = " and ".join(n.split(",")[0] for n, *_ in found)
+    table(OUT / "aci.tex",
+          ["Series", "year", "split, by month", "in band", "ACI, by month", "in band",
+           "split", "ACI"],
+          rows, "llrrrrrr",
+          "The adaptive layer at each tier it has been run at: " + tiers + ". "
+          "Walk-forward year of twelve monthly folds, each trained strictly on the "
+          "past and calibrated on the thirty days before it; coverage of the nominal "
+          "$0.90$ interval by month (range) and the share of the rolling 30-day curve "
+          "inside $0.85$--$0.95$. The last two columns are coverage after a level and "
+          "volatility shift injected into a model frozen six months earlier, which "
+          "static calibration cannot respond to by construction. "
+          + " ".join(
+              f"At {n.split(',')[0]} split conformal spends {d['year']['band_90']['split']['in_band_pct']:.0f}\\% "
+              f"of the year in band and ACI {d['year']['band_90']['aci']['in_band_pct']:.0f}\\%; "
+              f"after the shift, split settles at {d['frozen_shift']['post_shift_cov90_split']:.3f} "
+              f"and ACI at {d['frozen_shift']['post_shift_cov90_aci']:.3f}."
+              for n, d, *_ in found),
+          "tab:aci")
+
+
 def copula_df_table() -> None:
     """What the choice of the copula's one free parameter contributes: the
     held-out prediction under the tail-matched nu, under a pseudo-likelihood
@@ -679,6 +726,7 @@ def main() -> None:
     horizon_table()
     horizon_panel_table()
     copula_df_table()
+    aci_table()
     acceptance_table()
     iblend_table()
     df = load_study()

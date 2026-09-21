@@ -254,46 +254,51 @@ def fig_null(df) -> None:
 
 # --------------------------------------------------------------------------
 def fig_aci() -> None:
-    """The remedy, at building scale. Split conformal is the layer with the
-    theorem; the theorem's hypothesis is what breaks, and this is the twelve
-    months in which it breaks and the adaptive layer does not."""
-    p = RESULTS / "conformal_audit_Fox_office_Gaylord.json"
-    if not p.exists():
+    """The remedy, at every tier it has been run at. Split conformal is the
+    layer with the theorem; the theorem's hypothesis is what breaks, and this
+    is the twelve months in which it breaks and the adaptive layer does not.
+    One panel per audited series: the Phoenix office, and the Delhi city feed
+    when its audit has been run."""
+    series = [("Fox_office_Gaylord", "Phoenix office (building), 2016\u201317"),
+              ("IN_Delhi", "Delhi city (system demand), 2011\u201312")]
+    found = [(json.loads((RESULTS / f"conformal_audit_{k}.json").read_text()), title)
+             for k, title in series if (RESULTS / f"conformal_audit_{k}.json").exists()]
+    if not found:
         return
-    d = json.loads(p.read_text())
-    m = d["year"]["by_month"]
-    x = np.arange(len(m))
-    lab = [r["month"][2:] for r in m]
 
-    fig, ax = plt.subplots(figsize=(5.6, 2.5))
-    ax.axhspan(0.85, 0.95, color=LIGHT, alpha=0.22, lw=0)
-    ax.axhline(0.90, color=INK, lw=0.8, ls="--")
-
-    for key, col, ls, mk, name in (
-            ("raw_cov90", LIGHT, (0, (1, 1.6)), "s", "raw LightGBM quantiles"),
-            ("split_cov90", MID, "--", "^", "split conformal"),
-            ("aci_cov90", ACCENT, "-", "o", "split + adaptive (ACI)")):
-        y = [r[key] for r in m]
-        ax.plot(x, y, color=col, ls=ls, lw=1.3 if key == "aci_cov90" else 1.0,
-                marker=mk, ms=3.0, label=name)
-
-    band = d["year"]["band_90"]
-    ax.set_title(
-        "share of the year inside 0.85\u20130.95:      "
-        f"raw {band['raw']['in_band_pct']:.0f}%      "
-        f"split conformal {band['split']['in_band_pct']:.0f}%      "
-        f"ACI {band['aci']['in_band_pct']:.0f}%",
-        loc="left", fontsize=7.2, color=MID, pad=6)
-
-    ax.set_xticks(x)
-    ax.set_xticklabels(lab, rotation=45, ha="right")
-    ax.set_ylim(0.20, 1.02)
-    ax.set_ylabel("coverage of the\nnominal 90% interval", linespacing=1.3)
-    ax.set_xlabel("walk-forward test month (trained strictly on the past)")
-    ax.legend(loc="lower center", bbox_to_anchor=(0.5, -0.62), frameon=False,
-              ncol=3, handlelength=2.4, labelspacing=0.3, borderpad=0.0,
-              columnspacing=1.8)
-    _despine(ax)
+    n = len(found)
+    fig, axes = plt.subplots(n, 1, figsize=(5.6, 2.1 * n + 0.5), sharey=True)
+    axes = np.atleast_1d(axes)
+    for ax, (d, title) in zip(axes, found):
+        m = d["year"]["by_month"]
+        x = np.arange(len(m))
+        lab = [r["month"][2:] for r in m]
+        ax.axhspan(0.85, 0.95, color=LIGHT, alpha=0.22, lw=0)
+        ax.axhline(0.90, color=INK, lw=0.8, ls="--")
+        for key, col, ls, mk, name in (
+                ("raw_cov90", LIGHT, (0, (1, 1.6)), "s", "raw LightGBM quantiles"),
+                ("split_cov90", MID, "--", "^", "split conformal"),
+                ("aci_cov90", ACCENT, "-", "o", "split + adaptive (ACI)")):
+            y = [r[key] for r in m]
+            ax.plot(x, y, color=col, ls=ls, lw=1.3 if key == "aci_cov90" else 1.0,
+                    marker=mk, ms=3.0, label=name)
+        band = d["year"]["band_90"]
+        ax.set_title(
+            f"{title}   \u2014   share of the year inside 0.85\u20130.95:  "
+            f"raw {band['raw']['in_band_pct']:.0f}%   "
+            f"split {band['split']['in_band_pct']:.0f}%   "
+            f"ACI {band['aci']['in_band_pct']:.0f}%",
+            loc="left", fontsize=7.0, color=MID, pad=5)
+        ax.set_xticks(x)
+        ax.set_xticklabels(lab, rotation=45, ha="right")
+        ax.set_ylim(0.20, 1.02)
+        ax.set_ylabel("coverage of the\nnominal 90% interval", linespacing=1.3)
+        _despine(ax)
+    axes[-1].set_xlabel("walk-forward test month (trained strictly on the past)")
+    axes[-1].legend(loc="lower center", bbox_to_anchor=(0.5, -0.62 if n == 1 else -0.95),
+                    frameon=False, ncol=3, handlelength=2.4, labelspacing=0.3,
+                    borderpad=0.0, columnspacing=1.8)
+    fig.subplots_adjust(hspace=0.55)
     _save(fig, "fig_aci")
 
 

@@ -81,6 +81,31 @@ BAND_Q95 = (0.925, 0.975)
 # fitting
 # ---------------------------------------------------------------------------
 
+def shift_years(s: str, years: int) -> str:
+    """A date literal moved back by whole years, shape preserved: the same
+    device eval/comparative.py uses to run the 2016-17 protocol on Delhi's
+    2011-12 archive, so the audit's calendar position is identical there."""
+    if not years:
+        return s
+    t = pd.Timestamp(s)
+    return str(t.replace(year=t.year - years))
+
+
+def country_of(building: str, cache: Path) -> str:
+    """A metered system series carries its country in data/cache/manifest_national.json;
+    a BDG2 or I-BLEND building carries it in its site prefix."""
+    from forecast.calendars import country_of_building
+    man = cache / "manifest_national.json"
+    if man.exists():
+        m = json.loads(man.read_text())
+        if building in m:
+            return m[building]["country"]
+    prefix = building.split("_")[0]
+    if len(prefix) == 2 and prefix.isupper():
+        return prefix          # IN_Delhi, GB_UKM, CN_Hainan: the ISO code is the prefix
+    return country_of_building(building)
+
+
 def supervised(building: str, cache: Path) -> pd.DataFrame:
     """The (origin, horizon) frame, from the cache if the benchmark already
     built it. Rebuilding it costs about a minute and 2.5 million rows, and the
@@ -89,7 +114,7 @@ def supervised(building: str, cache: Path) -> pd.DataFrame:
     if path.exists():
         return pd.read_parquet(path)
     df = pd.read_parquet(cache / f"{building}.parquet")
-    sup = build_supervised(df)
+    sup = build_supervised(df, country=country_of(building, cache))
     sup.to_parquet(path)
     return sup
 
@@ -153,6 +178,7 @@ def _split_row(p_cal, p_te, y_cal, y_te, h_cal, h_te, mask, alpha, label, block=
 
 def study_split_robustness(
     sup: pd.DataFrame, n_blocks: int = 6, alpha: float = 0.10, seed: int = 0,
+    years_back: int = 0,
 ) -> dict:
     """Refit calibration on ``n_blocks`` disjoint blocks and re-measure test
     coverage each time.
@@ -164,10 +190,14 @@ def study_split_robustness(
     mean.
     """
     t = pd.to_datetime(sup["target_time"])
-    tr = sup[t <= "2017-03-31 23:45"]
-    es = sup[(t >= "2017-04-01") & (t <= "2017-04-30 23:45")]
-    cal = sup[(t >= "2017-05-01") & (t <= "2017-05-31 23:45")]
-    te = sup[(t >= "2017-06-01") & (t <= "2017-06-30 23:45")]
+    d = {k: shift_years(v, years_back) for k, v in {
+        "tr_end": "2017-03-31 23:45", "es0": "2017-04-01", "es1": "2017-04-30 23:45",
+        "cal0": "2017-05-01", "cal1": "2017-05-31 23:45",
+        "te0": "2017-06-01", "te1": "2017-06-30 23:45"}.items()}
+    tr = sup[t <= d["tr_end"]]
+    es = sup[(t >= d["es0"]) & (t <= d["es1"])]
+    cal = sup[(t >= d["cal0"]) & (t <= d["cal1"])]
+    te = sup[(t >= d["te0"]) & (t <= d["te1"])]
 
     models = fit_quantiles(tr, es)
     p_cal, p_te = predict(models, cal), predict(models, te)
@@ -234,7 +264,8 @@ def study_split_robustness(
 # study 2 -- the walk-forward year
 # ---------------------------------------------------------------------------
 
-def walk_forward_year(sup: pd.DataFrame, folds=AUDIT_FOLDS, gamma: float = 0.35) -> pd.DataFrame:
+def walk_forward_year(sup: pd.DataFrame, folds=AUDIT_FOLDS, gamma: float = 0.35,
+                      years_back: int = 0) -> pd.DataFrame:
     """One row per (origin, horizon) across twelve out-of-sample months.
 
     Per fold: train on everything up to 30 days before the fold boundary, early
@@ -244,6 +275,7 @@ def walk_forward_year(sup: pd.DataFrame, folds=AUDIT_FOLDS, gamma: float = 0.35)
     requires and what makes the coverage number mean something.
     """
     t = pd.to_datetime(sup["target_time"])
+    folds = [(shift_years(a, years_back), shift_years(b, years_back)) for a, b in folds]
     frames = []
     for i, (train_end, valid_end) in enumerate(folds):
         te_end = pd.Timestamp(train_end)
@@ -381,6 +413,7 @@ def study_frozen_shift(
     building: str, cache: Path, freeze_end: str = "2016-12-31 23:45",
     run_start: str = "2017-01-01", run_end: str = "2017-06-30 23:45",
     shift_start: str = "2017-03-01", gamma: float = 0.35, lead: int = 4,
+    years_back: int = 0,
 ) -> dict:
     """Train once, freeze, then run six months in a world that moved.
 
@@ -389,10 +422,13 @@ def study_frozen_shift(
     separate the adaptive layer from the retrain schedule. Freezing the model
     isolates one mechanism and measures it.
     """
+    freeze_end, run_start, run_end, shift_start = (
+        shift_years(x, years_back) for x in (freeze_end, run_start, run_end, shift_start))
+    country = country_of(building, cache)
     raw = pd.read_parquet(cache / f"{building}.parquet")
     shifted = inject_shift(raw, shift_start)
 
-    sup_tr = build_supervised(raw)
+    sup_tr = build_supervised(raw, country=country)
     t = pd.to_datetime(sup_tr["target_time"])
     cal_start = pd.Timestamp(freeze_end) - pd.Timedelta(days=30)
     es_start = cal_start - pd.Timedelta(days=15)
@@ -405,7 +441,7 @@ def study_frozen_shift(
 
     # the evaluation frame is built from the *shifted* series, so the lag
     # features carry the new regime exactly as a deployed model's would
-    sup_ev = build_supervised(shifted)
+    sup_ev = build_supervised(shifted, country=country)
     te = pd.to_datetime(sup_ev["target_time"])
     ev = sup_ev[(te >= pd.Timestamp(run_start)) & (te <= pd.Timestamp(run_end))]
     ev = ev.sort_values(["target_time", "horizon"]).reset_index(drop=True)
@@ -520,6 +556,7 @@ def figure(payload: dict, path: Path) -> None:
 
 
 def to_markdown(p: dict) -> str:
+    yr = 2017 - int(p.get("shift_years", 0))
     s, y, f = p["split_robustness"], p["year"], p["frozen_shift"]
     fb = s["full_block"]
     L = [
@@ -544,8 +581,8 @@ def to_markdown(p: dict) -> str:
         "",
         "#### A1 — coverage does not depend on the calibration split",
         "",
-        "Six disjoint calibration blocks partition May 2017; June is the test month, "
-        "touched once. Training ends 2017-03-31 and April is the early-stopping block, "
+        f"Six disjoint calibration blocks partition May {yr}; June is the test month, "
+        f"touched once. Training ends {yr}-03-31 and April is the early-stopping block, "
         "so no block that selected the model is ever used to calibrate it. A seventh "
         "row calibrates on all of May, which separates the effect of *where* the "
         "calibration window sits from *how big* it is.",
@@ -703,6 +740,9 @@ def main() -> None:
     ap.add_argument("--reuse", action="store_true",
                     help="reuse the saved walk-forward year and frozen-shift study "
                          "instead of retraining fourteen models to change a table")
+    ap.add_argument("--shift-years", type=int, default=0,
+                    help="run the identical 2016-17 protocol this many years earlier; "
+                         "5 puts it on Delhi's 2011-12 archive, as the benchmark does")
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
 
@@ -710,7 +750,7 @@ def main() -> None:
     sup = supervised(args.building, args.cache)
 
     print("\n-- A1: six disjoint calibration blocks")
-    robustness = study_split_robustness(sup)
+    robustness = study_split_robustness(sup, years_back=args.shift_years)
     print(f"   coverage90 mean {robustness['coverage_90_mean']:.4f}  "
           f"sd across splits {robustness['coverage_90_sd_across_splits']:.4f}  "
           f"bootstrap SE {robustness['block_bootstrap_se_90']:.4f}")
@@ -722,7 +762,7 @@ def main() -> None:
         print(f"   reusing {year_path.name} ({len(year):,} rows, "
               f"{year['fold'].nunique()} folds)")
     else:
-        year = walk_forward_year(sup, gamma=args.gamma)
+        year = walk_forward_year(sup, gamma=args.gamma, years_back=args.shift_years)
     curves = coverage_curves(year, lead=args.lead)
     year_payload = {
         "folds": int(year["fold"].nunique()),
@@ -747,12 +787,15 @@ def main() -> None:
         frozen = json.loads(prev.read_text())["frozen_shift"]
         print("   reusing the frozen-shift study from the previous run")
     else:
-        frozen = study_frozen_shift(args.building, args.cache, gamma=args.gamma, lead=args.lead)
+        frozen = study_frozen_shift(args.building, args.cache, gamma=args.gamma, lead=args.lead,
+                                    years_back=args.shift_years)
     print(f"   post-shift P(y<=q95): split {frozen['post_shift_below_q95_split']:.4f}  "
           f"aci {frozen['post_shift_below_q95_aci']:.4f}")
 
     payload = {
         "building": args.building,
+        "country": country_of(args.building, args.cache),
+        "shift_years": args.shift_years,
         "gamma": args.gamma,
         "bands": {"coverage_90": list(BAND_90), "below_q95": list(BAND_Q95)},
         "split_robustness": robustness,
@@ -762,9 +805,13 @@ def main() -> None:
     (args.out / f"conformal_audit_{args.building}.json").write_text(
         json.dumps(payload, indent=2, default=float))
     figure(payload, args.out / f"conformal_audit_{args.building}.png")
-    (args.out / "conformal_audit.md").write_text(to_markdown(payload) + "\n")
+    # the original building keeps the unsuffixed report the paper's
+    # reproducibility block names; every other series gets its own
+    md = args.out / ("conformal_audit.md" if args.building == "Fox_office_Gaylord"
+                     else f"conformal_audit_{args.building}.md")
+    md.write_text(to_markdown(payload) + "\n")
     year.to_parquet(args.out / f"conformal_year_{args.building}.parquet")
-    print(f"\nwrote {args.out / 'conformal_audit.md'}")
+    print(f"\nwrote {md}")
 
 
 if __name__ == "__main__":
