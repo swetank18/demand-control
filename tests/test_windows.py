@@ -58,3 +58,38 @@ def test_a_long_gap_is_refused():
     df = pd.DataFrame({"base_kw": 1.0}, index=idx)
     with pytest.raises(ValueError, match="refusing to interpolate"):
         _fill_short_gaps(df.drop(df.index[20:30]))
+
+
+# --- the counts the paper states ------------------------------------------
+
+def test_the_supply_count_the_paper_claims_is_the_count_that_ran():
+    """The title says how many supplies the protocol ran over. It is easy to
+    write that number once and then add an arm, or to count a series the
+    selection rule threw out -- an earlier draft said thirty-eight because it
+    counted IIITD_Lecture, whose meter is dead and which has no admissible
+    window. Count it from the results instead."""
+    import json
+    from pathlib import Path
+    results = Path("results")
+    arms = ["climate", "demographic", "office", "national", "china"]
+    ids = set()
+    for arm in arms:
+        p = results / f"comparative_{arm}.json"
+        if not p.exists():
+            import pytest
+            pytest.skip(f"no {p.name}; run eval/comparative.py")
+        d = json.loads(p.read_text())
+        rows = d if isinstance(d, list) else list(d.values())
+        ids |= {r["id"] for r in rows if isinstance(r, dict) and "models" in r}
+    p = results / "comparative_india.json"
+    if p.exists():
+        ids |= {r["id"] for r in json.loads(p.read_text()).values() if "models" in r}
+
+    claimed = "thirty-seven"
+    words = {30: "thirty", 36: "thirty-six", 37: "thirty-seven", 38: "thirty-eight"}
+    assert words.get(len(ids)) == claimed, (
+        f"the protocol ran over {len(ids)} distinct supplies "
+        f"({words.get(len(ids), len(ids))}), the paper says {claimed}")
+    for doc in (Path("docs/paper/main.tex"), Path("docs/paper_journal/main.tex")):
+        if doc.exists():
+            assert claimed in doc.read_text(), f"{doc} does not state the count"
