@@ -1,0 +1,26 @@
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llrrlrrrrr}
+\toprule
+Series & Level & June & Train mo. & Cooling on meter & Median kW & Seas.\ naive & Ours & Skill & Cov 90\% \\
+\midrule
+Campus & campus & 2017 & 8 & yes & 170.1 & 22.942 & 21.047 & \textbf{+0.083} & 0.873 \\
+Academic & building & 2015 & 13 & no & 18.9 & 0.943 & 1.211 & \textbf{-0.284} & 0.903 \\
+Academic & building & 2016 & 15 & no & 18.9 & 1.097 & 1.146 & \textbf{-0.045} & 0.910 \\
+Academic & building & 2017 & 15 & no & 18.9 & 1.264 & 0.853 & \textbf{+0.325} & 0.909 \\
+Boys & building & 2014 & 7 & no & 27.8 & 0.598 & 0.667 & \textbf{-0.114} & 0.915 \\
+Dining & building & 2017 & 9 & no & 16.3 & 1.476 & 1.323 & \textbf{+0.103} & 0.901 \\
+Facilities & building & 2015 & 10 & yes & 8.1 & 0.427 & 0.359 & \textbf{+0.160} & 0.902 \\
+Facilities & building & 2016 & 5 & yes & 8.1 & 0.472 & 0.473 & \textbf{-0.001} & 0.897 \\
+Facilities & building & 2017 & 15 & yes & 8.1 & 0.457 & 0.345 & \textbf{+0.246} & 0.903 \\
+Girls & building & 2014 & 6 & no & 12.7 & 0.355 & 0.350 & \textbf{+0.016} & 0.905 \\
+Girls & building & 2017 & 8 & no & 12.7 & 0.305 & 0.267 & \textbf{+0.124} & 0.908 \\
+Library & building & 2014 & 7 & no & 6.2 & 0.546 & 0.553 & \textbf{-0.012} & 0.922 \\
+Library & building & 2016 & 7 & no & 6.2 & 0.391 & 0.769 & \textbf{-0.965} & 0.941 \\
+\bottomrule
+\end{tabular}
+\caption{The Indian building arm: I-BLEND, IIIT-Delhi, one row per admissible (series, June) window, native 15-minute blocks, the unchanged protocol with the training block shortened where meter uptime forces it (the China-arm precedent). \emph{Cooling on meter} is the selection rule's chilled-water clause: six of seven buildings are served by a central chiller on the campus feed, so only the Facilities building and the campus total are control objects; every row is a forecasting and calibration result.}
+\label{tab:iblend}
+\end{table*}

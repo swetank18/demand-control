@@ -1,0 +1,28 @@
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llrcrrrrr}
+\toprule
+Series & June & realised & 95\% CI & $\nu_{\mathrm{tail}}$ & copula & $\nu_{\mathrm{lik}}$ & copula & copula, $\nu{=}7$ \\
+\midrule
+Phoenix office (BDG2) & 2017 & \textbf{0.405} & [0.28, 0.53] & 7 & 0.497 & 25 & 0.567$^\dagger$ & 0.497 \\
+\midrule
+IIIT-Delhi Academic & 2015 & \textbf{0.393} & [0.28, 0.50] & 3 & 0.477 & 25 & 0.714$^\dagger$ & 0.616$^\dagger$ \\
+IIIT-Delhi Academic & 2016 & \textbf{0.636} & [0.50, 0.75] & 5 & 0.580 & 25 & 0.732 & 0.631 \\
+IIIT-Delhi Academic & 2017 & \textbf{0.422} & [0.30, 0.54] & 5 & 0.595$^\dagger$ & Gauss. & 0.801$^\dagger$ & 0.648$^\dagger$ \\
+IIIT-Delhi Boys & 2014 & \textbf{0.501} & [0.38, 0.61] & 4 & 0.554 & 25 & 0.746$^\dagger$ & 0.642$^\dagger$ \\
+IIIT-Delhi Campus & 2017 & \textbf{0.432} & [0.29, 0.58] & 4 & 0.482 & 25 & 0.636$^\dagger$ & 0.553 \\
+IIIT-Delhi Dining & 2017 & \textbf{0.714} & [0.61, 0.81] & 15 & 0.744 & 25 & 0.774 & 0.665 \\
+IIIT-Delhi Facilities & 2015 & \textbf{0.639} & [0.55, 0.71] & 7 & 0.705 & Gauss. & 0.875$^\dagger$ & 0.705 \\
+IIIT-Delhi Facilities & 2016 & \textbf{0.621} & [0.52, 0.72] & 5 & 0.633 & Gauss. & 0.856$^\dagger$ & 0.690 \\
+IIIT-Delhi Facilities & 2017 & \textbf{0.739} & [0.62, 0.85] & 10 & 0.753 & Gauss. & 0.876$^\dagger$ & 0.706 \\
+IIIT-Delhi Girls & 2014 & \textbf{0.693} & [0.59, 0.78] & 4 & 0.589$^\dagger$ & Gauss. & 0.848$^\dagger$ & 0.684 \\
+IIIT-Delhi Girls & 2017 & \textbf{0.818} & [0.74, 0.89] & 7 & 0.739 & Gauss. & 0.914$^\dagger$ & 0.739 \\
+IIIT-Delhi Library & 2014 & \textbf{0.480} & [0.36, 0.59] & 4 & 0.567 & Gauss. & 0.816$^\dagger$ & 0.659$^\dagger$ \\
+IIIT-Delhi Library & 2016 & \textbf{0.509} & [0.41, 0.61] & 4 & 0.504 & 25 & 0.670$^\dagger$ & 0.579 \\
+\bottomrule
+\end{tabular}
+\caption{What selecting the copula's degrees of freedom contributes. Realised horizon exceedance at $H=64$ on the held-out month with its day-block bootstrap interval, and the copula's prediction under three choices of $\nu$: matched to horizon exceedance on the validation block (the paper's choice; columns 5--6), maximising the $t$-copula pseudo-likelihood on the same block (columns 7--8), and held at the Phoenix value $\nu=7$ with no refitting (last column). $\dagger$ marks a prediction outside the realised interval. The tail-matched choice lies inside on 12 of 14 windows (mean absolute error $0.065$).}
+\label{tab:copula-df}
+\end{table*}

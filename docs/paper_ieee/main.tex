@@ -1,0 +1,311 @@
+% =====================================================================
+% Conference version. The technical report is ../paper/main.tex; this is
+% the six-page cut of it for an IEEE conference, built from the *same*
+% generated tables (eval/paper_tables.py --ieee) and the same figures, so
+% no number in here is typed by hand or can drift from the study.
+%
+% Scope: Contributions 1 and 2 -- what the marginal constraint delivers
+% over a horizon, and how to make that level settable -- with the
+% calibration result kept only where Contribution 1 leans on it.
+% =====================================================================
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+% One source of truth: the figures and the bibliography are the report's,
+% referenced rather than copied, so they cannot drift between the two builds.
+\graphicspath{{../paper/figures/}}
+\newcommand{\rupee}[1]{\textsf{Rs}~#1}
+
+\begin{document}
+
+\title{What a Chance Constraint Does Not Promise:\\
+Measuring a Demand-Ceiling Guarantee on Metered\\
+Building and Campus Load}
+
+\author{\IEEEauthorblockN{Swetank Kumar}
+\IEEEauthorblockA{% TODO(author): affiliation, department, city, country, email
+Project Samanvay / Aethergrid\\
+India\\
+dynamicsanvil@gmail.com}}
+
+\maketitle
+
+\begin{abstract}
+Indian commercial demand charges are set by a single worst thirty-minute block
+in a month, which makes defending a demand ceiling a risk problem rather than a
+prediction problem. The standard applied response substitutes a high forecast
+quantile into the capacity constraint and calls the result a $95\%$ guarantee.
+We measure what that guarantee delivers, on fourteen held-out windows across an
+American office and an Indian campus at native 15-minute resolution. Per step
+the bound behaves as advertised: realised exceedance is $0.032$--$0.079$
+against a nominal $0.05$ on every window. Over the controller's 16-hour
+planning window the probability of breaching \emph{somewhere} is $0.39$ to
+$0.82$, median $0.57$ --- eight to sixteen times the level the constraint
+appears to promise --- and it is not a constant of the formulation, since one
+meter returns $0.39$, $0.64$ and $0.42$ in three successive Junes while its
+per-step rate does not move. Neither textbook substitute recovers it: the
+independence calculation $1-(1-\alpha)^{H}$ overstates realised risk by
+$1.7\times$ at the median because load errors are strongly autocorrelated, and
+the Boole union bound, the only one of the two that is valid, is $1$ on every
+window. A Student-$t$ copula fitted on validation data predicts the realised
+value to a mean absolute error of $0.065$ and lies inside the day-block
+bootstrap interval on twelve of fourteen windows. Using it, a scenario MILP
+restores the violation level as a settable parameter: realised violation of the
+ceiling the optimiser committed to tracks the requested $\varepsilon$ at rank
+correlation $0.957$, for \rupee{3{,}339} on a billing month, with a resolution
+floor of one scenario's probability mass.
+\end{abstract}
+
+\begin{IEEEkeywords}
+demand charge, chance constraint, conformal prediction, model predictive
+control, load forecasting, copula
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+A commercial consumer in India pays for energy and, separately, for the single
+highest demand block recorded in the billing month. Defending a ceiling on that
+block is the object of a large applied literature, and the standard
+formulation is a per-interval chance constraint discharged by substituting a
+high forecast quantile,
+\begin{equation}
+\label{eq:marginal}
+\Pr\!\left[\,y_t \le \hat q_{0.95}(t)\,\right] \ge 0.95
+\quad \text{for each } t \text{ in the window,}
+\end{equation}
+after which the controller is described as offering a $95\%$ guarantee. The
+event an operator cares about is not \eqref{eq:marginal}. It is that no block
+in the planning window exceeds the ceiling, and that is a joint event over $H$
+correlated steps. The two statements differ, and this paper measures by how
+much on metered load.
+
+The measurement is worth making because both of the usual corrections fail, and
+they fail in opposite directions. The quantity most often quoted,
+$1-(1-\alpha)^{H}$, is the independence calculation and not a bound; load
+errors are strongly autocorrelated, so it overstates the risk. The
+Boole/Bonferroni union bound is valid and, at $\hat\alpha\approx0.05$ over a
+sixteen-hour horizon, vacuous. Marginal calibration therefore pins the
+horizon-level risk only to a wide interval, and nothing about the forecaster
+tells an operator where in that interval a deployment sits.
+
+\paragraph*{Contributions}
+\begin{enumerate}
+\item A measured bracket on horizon-level risk for a demand ceiling on held-out
+      meter data, over fourteen windows in two countries at native 15-minute
+      resolution, with day-block bootstrap intervals: claimed $0.05$, realised
+      $0.39$--$0.82$, independence calculation $0.87$--$0.99$, union bound
+      vacuous on every row (Section~\ref{sec:gap}).
+\item A closed-loop demonstration that this level can be made an operator-set
+      parameter rather than an emergent property of horizon length, with its
+      exactness, its resolution floor and its price measured
+      (Section~\ref{sec:dial}).
+\item The measurement is made on the first Indian building-level load published
+      at native resolution for this purpose, under an Indian tariff
+      (Section~\ref{sec:setup}).
+\end{enumerate}
+
+\section{Related Work}
+
+Chance-constrained MPC for buildings was established by Oldewurtel
+\emph{et al.}\cite{oldewurtel2012,oldewurtel2014}, which reformulates per-step
+chance constraints under Gaussian disturbances; Zhang \emph{et
+al.}\cite{zhang2013scenario} replaces the distributional assumption with
+sampled scenarios in the sense of Calafiore and
+Campi\cite{calafiore2006scenario}. Joint-in-time chance constraints are handled
+in the general stochastic-MPC literature by risk allocation under Boole's
+inequality\cite{ono2008risk,paulson2017joint}, which is conservative by
+construction and, as Section~\ref{sec:gap} measures, vacuous at the horizon a
+demand ceiling requires. A recent line combines conformal prediction with MPC
+to obtain joint-in-time regions without a distributional
+assumption\cite{lindemann2023safe,vogel2025conformalmpc}, evaluated on
+trajectory-prediction and synthetic linear-system benchmarks; the one
+application to building demand response we are aware
+of\cite{xu2026e2edpc} uses stage-wise conformal tightening in simulation and
+does not report horizon-level violation.
+
+On demand-charge management specifically, the closest prior work is the PolyU
+line on monthly peak limiting\cite{xu2019adaptive,xu2020exploration}:
+probabilistic load forecasts feed a threshold-resetting scheme, with Monte
+Carlo used to study robustness of the \emph{threshold} rather than to bound the
+probability of exceeding it. Conformal methods for multi-step time series
+provide the marginal layer we
+use\cite{romano2019cqr,gibbs2021adaptive,stankeviciute2021conformal,sun2024copula}.
+What is missing across these threads, and what this paper supplies, is a
+measurement on metered building load of the horizon-level breach probability a
+marginally calibrated constraint actually delivers, bracketed by the two
+substitutes, and its restoration as a settable level inside a demand-charge
+MILP.
+
+\section{Setup}
+\label{sec:setup}
+
+\paragraph*{Data} Two corpora, one protocol. The Building Data Genome Project
+2\cite{miller2020bdg2} supplies an all-electric office in Phoenix
+(13{,}759\,m$^2$). I-BLEND\cite{rashid2019iblend} supplies seven buildings and
+the campus transformer feed of IIIT-Delhi at one-minute native resolution,
+blocked to fifteen minutes; it is, to our knowledge, the only open Indian
+building-level load dataset with the coverage this protocol needs. Six of the
+seven buildings are served by a central chiller that is not on their own meter,
+so building rows are forecasting and calibration results only; the campus total
+is the billed consumer and the control object.
+
+\paragraph*{Protocol} Fifteen months train, two months validate, one month
+test, temporal throughout, with conformal calibration fitted on the validation
+block alone. The test month is June in every window. Quantile forecasts come
+from gradient-boosted trees at five levels, calibrated by split conformal per
+horizon and an adaptive layer\cite{gibbs2021adaptive} run in time order over
+the evaluation window. Thirteen admissible (series, June) windows in Delhi plus
+the Phoenix office give fourteen.
+
+\paragraph*{Uncertainty} Coverage and exceedance are means over thousands of
+forecast origins, but adjacent origins share 63 of their 64 steps, so the unit
+of replication is the day rather than the origin. Every interval reported here
+is a day-block bootstrap, resampling calendar days with replacement.
+
+\section{The Horizon Gap}
+\label{sec:gap}
+
+\input{tables/horizon}
+\input{tables/horizon_panel}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_horizon.pdf}
+\caption{The bracket on one building. Marginal calibration constrains the
+probability of breaching somewhere in the window only to the shaded region,
+which at $H=64$ spans $0.05$ to $0.983$. The per-step rate is flat and well
+calibrated at every horizon, so nothing here is a broken forecaster. The band
+around the realised curve is the $95\%$ day-block bootstrap interval.}
+\label{fig:horizon}
+\end{figure}
+
+Table~\ref{tab:horizon-panel} reports, for each window, the per-step exceedance
+rate of the ceiling and the probability that the ceiling is breached at least
+once within a 16-hour window, alongside both substitutes.
+Figure~\ref{fig:horizon} draws the same measurement against horizon length on
+the Phoenix office.
+
+Three readings are simultaneously true. First, \emph{the forecaster is not the
+problem}: $\hat\alpha$ holds between $0.032$ and $0.079$ against a nominal
+$0.05$ on every window, which is the calibration layer doing its job. Second,
+\emph{the formulation is under-protected by roughly an order of magnitude}:
+realised horizon exceedance runs $0.393$ to $0.818$, median $0.565$, and no
+window's bootstrap lower bound falls under $0.28$. A controller deployed on
+\eqref{eq:marginal} and described as a $95\%$ guarantee is running at roughly
+$60\%$ on the mildest window in the table and below $20\%$ on the worst. Third,
+\emph{neither substitute recovers it}. The independence figure sits between
+$0.87$ and $0.99$, overstating realised risk by $1.66\times$ at the median. The
+Boole bound is $1$ on every row: at $\hat\alpha\approx0.05$ it reaches unity by
+$H=17$, four hours into a sixteen-hour horizon, after which it says nothing.
+
+The gap is also not a constant that could simply be published as a correction.
+The Academic building returns $0.393$, $0.636$ and $0.422$ in three successive
+Junes while its per-step rate stays within $0.002$ of $0.05$, and 32 of the 91
+pairs of bootstrap intervals in the table are disjoint. The correction is
+itself a random variable with a wide law.
+
+\subsection{Robustness to the Calibration Layer's Own Tuning}
+
+The per-step column is produced by an adaptive layer whose step size is a
+number in the units of each series, and these meters range from intervals of a
+few kilowatts to several hundred. Restating that step as a fraction of the
+interval width and rerunning all fourteen windows leaves the finding in place
+and changes its size: realised exceedance then runs $0.254$ to $0.660$, median
+$0.440$, with the lowest bootstrap bound at $0.15$. Under either calibration,
+on every window, the marginal constraint delivers between three and sixteen
+times its nominal horizon risk. Which end of that range a deployment lands on
+depends in part on a tuning choice nobody making it would expect to be choosing
+a risk level.
+
+\section{Restoring the Level as a Dial}
+\label{sec:dial}
+
+\input{tables/acceptance}
+
+We fit a Student-$t$ copula over the horizon on the validation block and sample
+joint trajectories --- the marginals-to-scenarios construction of Pinson
+\emph{et al.}\cite{pinson2009scenarios} with a heavier-tailed dependence family
+--- which a scenario MILP then constrains with a CVaR
+surrogate\cite{rockafellar2000cvar,nemirovski2006convex} on the probability
+mass permitted to violate. The copula reproduces the calibrated marginals to
+within $4.6\%$ of mean interval width at $4{,}000$ paths per origin, so it adds
+dependence and disturbs nothing upstream, and it predicts horizon exceedance
+far closer than either substitute: across the fourteen windows its mean
+absolute error is $0.065$ against $0.382$ for the independence figure, and it
+lies inside the realised value's $95\%$ interval on twelve of fourteen, where
+the independence figure lies inside none.
+
+Its one free parameter, the degrees of freedom, is selected on the validation
+block by matching predicted to realised horizon exceedance --- the quantity it
+is later judged on. Holding that parameter at the value chosen on the Phoenix
+office and applying it unchanged to all thirteen Indian windows still lands
+inside the realised interval on nine of thirteen, so the selection buys
+accuracy rather than the agreement itself. Selecting it instead by
+pseudo-likelihood on the same block picks the near-Gaussian end of the grid on
+every window and over-predicts on all fourteen: the likelihood is dominated by
+the body of the distribution, where the families agree, while the horizon event
+lives in the joint upper tail.
+
+Table~\ref{tab:acceptance} is a closed-loop run over a real billing month at
+two demand targets and four risk levels. The acceptance metric is violation of
+the ceiling \emph{the optimiser itself committed to at each origin}, because
+that is the event $\varepsilon$ is a statement about; the operator's monthly
+target is a business metric the chance constraint never promised, since the
+committed peak is a decision variable and an optimiser short of capacity may
+lift it, pay the demand charge and honour its constraint exactly. Both columns
+are shown and only one is the criterion.
+
+The result is that $\varepsilon$ becomes a dial. Realised commit violation
+tracks the requested level at rank correlation $0.957$ across the sweep, mean
+absolute gap $0.057$, conservative at five of eight levels. It is not exact: at
+the tightest setting $\varepsilon=0.05$ delivers $0.097$ at the tight target,
+on the unsafe side. There is a hard resolution floor at $1/S$: with $S$
+scenarios the finest expressible level is one scenario's worth of probability
+mass, below which the CVaR surrogate collapses onto the sample maximum. That is
+a property of sample average approximation, not a tuning artefact, and a finer
+dial costs scenarios and solve time.
+
+\section{Limitations}
+
+The closed-loop result is one building over one month; it is the deepest
+measurement here and the narrowest. Base-load and PV scenarios are drawn
+independently, while cloud raises cooling load at the same moment it cuts PV
+output, so the true joint law has worse afternoons than these scenarios
+contain. The horizon is sixteen hours while the demand charge bills a monthly
+maximum over roughly $2{,}880$ intervals: a joint guarantee over the window is
+strictly stronger than a marginal one and strictly weaker than a monthly one,
+and extending it needs the copula fitted over a month-length horizon, which is
+a $2{,}880$-square correlation matrix and needs structure rather than a raw
+estimate. Weather at the target time is taken as a perfect forecast, which
+flatters the forecaster uniformly across the comparison.
+
+\section{Conclusion}
+
+A per-step chance constraint on a demand ceiling, marginally calibrated and
+behaving exactly as specified, is under-protected over a sixteen-hour planning
+window by a factor of eight on the building where it was first measured, and by
+between three and sixteen across fourteen windows in two countries. The figure
+usually quoted as the conservative correction is not a bound and overstates the
+risk; the correction that is a bound is vacuous four hours in. The practical
+consequence runs in both directions --- a controller sized off the independence
+figure is over-protected by more than a factor of two and pays for it in the
+usable headroom the whole economic argument rests on. Restoring the level as a
+parameter costs \rupee{3{,}339} on a billing month and makes a quantity that
+was an emergent property of horizon length into one an operator sets.
+
+\section*{Reproducibility}
+
+Every number in this paper is emitted by a script from a results file; the
+study regenerates with \texttt{reproduce.sh} and its Indian arm with
+\texttt{reproduce\_india.sh}. % TODO(author): repository URL on acceptance
+
+\bibliographystyle{IEEEtran}
+\bibliography{../paper/refs}
+
+\end{document}

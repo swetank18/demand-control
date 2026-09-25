@@ -7,6 +7,7 @@ study and re-running this is the whole update path for the write-up.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import numpy as np
@@ -79,6 +80,33 @@ def ci(bounds, nd: int = 2) -> str:
     return f"[{bounds[0]:.{nd}f}, {bounds[1]:.{nd}f}]"
 
 
+#: Emit for the two-column IEEEtran build instead of the single-column report:
+#: the same rows and the same caption, in a spanning environment at a smaller
+#: face. Set by --ieee so that one generator serves both documents and no
+#: number is ever retyped into the conference version.
+IEEE = False
+
+#: IEEEtran sets table captions in small caps, where the report's
+#: paragraph-length ones are unreadable. The conference build keeps whole
+#: sentences up to this budget and drops the discussion that follows, so the
+#: numbers a caption states are still the generated ones and nothing is
+#: rewritten by hand.
+IEEE_CAPTION_CHARS = 620
+
+
+def _short_caption(caption: str, budget: int = IEEE_CAPTION_CHARS) -> str:
+    if len(caption) <= budget:
+        return caption
+    out, n = [], 0
+    #: split on sentence ends that are not a decimal point or an abbreviation
+    for sentence in re.split(r"(?<=[.;]) (?=[A-Z(])", caption):
+        if n + len(sentence) > budget and out:
+            break
+        out.append(sentence)
+        n += len(sentence) + 1
+    return " ".join(out)
+
+
 def table(path: Path, header: list[str], rows: list[list[str]], align: str,
           caption: str, label: str) -> None:
     """Wide tables get a smaller face and tighter columns.
@@ -86,9 +114,25 @@ def table(path: Path, header: list[str], rows: list[list[str]], align: str,
     Eight or more columns overruns the text block at \\small on a4paper, which
     LaTeX reports as an overfull hbox and a reader sees as a table poking into
     the margin. Deciding this from the column count keeps it automatic rather
-    than something to remember per table.
+    than something to remember per table. In the two-column build the same
+    count decides between a column-width table and one that spans the page.
     """
     wide = len(header) >= 8
+    if IEEE:
+        env = "table*" if len(header) >= 6 else "table"
+        size = r"\scriptsize" if wide else r"\footnotesize"
+        caption = _short_caption(caption)
+        L = [rf"\begin{{{env}}}[t]", r"\centering", size,
+             r"\setlength{\tabcolsep}{3pt}",
+             r"\begin{tabular}{" + align + "}", r"\toprule",
+             " & ".join(header) + r" \\", r"\midrule"]
+        L += [r[0] if len(r) == 1 and str(r[0]).startswith("\\")
+              else " & ".join(r) + r" \\" for r in rows]
+        L += [r"\bottomrule", r"\end{tabular}",
+              rf"\caption{{{caption}}}", rf"\label{{{label}}}", rf"\end{{{env}}}", ""]
+        path.write_text("\n".join(L))
+        print(f"  {path.name}")
+        return
     size = r"\footnotesize" if wide else r"\small"
     L = [r"\begin{table}[t]", r"\centering", size]
     if wide:
@@ -952,6 +996,16 @@ def correlation_table(df: pd.DataFrame) -> None:
 
 
 def main() -> None:
+    global IEEE, OUT
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--ieee", action="store_true",
+                    help="emit the two-column IEEEtran variants into docs/paper_ieee/tables")
+    args = ap.parse_args()
+    if args.ieee:
+        IEEE = True
+        OUT = ROOT / "docs/paper_ieee/tables"
+        OUT.mkdir(parents=True, exist_ok=True)
     OUT.mkdir(parents=True, exist_ok=True)
     print("emitting LaTeX tables:")
     horizon_table()

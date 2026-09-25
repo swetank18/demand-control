@@ -38,6 +38,35 @@ class RunResult:
     metrics: dict = field(default_factory=dict)
 
 
+def _fill_short_gaps(frame: pd.DataFrame, max_blocks: int = 4) -> tuple[pd.DataFrame, dict]:
+    """Put ``frame`` on a regular 15-minute grid, interpolating short holes.
+
+    Returns the regular frame and what was filled, so a run that leaned on it
+    says so rather than presenting interpolated load as metered.
+    """
+    idx = pd.date_range(frame.index[0], frame.index[-1], freq="15min")
+    missing = idx.difference(frame.index)
+    if len(missing) == 0:
+        return frame, {"n": 0, "longest_run": 0}
+    runs, run, prev = [], 1, missing[0]
+    for t in missing[1:]:
+        if t - prev == pd.Timedelta("15min"):
+            run += 1
+        else:
+            runs.append(run)
+            run = 1
+        prev = t
+    runs.append(run)
+    if max(runs) > max_blocks:
+        raise ValueError(
+            f"{max(runs)} consecutive 15-minute blocks missing between "
+            f"{frame.index[0]} and {frame.index[-1]}; refusing to interpolate "
+            f"more than {max_blocks}")
+    filled = frame.reindex(idx).interpolate(limit=max_blocks, limit_direction="both")
+    return filled, {"n": int(len(missing)), "longest_run": int(max(runs)),
+                    "at": [str(t) for t in missing[:8]]}
+
+
 def build_context(
     building: str,
     month_start: str,
@@ -45,6 +74,7 @@ def build_context(
     tariff_path: Path = ROOT / "tariff/orders/tnerc_2026.json",
     cache: Path = ROOT / "data/cache",
     models: Path = ROOT / "models",
+    model_tag: str = "",
     pv_kwp: float = 150.0,
     with_battery: bool = False,
     comfort: Comfort | None = None,
@@ -75,6 +105,14 @@ def build_context(
         ext, stress_report = stress.apply(ext)
     exog = ext.loc[month_start:month_end].copy()
 
+    # A metered series can be missing a block where the ingest's coverage rule
+    # rejected it (data/iblend.py needs 8 of 15 minutes on every feed). The
+    # plant is a difference equation over a regular grid, so a hole is not
+    # something the simulator can step over. Short holes are interpolated and
+    # counted; a long one is refused, because filling an hour of load is
+    # inventing the thing being controlled.
+    exog, gaps = _fill_short_gaps(exog, max_blocks=4)
+
     pvq = PVQuantiles(exog.index, exog["cloud"], exog["t_out"], params.pv,
                       history_cloud=history["cloud"], history_index=history.index)
     pv_actual = pv_output_kw(exog.index, exog["cloud"], exog["t_out"], params.pv).to_numpy()
@@ -89,9 +127,13 @@ def build_context(
     if perturbs_forecast:
         from forecast.predict import QuantileModels
 
-        tensor = QuantileModels(models / building).predict_tensor(ext, window_start=month_start)
+        tensor = QuantileModels(models / f"{building}{model_tag}").predict_tensor(
+            ext, window_start=month_start)
     else:
-        tensor = models / building / "forecast_test.parquet"
+        # A series with several admissible test months keeps one model
+        # directory per window (models/IIITD_Campus@2017), so the caller says
+        # which window this month belongs to.
+        tensor = models / f"{building}{model_tag}" / "forecast_test.parquet"
     fc_quantile = TensorForecast(tensor, exog.index, pvq)
     fc_oracle = OracleForecast(exog["base_kw"].to_numpy(), pv_actual)
 
@@ -99,6 +141,7 @@ def build_context(
         building=building, params=params, tariff=tariff, exog=exog,
         fc_quantile=fc_quantile, fc_oracle=fc_oracle, pvq=pvq,
         stress=stress_report, month_start=month_start, month_end=month_end,
+        filled_blocks=gaps,
     )
 
 

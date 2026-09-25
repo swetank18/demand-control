@@ -31,3 +31,11 @@ docs/paper/*.log
 docs/paper/*.out
 docs/paper/*.blg
 docs/paper/*.bbl
+
+# The conference build's intermediates; main.tex, tables and figures are tracked.
+docs/paper_ieee/*.aux
+docs/paper_ieee/*.bbl
+docs/paper_ieee/*.blg
+docs/paper_ieee/*.log
+docs/paper_ieee/*.out
+docs/paper_ieee/main.pdf

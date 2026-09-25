@@ -33,3 +33,28 @@ def test_primary_results_filters_a_real_directory(tmp_path):
         (tmp_path / name).write_text("{}")
     got = [p.name for p in primary_results(tmp_path)]
     assert got == ["horizon_risk_IIITD_A@2016.json", "horizon_risk_IIITD_B@2017.json"]
+
+
+# --- the control context's gap handling ------------------------------------
+
+def test_short_gaps_are_filled_and_counted():
+    import pandas as pd
+    from eval.run_month import _fill_short_gaps
+    idx = pd.date_range("2017-06-01", periods=96, freq="15min")
+    df = pd.DataFrame({"base_kw": range(96), "t_out": 25.0}, index=idx)
+    holed = df.drop(df.index[[10, 50, 51]])
+    out, rep = _fill_short_gaps(holed)
+    assert len(out) == 96 and out.index.equals(idx)
+    assert rep["n"] == 3 and rep["longest_run"] == 2
+    assert out["base_kw"].iloc[10] == 10.0        # linear through a single hole
+    assert not out.isna().any().any()
+
+
+def test_a_long_gap_is_refused():
+    import pandas as pd
+    import pytest
+    from eval.run_month import _fill_short_gaps
+    idx = pd.date_range("2017-06-01", periods=96, freq="15min")
+    df = pd.DataFrame({"base_kw": 1.0}, index=idx)
+    with pytest.raises(ValueError, match="refusing to interpolate"):
+        _fill_short_gaps(df.drop(df.index[20:30]))

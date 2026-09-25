@@ -127,8 +127,27 @@ class BuildingParams:
 
     @classmethod
     def from_manifest(cls, manifest_path: str | Path, building_id: str, **overrides) -> "BuildingParams":
-        m = json.loads(Path(manifest_path).read_text())
-        p = m["buildings"][building_id]
+        """The plant, as the ingest derived it from that meter's own load.
+
+        BDG2 buildings live under ``buildings`` in data/cache/manifest.json and
+        the I-BLEND series under ``series`` in manifest_iblend.json, with the
+        same fields because data/iblend.py runs the same changepoint fit and
+        the same engineering sizing. Either manifest is accepted, and the
+        sibling file is searched when the id is not in the one named, so a
+        caller does not have to know which corpus a series came from.
+        """
+        path = Path(manifest_path)
+        m = json.loads(path.read_text())
+        p = (m.get("buildings") or m.get("series") or {}).get(building_id)
+        if p is None:
+            for sibling in (path.parent / "manifest_iblend.json", path.parent / "manifest.json"):
+                if sibling != path and sibling.exists():
+                    alt = json.loads(sibling.read_text())
+                    p = (alt.get("buildings") or alt.get("series") or {}).get(building_id)
+                    if p is not None:
+                        break
+        if p is None:
+            raise KeyError(f"{building_id} is in neither manifest under {path.parent}")
         th = p["thermal"]
         base = cls(
             id=building_id,

@@ -88,14 +88,19 @@ def main() -> None:
                     help="lower end of the bisection, as a fraction of the uncontrolled peak")
     ap.add_argument("--hi-frac", type=float, default=1.00)
     ap.add_argument("--pv-kwp", type=float, default=150.0)
+    ap.add_argument("--tariff", type=Path, default=ROOT / "tariff/orders/tnerc_2026.json")
+    ap.add_argument("--tag", default="", help="model-directory suffix, e.g. @2017")
     ap.add_argument("--out", type=Path, default=ROOT / "results/demand_targets.json")
     args = ap.parse_args()
 
-    ctx = build_context(args.building, args.start, args.end, pv_kwp=args.pv_kwp)
+    ctx = build_context(args.building, args.start, args.end, pv_kwp=args.pv_kwp,
+                        tariff_path=args.tariff, model_tag=args.tag)
     res = search(ctx, args.comfort_budget_pct, lo_frac=args.lo_frac,
                  hi_frac=args.hi_frac, iters=args.iters)
     res["building"] = args.building
     res["window"] = [args.start, args.end]
+    res["tariff"] = ctx["tariff"].order_ref
+    res["pv_kwp"] = args.pv_kwp
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     existing = json.loads(args.out.read_text()) if args.out.exists() else {}
