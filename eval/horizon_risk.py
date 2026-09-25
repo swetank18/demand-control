@@ -788,8 +788,13 @@ def main() -> None:
         json.dumps(payload, indent=2, default=float))
     if closed:
         figure(payload, args.out / f"horizon_risk_{model_key}.png")
-        (args.out / "horizon_risk.md").write_text(to_markdown(payload) + "\n")
-        print(f"\nwrote {args.out / 'horizon_risk.md'}")
+        # The original building keeps the unsuffixed report the reproducibility
+        # block names; a second control object gets its own, rather than
+        # overwriting the first one's and leaving no sign that it did.
+        md = args.out / ("horizon_risk.md" if model_key == "Fox_office_Gaylord"
+                         else f"horizon_risk_{model_key}.md")
+        md.write_text(to_markdown(payload) + "\n")
+        print(f"\nwrote {md}")
 
 
 if __name__ == "__main__":
