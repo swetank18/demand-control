@@ -1,0 +1,116 @@
+% =====================================================================
+% Elsevier version -- for Applied Energy / Energy and Buildings.
+%
+% Same body as the technical report and the IEEE build: all three
+% \input ../paper/sections/*.tex, so the prose has one source. What
+% this file owns is the class, Elsevier's front matter (highlights,
+% keywords, structured author block) and single-column figure
+% placement.
+%
+% Tables: eval/paper_tables.py --out docs/paper_elsevier/tables
+% =====================================================================
+\documentclass[preprint,11pt,authoryear]{elsarticle}
+
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[final,protrusion=true,expansion=false]{microtype}
+\usepackage[hidelinks]{hyperref}
+\graphicspath{{../paper/figures/}}
+\newcommand{\rupee}[1]{\textsf{Rs}~#1}
+
+% Single column, so figures sit at text width as they do in the report.
+\newcommand{\paperfig}[3]{%
+  \begin{figure}[t]\centering
+  \includegraphics[width=0.88\textwidth]{#1}%
+  \caption{#2}\label{#3}
+  \end{figure}}
+
+\journal{Applied Energy}   % TODO(author): confirm the target journal
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{What a Chance Constraint Does Not Promise: Measuring and
+Restoring a Demand-Ceiling Guarantee on Metered Load}
+
+% TODO(author): full author list, affiliations, corresponding author.
+\author[a]{Swetank Kumar\corref{cor1}}
+\ead{dynamicsanvil@gmail.com}
+\cortext[cor1]{Corresponding author.}
+\affiliation[a]{organization={Project Samanvay / Aethergrid},
+                country={India}}
+
+\begin{abstract}
+Indian commercial demand charges are set by the single worst thirty-minute
+block in a month, which makes defending a demand ceiling a risk problem rather
+than a prediction problem. The standard applied response substitutes a high
+forecast quantile into the capacity constraint and calls the result a 95\%
+guarantee. This paper measures what that guarantee delivers, on fourteen
+held-out windows across an American office and an Indian campus at native
+15-minute resolution. Per step the bound behaves as advertised: realised
+exceedance is 0.032--0.079 against a nominal 0.05 on every window. Over the
+controller's 16-hour planning window the probability of breaching
+\emph{somewhere} is 0.39 to 0.82, median 0.57 --- eight to sixteen times the
+level the constraint appears to promise --- and it is not a constant of the
+formulation, since one meter returns 0.39, 0.64 and 0.42 in three successive
+Junes while its per-step rate does not move. Neither textbook substitute
+recovers it: the independence calculation overstates realised risk by
+1.7$\times$ at the median because load errors are strongly autocorrelated, and
+the Boole union bound, the only one of the two that is valid, is 1 on every
+window. A Student-$t$ copula fitted on validation data predicts the realised
+value to a mean absolute error of 0.065; using it, a scenario MILP restores the
+violation level as a settable parameter, tracking the requested $\varepsilon$
+at rank correlation 0.957 for \rupee{3{,}339} on a billing month, with its
+exactness and its resolution floor reported. The same protocol run over
+thirty-seven electricity supplies in eight countries yields two further
+results. Distribution-free coverage does \emph{not} degrade with aggregation
+level, contrary to a reading this study first made and then unmade by its own
+audit: the adaptive conformal layer's step size is stated in the units of the
+series, and at system scale it had stopped moving. And forecast skill and
+available flexibility are independent deployment axes, only one of which tracks
+climate.
+\end{abstract}
+
+\begin{highlights}
+\item A marginally calibrated demand ceiling breaches somewhere in a 16-hour
+      window on 39--82\% of held-out origins, against a nominal 5\%.
+\item The gap is measured on fourteen windows in two countries with day-block
+      bootstrap intervals, not asserted from one building.
+\item Both textbook corrections fail: the independence figure is not a bound,
+      the valid bound is vacuous four hours into the horizon.
+\item A copula plus a scenario MILP makes the violation level a parameter an
+      operator sets, at a measured price and with a stated resolution floor.
+\item An aggregation effect the study first reported is retracted: it was the
+      adaptive layer's step size stated in the wrong units.
+\end{highlights}
+
+\begin{keyword}
+demand charge \sep chance constraint \sep conformal prediction \sep
+model predictive control \sep load forecasting \sep copula
+\end{keyword}
+
+\end{frontmatter}
+
+\input{../paper/sections/01-introduction}
+\input{../paper/sections/02-related}
+\input{../paper/sections/03-instrument}
+\input{../paper/sections/04-data}
+\input{../paper/sections/05-horizon}
+\input{../paper/sections/06-dial}
+\input{../paper/sections/07-calibration}
+\input{../paper/sections/08-axes}
+\input{../paper/sections/09-china}
+\input{../paper/sections/10-india}
+\input{../paper/sections/11-india-fix}
+\input{../paper/sections/12-against}
+\input{../paper/sections/13-limitations}
+\input{../paper/sections/14-conclusion}
+
+\input{../paper/sections/reproducibility}
+
+\bibliographystyle{elsarticle-num}
+\bibliography{../paper/refs}
+
+\end{document}

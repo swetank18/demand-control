@@ -45,3 +45,10 @@ docs/paper_journal/*.blg
 docs/paper_journal/*.log
 docs/paper_journal/*.out
 docs/paper_journal/main.pdf
+docs/paper_elsevier/*.aux
+docs/paper_elsevier/*.bbl
+docs/paper_elsevier/*.blg
+docs/paper_elsevier/*.log
+docs/paper_elsevier/*.out
+docs/paper_elsevier/*.spl
+docs/paper_elsevier/main.pdf

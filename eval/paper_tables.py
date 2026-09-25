@@ -86,6 +86,11 @@ def ci(bounds, nd: int = 2) -> str:
 #: number is ever retyped into the conference version.
 IEEE = False
 SHORT_CAPTIONS = False
+#: Scale each tabular to the measure it lands in. The report is set on a wide
+#: a4 text block and Elsevier's preprint style is not, so a table that fits one
+#: overruns the other by a few picas; scaling is the one fix that does not
+#: depend on knowing the class's text width here.
+FIT = False
 
 #: IEEEtran sets table captions in small caps, where the report's
 #: paragraph-length ones are unreadable. The conference build keeps whole
@@ -135,7 +140,7 @@ def table(path: Path, header: list[str], rows: list[list[str]], align: str,
               else " & ".join(r) + r" \\" for r in rows]
         L += [r"\bottomrule", r"\end{tabular}",
               rf"\caption{{{caption}}}", rf"\label{{{label}}}", rf"\end{{{env}}}", ""]
-        path.write_text("\n".join(L))
+        path.write_text("\n".join(_fit(L)))
         print(f"  {path.name}")
         return
     size = r"\footnotesize" if wide else r"\small"
@@ -150,8 +155,23 @@ def table(path: Path, header: list[str], rows: list[list[str]], align: str,
           else " & ".join(r) + r" \\" for r in rows]
     L += [r"\bottomrule", r"\end{tabular}",
           rf"\caption{{{caption}}}", rf"\label{{{label}}}", r"\end{table}", ""]
-    path.write_text("\n".join(L))
+    path.write_text("\n".join(_fit(L)))
     print(f"  {path.name}")
+
+
+def _fit(lines: list[str]) -> list[str]:
+    """Wrap the tabular in a \resizebox so it cannot overrun its measure."""
+    if not FIT:
+        return lines
+    out = []
+    for ln in lines:
+        if ln.startswith(r"\begin{tabular}"):
+            out += [r"\resizebox{\linewidth}{!}{%", ln]
+        elif ln == r"\end{tabular}":
+            out += [ln, "}"]
+        else:
+            out.append(ln)
+    return out
 
 
 def horizon_table() -> None:
@@ -1009,6 +1029,10 @@ def main() -> None:
     ap.add_argument("--out", type=Path, default=None,
                     help="where to write them (default: docs/paper/tables, or "
                          "docs/paper_ieee/tables with --ieee)")
+    ap.add_argument("--fit", action="store_true",
+                    help="scale each tabular to its measure with \\resizebox; the "
+                         "Elsevier build needs it because its text block is narrower "
+                         "than the report's")
     ap.add_argument("--short-captions", action="store_true",
                     help="cut each caption to whole sentences within a budget. The "
                          "conference build needs it, because IEEEtran sets captions in "
@@ -1021,6 +1045,7 @@ def main() -> None:
     elif args.out:
         OUT = args.out
     globals()["SHORT_CAPTIONS"] = bool(args.short_captions)
+    globals()["FIT"] = bool(args.fit)
     OUT.mkdir(parents=True, exist_ok=True)
     OUT.mkdir(parents=True, exist_ok=True)
     print("emitting LaTeX tables:")

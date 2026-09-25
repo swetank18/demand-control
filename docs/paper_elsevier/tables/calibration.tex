@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrr}
+\toprule
+Population & $n$ & mean cov. & worst & $<0.85$ \\
+\midrule
+Buildings (BDG2), metered & 18 & \textbf{0.901} & 0.824 & 1 \\
+System demand, metered & 6 & \textbf{0.829} & 0.762 & 5 \\
+System demand, reconstructed & 6 & \textbf{0.824} & 0.565 & 2 \\
+\midrule
+\emph{India, one city (I-BLEND + Delhi SLDC), windows} &  &  &  &  \\
+\quad buildings, native 15-min & 12 & \textbf{0.910} & 0.897 & 0 \\
+\quad campus feed (one HT consumer) & 1 & \textbf{0.873} & 0.873 & 0 \\
+\quad city (Delhi SLDC) & 1 & \textbf{0.762} & 0.762 & 1 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Empirical coverage of the nominal 90\% interval after conformal calibration, \emph{as the benchmark calibrated it}: split conformal plus an adaptive layer at the step $\gamma=0.35$ in the units of each series. Read this way the guarantee very nearly holds on individual buildings and fails systematically on system-level demand. The third row is the replication: six Chinese provinces, a different country, a different year and a different data-generating process, reproduce the system-level failure to within 0.005 of the metered panel and contain the worst row in the study (Heilongjiang, 0.565). The lower panel is the same effect inside one city: building, campus and city demand in Delhi, one weather feed, native 15-minute resolution throughout, and coverage falls monotonically with each step up the ladder. Table~\ref{tab:aci-step} re-reads every row of this table with the adaptive step stated in the interval's units, and the ladder does not survive it.}
+\label{tab:calibration}
+\end{table}
