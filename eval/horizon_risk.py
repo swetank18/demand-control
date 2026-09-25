@@ -52,6 +52,7 @@ from forecast.trajectories import (block_max, fit_ratio_copula, load_or_fit,
                                    marginal_check, path_exceedance)
 from sim.thermal import BuildingSim
 from tariff.bill import demand_blocks
+from tariff.schema import Tariff
 
 RESULTS = ROOT / "results"
 MODELS = ROOT / "models"
@@ -334,13 +335,21 @@ def closed_loop_sweep(
     building: str, start: str, end: str, targets: dict[str, float],
     epsilons: tuple[float, ...], n_scenarios: int, reduce_to: int,
     mode: str, cfg: MPCConfig, pv_kwp: float = 150.0, seed: int = 0,
+    tag: str = "", tariff_path: Path | None = None,
 ) -> list[dict]:
-    ctx = build_context(building, start, end, pv_kwp=pv_kwp)
+    model_key = f"{building}{tag}"
+    kw = {"tariff_path": tariff_path} if tariff_path else {}
+    ctx = build_context(building, start, end, pv_kwp=pv_kwp, model_tag=tag, **kw)
     index = ctx["exog"].index
-    tensor = pd.read_parquet(MODELS / building / "tensors" / "lightgbm_quantile.parquet")
+    # the benchmark harness's tensor where it exists, so the Fox run is
+    # unchanged, and the trainer's otherwise -- the same fallback main() uses
+    tensor_path = MODELS / model_key / "tensors" / "lightgbm_quantile.parquet"
+    if not tensor_path.exists():
+        tensor_path = MODELS / model_key / "forecast_test.parquet"
+    tensor = pd.read_parquet(tensor_path)
     fc0 = TensorForecast(tensor, index, ctx["pvq"])
 
-    cop = load_or_fit(building, MODELS, ROOT / "data/cache")
+    cop = load_or_fit(model_key, MODELS, ROOT / "data/cache")
     pvq = ctx["pvq"]
     ok = pvq.clear > 1e-6
     pvcop = fit_ratio_copula(
@@ -668,6 +677,9 @@ def main() -> None:
     ap.add_argument("--out", type=Path, default=RESULTS)
     ap.add_argument("--skip-closed-loop", action="store_true")
     ap.add_argument("--tag", default="", help="model-directory suffix from forecast/train.py --tag, e.g. @2016")
+    ap.add_argument("--tariff", type=Path, default=None,
+                    help="tariff order to bill the closed loop under; the default is "
+                         "whatever eval/run_month.py uses (Tamil Nadu)")
     ap.add_argument("--valid-start", default="2017-04-01", help="copula is fitted on this block, never on the test month")
     ap.add_argument("--valid-end", default="2017-05-31 23:45")
     ap.add_argument("--ci-only", action="store_true",
@@ -719,6 +731,10 @@ def main() -> None:
     acceptance: dict = {}
     if not args.skip_closed_loop:
         d = json.loads((RESULTS / "demand_targets.json").read_text())[args.building]
+        if args.tariff and d.get("tariff") and Tariff.load(args.tariff).order_ref != d["tariff"]:
+            raise SystemExit(
+                f"{args.building}'s demand target was found under a different tariff "
+                f"({d['tariff'][:60]}...); rerun eval/find_target.py with --tariff")
         nominal = float(d["target_kw"])
         targets = {"tight": round(args.tight_frac * nominal, 1), "nominal": round(nominal, 1)}
         print(f"\n-- B3: closed loop, mode={args.mode}, S={args.scenarios}->{args.reduce_to}, "
@@ -726,7 +742,8 @@ def main() -> None:
         cfg = MPCConfig()
         closed = closed_loop_sweep(args.building, args.start, args.end, targets,
                                    tuple(args.epsilons), args.scenarios, args.reduce_to,
-                                   args.mode, cfg, pv_kwp=args.pv_kwp)
+                                   args.mode, cfg, pv_kwp=args.pv_kwp, tag=args.tag,
+                                   tariff_path=args.tariff)
 
         df = pd.DataFrame(closed)
         sc = df[df["mode"] != "marginal"]
