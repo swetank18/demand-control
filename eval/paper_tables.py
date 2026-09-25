@@ -704,11 +704,23 @@ def ci_str(bounds) -> str:
     return ci(bounds)
 
 
-def acceptance_table() -> None:
+#: The two control objects the closed loop has been run on: an American office
+#: under a Tamil Nadu tariff, and a Delhi campus feed under Delhi's own.
+CONTROL_OBJECTS = (
+    ("Fox_office_Gaylord", "acceptance", "tab:acceptance",
+     "a 13{,}759\\,m$^2$ office in Phoenix under the TNERC tariff"),
+    ("IIITD_Campus@2017", "acceptance_campus", "tab:acceptance-campus",
+     "the IIIT-Delhi campus feed under the DERC tariff, the billed consumer "
+     "of Section~\\ref{sec:data}"),
+)
+
+
+def acceptance_table(key: str = "Fox_office_Gaylord", out: str = "acceptance",
+                     label: str = "tab:acceptance", what: str = "") -> None:
     """The closed-loop sweep. Commit violation is the acceptance metric; the
     against-target column is shown because omitting it would look like hiding it,
     and labelled as the business metric it is."""
-    p = RESULTS / "horizon_risk_Fox_office_Gaylord.json"
+    p = RESULTS / f"horizon_risk_{key}.json"
     if not p.exists():
         return
     d = json.loads(p.read_text())
@@ -732,11 +744,13 @@ def acceptance_table() -> None:
             f"{r['bill_inr']:,.0f}",
             f"{r['solve_ms_mean']:.0f}",
         ])
-    table(OUT / "acceptance.tex",
+    table(OUT / f"{out}.tex",
           ["Target", "Controller", "$\\varepsilon$", "Commit viol.\\ (gap)",
            "vs target", "Breaches", "Peak kVA", "Bill Rs", "Solve ms"],
           rows, "llrrrrrrr",
-          "Closed loop over one billing month. \\textbf{Commit violation} is the "
+          (f"Closed loop over one billing month on {what}. " if what
+           else "Closed loop over one billing month. ")
+          + "\\textbf{Commit violation} is the "
           "acceptance metric: the fraction of horizons in which realised load cleared "
           "the ceiling the optimiser committed to, which is what $\\varepsilon$ is a "
           "statement about. The against-target column is the business metric and is "
@@ -744,7 +758,12 @@ def acceptance_table() -> None:
           f"decision variable. Rank correlation {a['rank_corr']:.3f}, mean absolute gap "
           f"{a['mean_abs_gap']:.3f}, conservative at {a['n_conservative']} of "
           f"{a['n_levels']} levels; resolution floor $1/S={a['resolution_floor']:.3f}$.",
-          "tab:acceptance")
+          label)
+
+
+def acceptance_tables() -> None:
+    for key, out, label, what in CONTROL_OBJECTS:
+        acceptance_table(key, out, label, what)
 
 
 def india_table(df: pd.DataFrame) -> None:
@@ -1056,7 +1075,7 @@ def main() -> None:
     aci_gamma_table()
     aci_step_table()
     horizon_kappa_table()
-    acceptance_table()
+    acceptance_tables()
     iblend_table()
     df = load_study()
     arm_table(df, "climate", "site", "Site",

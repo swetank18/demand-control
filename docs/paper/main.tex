@@ -59,7 +59,11 @@ load errors are strongly autocorrelated, and the Boole/Bonferroni union bound
 A Student-$t$ copula over the horizon predicts the realised value to a mean
 absolute error of $0.065$; we use it to restore the level as a settable
 parameter with a scenario MILP, tracking requested $\varepsilon$ at rank
-correlation $0.957$ for \rupee{3{,}339} on a billing month, and report its
+correlation $0.957$ for \rupee{3{,}339} on a billing month. On a second
+control object --- an Indian campus feed under Delhi's own tariff --- the
+response stays monotone (rank correlation $0.988$) and the exactness does not
+survive, on the one series here whose per-step layer under-covers: a joint
+guarantee is no more exact than the marginals it composes. We report its
 exactness and resolution limits.
 
 We test the rest of the pipeline by running one unchanged protocol over thirty

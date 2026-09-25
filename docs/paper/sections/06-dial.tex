@@ -31,6 +31,43 @@ formulation errs safe by construction: the CVaR surrogate admits a strict subset
 of the chance-constrained feasible set, so it defends the committed ceiling
 harder than asked.
 
+\input{tables/acceptance_campus}
+
+\paragraph{A second control object, and the half of this that replicates.}
+Table~\ref{tab:acceptance-campus} repeats the sweep on the IIIT-Delhi campus
+feed --- another country, another tariff, another plant, and the consumer a
+Delhi utility actually bills --- with nothing tuned for it. Two things happen,
+and only one of them is the result above.
+
+The dial's \emph{monotonicity} replicates, and more cleanly than on the office:
+rank correlation $0.988$, and realised commit violation rises through $0.172$,
+$0.236$, $0.300$, $0.392$ as $\varepsilon$ is set to $0.05$, $0.10$, $0.20$,
+$0.35$. An operator turning the dial gets a monotone response on both plants.
+
+The dial's \emph{calibration} does not replicate. Mean absolute gap is $0.100$
+against $0.057$, and the sweep is conservative at \emph{none} of its eight
+levels rather than five: on this feed the formulation delivers more risk than
+it was asked for at every setting. We do not think this is the risk
+formulation failing, and the reason is one row of
+Table~\ref{tab:horizon-panel}. The campus feed is the single window in the
+study whose per-step layer \emph{under}-covers --- $\hat\alpha = 0.079$
+against a nominal $0.05$, the only figure above the line --- and $\varepsilon$
+is a statement built on top of that layer. A joint guarantee cannot be more
+exact than the marginals it composes, and here the marginals are optimistic by
+half again. Restating the adaptive step in the interval's units, which
+Section~\ref{sec:calibration} shows is the defensible way to set it, moves the
+campus per-step rate to $0.069$; whether that carries through to the dial is
+the experiment we have not run.
+
+The honest summary of Contribution~2 is therefore narrower than one control
+object suggested. On both plants $\varepsilon$ converts a risk level that was
+an emergent property of horizon length into one an operator sets and gets a
+monotone response from. On the plant whose marginals are calibrated it is also
+roughly exact and errs safe; on the plant whose marginals are not, it is
+monotone and optimistic. That is a useful thing for a deployment to know, and
+it says the marginal calibration layer is not a preliminary to the guarantee
+but part of it.
+
 \paragraph{What it does not do, stated in full.} It is not exact. At the
 tightest setting, $\varepsilon=0.05$ delivers $0.097$ at the tight target,
 nearly twice the requested risk and on the unsafe side. There is a hard
@@ -71,6 +108,10 @@ raw estimate.
 
 The honest summary is not that the guarantee is restored exactly. It is that a
 risk level which was previously an \emph{emergent property of horizon length}
---- unstated, unsettable, and equal to $0.106$ at the tight target under the
-incumbent marginal controller --- is now a parameter with a monotone and
-conservative response, at a cost of \rupee{3{,}339} on the month.
+--- unstated, unsettable, and equal to $0.106$ at the tight target on the
+office and $0.297$ on the campus feed under the incumbent marginal controller
+--- is now a parameter with a monotone response on both, conservative on the
+one whose marginals are calibrated, at a cost of \rupee{3{,}339} on the month
+there and \rupee{3{,}329} \emph{saved} on the campus, where the tight target
+binds so rarely that the scenario controller buys its risk level out of
+headroom the marginal one was wasting.

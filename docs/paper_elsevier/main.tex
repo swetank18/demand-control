@@ -63,7 +63,11 @@ window. A Student-$t$ copula fitted on validation data predicts the realised
 value to a mean absolute error of 0.065; using it, a scenario MILP restores the
 violation level as a settable parameter, tracking the requested $\varepsilon$
 at rank correlation 0.957 for \rupee{3{,}339} on a billing month, with its
-exactness and its resolution floor reported. The same protocol run over
+exactness and its resolution floor reported. Repeated on a second control
+object in another country under another tariff, the dial's monotonicity
+replicates (rank correlation 0.988) and its exactness does not, on the one
+series here whose per-step layer under-covers --- a joint guarantee is no more
+exact than the marginals it composes. The same protocol run over
 thirty-seven electricity supplies in eight countries yields two further
 results. Distribution-free coverage does \emph{not} degrade with aggregation
 level, contrary to a reading this study first made and then unmade by its own
@@ -81,7 +85,8 @@ climate.
 \item Both textbook corrections fail: the independence figure is not a bound,
       the valid bound is vacuous four hours into the horizon.
 \item A copula plus a scenario MILP makes the violation level a parameter an
-      operator sets, at a measured price and with a stated resolution floor.
+      operator sets; on two plants the response is monotone, and exact only
+      where the marginal layer beneath it is calibrated.
 \item An aggregation effect the study first reported is retracted: it was the
       adaptive layer's step size stated in the wrong units.
 \end{highlights}
