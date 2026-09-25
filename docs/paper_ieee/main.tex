@@ -21,6 +21,11 @@
 % referenced rather than copied, so they cannot drift between the two builds.
 \graphicspath{{../paper/figures/}}
 \newcommand{\rupee}[1]{\textsf{Rs}~#1}
+\newcommand{\paperfig}[3]{%
+  \begin{figure}[t]\centering
+  \includegraphics[width=\columnwidth]{#1}%
+  \caption{#2}\label{#3}
+  \end{figure}}
 
 \begin{document}
 

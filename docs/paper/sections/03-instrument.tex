@@ -1,0 +1,29 @@
+\section{The instrument}
+\label{sec:instrument}
+
+Six components, each independently swappable, with the bill engine as the single
+source of truth for every reported figure:
+%
+\begin{align*}
+\text{tariff} &\;\rightarrow\; \text{quantile forecast}\\
+  &\;\rightarrow\; \text{conformal calibration}\\
+  &\;\rightarrow\; \text{chance-constrained MILP}\\
+  &\;\rightarrow\; \text{RC simulator}
+    \;\rightarrow\; \text{bill engine}.
+\end{align*}
+%
+The forecaster is a quantile LightGBM \citep{ke2017lightgbm} at five levels
+over a 64-step (16-hour) horizon at 15-minute resolution, wrapped in split and
+adaptive conformal calibration
+\citep{angelopoulos2023gentle,gibbs2021adaptive}. The controller is a
+deterministic MILP solved with HiGHS; no
+language model touches a money decision. The evaluation discipline is that a
+number reaches a table only if a script produced it, and a single entry point
+regenerates every figure and every table in this paper from a clean checkout.
+
+This matters for the measurements because each one requires pinning everything
+and moving one thing. Section~\ref{sec:horizon} pins the plant and varies only
+the risk formulation. Section~\ref{sec:calibration} pins the protocol and varies
+only the series. Section~\ref{sec:axes} pins the model and varies the site.
+Section~\ref{sec:china} pins all three and varies the country, which is the one
+we did not choose.

@@ -1,0 +1,89 @@
+\section{Related work, and the gap}
+\label{sec:related}
+
+Four literatures meet at a demand ceiling, and the gap sits where they fail to
+overlap.
+
+\paragraph{Stochastic and chance-constrained MPC for buildings.}
+\citet{oldewurtel2012} and \citet{oldewurtel2014} established chance-constrained
+MPC for building climate control under weather uncertainty, reformulating
+per-step chance constraints deterministically under Gaussian disturbance
+assumptions; \citet{zhang2013scenario} replaced the distributional assumption with
+sampled scenarios in the sense of \citet{calafiore2006scenario}. Joint-in-time
+chance constraints --- that a trajectory stay feasible at \emph{every} step of
+the horizon --- are handled in the general stochastic-MPC literature by risk
+allocation under Boole's inequality \citep{ono2008risk,paulson2017joint},
+which is conservative by construction and, as Section~\ref{sec:horizon}
+measures, vacuous at the horizon a demand ceiling requires. A recent line
+combines conformal prediction with MPC to obtain joint-in-time regions without
+a distributional assumption \citep{lindemann2023safe,vogel2025conformalmpc},
+evaluated on trajectory-prediction and synthetic linear-system benchmarks. The
+one application of that idea to building demand response we are aware of
+\citep{xu2026e2edpc} uses stage-wise --- that is, marginal --- conformal
+tightening in an EnergyPlus simulation and does not report horizon-level
+violation. None of these measures, on metered building load, how far a
+marginally calibrated $q95$ constraint's realised horizon risk sits from its
+nominal level.
+
+\paragraph{Demand-charge management.} The closest prior work on monthly peak
+limiting under load uncertainty is the Hong Kong PolyU line
+\citep{xu2019adaptive,xu2020exploration}: probabilistic ANN load forecasts,
+driven by probabilistic weather forecasts, feed an expected-cost threshold
+resetting scheme, and Monte Carlo is used to study the robustness of the
+\emph{threshold}, not to bound the probability of exceeding it.
+\citet{flamm2020peak} treat demand-charge management with storage as
+multi-period stochastic MPC over weather scenarios with affine decision rules
+and an expected-cost objective, with a weighting for horizons that straddle
+billing periods. In neither line is the exceedance probability of the ceiling
+a constraint with a stated level, and neither is evaluated on an Indian tariff
+or an Indian building. Field and simulation studies of HVAC demand flexibility
+under MPC report peak reduction and savings without a risk statement at all.
+
+\paragraph{Conformal prediction for multi-step forecasts.} Split conformal
+\citep{vovk2005algorithmic} and CQR \citep{romano2019cqr} give per-step
+marginal coverage. \citet{stankeviciute2021conformal} obtain joint coverage
+over a horizon by Bonferroni correction; \citet{sun2024copula} replace
+Bonferroni with a copula over per-step conformity scores, which is the same
+modelling move as Section~\ref{sec:dial} but deployed as a \emph{predictor}
+rather than inside an optimiser, and requiring a second calibration set.
+\citet{lin2022temporal} study conformal intervals under temporal dependence.
+\citet{zaffran2022adaptive} and \citet{wang2024acmcp} extend adaptive conformal
+inference \citep{gibbs2021adaptive} to non-stationary and multi-step settings,
+targeting marginal coverage; the latter establishes that optimal $h$-step
+errors are serially correlated to lag $h-1$, which is the dependence our
+copula fits. This paper adds to that line a measurement rather than a method:
+the realised joint exceedance on real load errors, placed against both the
+Bonferroni bound and the independence figure, with the copula's accuracy for
+that quantity reported.
+
+\paragraph{Decision-aware forecasting and calibration.} Decision-focused
+learning \citep{elmachtoub2022spo,donti2017task,berthet2020perturbed} trains
+the forecast on the downstream decision's cost; \citet{stratigakos2026decision}
+calibrate multivariate prediction sets to the \emph{reliability of the
+downstream decision} rather than to coverage, for robust reserve scheduling.
+That is complementary to Section~\ref{sec:dial}, which reaches the same object
+--- an operator-set violation level on a committed ceiling --- from the
+optimiser side, and reports its exactness and resolution floor.
+
+\paragraph{Data.} Probabilistic load forecasting is mature at system scale
+\citep{hong2016review,hong2016gefcom} and increasingly benchmarked at building
+scale \citep{miller2020bdg2,emami2023buildingsbench,nweye2023citylearn}. Aggregation is known to
+improve point accuracy by a scaling law \citep{sevlian2018scaling}; whether
+\emph{distribution-free coverage} holds across aggregation levels has not, to
+our knowledge, been reported. For India, \citet{rashid2019iblend} publish
+I-BLEND: 52 months of one-minute mains data, with power factor, for seven
+buildings on a Delhi campus. It is the only open Indian building-level load
+corpus at the resolution Indian demand charges are assessed on, and it has
+been used for point forecasting rather than for demand-charge control.
+
+\paragraph{The gap.} We find no published work that (i) measures, on metered
+building load, the horizon-level breach probability a marginally calibrated
+$q95$ chance constraint actually delivers against its nominal level, bracketed
+by the valid Boole bound above and the independence figure that is usually
+misquoted as one; (ii) restores that level as a settable parameter inside a
+demand-charge MILP and reports its exactness and resolution floor; (iii) tests
+distribution-free coverage across building and system scale under one
+protocol; or (iv) does any of this on real Indian commercial buildings at
+native 15-minute resolution under an Indian tariff. Items (i)--(iii) are this
+paper. Item (iv) is the work Section~\ref{sec:india-fix} opens, and the data
+for it exists.

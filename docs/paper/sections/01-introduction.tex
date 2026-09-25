@@ -1,0 +1,86 @@
+\section{Introduction}
+
+An Indian commercial electricity bill has three levers: a time-of-day energy
+charge, a demand charge levied on the highest 30-minute average demand in the
+month, and power-factor penalties. The second dominates the risk. It is set by
+one block out of roughly $1{,}440$ in a month, so a single bad afternoon prices
+all thirty days. A controller that reduces average consumption but occasionally
+overshoots can cost more than one that does nothing.
+
+The standard applied response is a chance constraint: replace the forecast mean
+in the capacity constraint with a high quantile, typically the 95th, and treat
+the result as a $95\%$ guarantee. Formally, with $b_t$ the uncontrollable base
+load, $u_t$ the controllable allocation, $s_t$ solar generation and $D$ the
+ceiling,
+%
+\begin{equation}
+  \hat b^{\,q95}_t + u_t - \hat s^{\,q05}_t \;\le\; D
+  \qquad \text{for each } t \text{ in the horizon.}
+  \label{eq:marginal}
+\end{equation}
+%
+Equation~\eqref{eq:marginal} is a set of \emph{marginal} statements. Each row
+says that at that timestep, considered alone, the realisation exceeds the bound
+about $5\%$ of the time. The event that costs money is different: it is
+%
+\begin{equation}
+  \Pr\Big[\max_{t \in \mathcal{W}} \big(b_t + u_t - s_t\big) > D\Big],
+  \label{eq:joint}
+\end{equation}
+%
+a statement about a maximum over a window $\mathcal{W}$. That
+\eqref{eq:marginal} does not imply \eqref{eq:joint} is elementary and well
+known; joint chance constraints, their intractability, and the standard routes
+around them --- Boole/Bonferroni risk allocation and the scenario approach
+\citep{calafiore2006scenario,nemirovski2006convex} --- are textbook material.
+
+\paragraph{What is not established} is how large the gap is on real building
+load, and how badly each of the standard substitutes misses it. Both ends matter
+practically: the first is how much a deployed controller is under-protected, and
+the second is how much headroom a careful designer gives away for nothing. We
+measure both, and find they are wrong in opposite directions by factors we can
+state.
+
+\paragraph{Contributions.}
+\begin{enumerate}
+  \item A measured bracket on horizon risk for a demand ceiling on held-out
+        meter data (Section~\ref{sec:horizon}), over fourteen windows in two
+        countries: claimed $0.05$, realised $0.39$--$0.82$ (median $0.57$;
+        no $95\%$ lower bound under $0.28$), independence calculation
+        $0.87$--$0.99$, union bound vacuous on every row, and the gap surviving
+        a restatement of the per-step layer's own tuning parameter in units
+        that transfer across meter sizes. The common formulation is under-protected by a factor of eight to
+        sixteen, the usual correction is $1.7\times$ too conservative at the
+        median, and the gap is a distribution rather than a number.
+  \item A closed-loop demonstration that this risk level can be made an
+        operator-set parameter rather than an emergent property of horizon
+        length, with its exactness and resolution floor measured and its price
+        stated (Section~\ref{sec:dial}).
+  \item A finding made and then unmade by its own audit. One protocol over
+        thirty supplies in eight countries, replicated inside a single city
+        across building, campus and system demand, showed conformal coverage
+        degrading with aggregation. The audit of the adaptive layer at system
+        scale showed why: its step is stated in the units of the series and had
+        stopped moving. Re-read without that confound, split conformal fails at
+        every tier alike and the adaptive layer, with its step as a fraction of
+        the interval width, holds the level at every tier
+        (Section~\ref{sec:calibration}). What transfers across scales is not
+        the number but the fraction, and a practitioner moving the layer from a
+        building to a feeder will hit exactly this.
+  \item A null separating forecast skill from available flexibility as
+        independent deployment axes, replicated on a panel it was not fitted to
+        (Section~\ref{sec:axes}).
+  \item A provenance audit of a dataset added to the study under an external
+        constraint, which disqualifies that arm's most favourable result and is
+        reported as such (Section~\ref{sec:china}).
+\end{enumerate}
+
+\paragraph{Where the novelty is, and where it is not.} We invented no method.
+Every component --- chance-constrained MPC for buildings, joint chance
+constraints and their standard treatments, quantile gradient boosting,
+conformalized quantile regression, adaptive conformal inference, copula
+scenario generation, decision-focused learning --- is prior work, and
+Section~\ref{sec:related} places each. The novelty is empirical and
+integrative: an instrument that pins everything and moves one thing, run on
+metered load, with the results that argue against it reported at full size.
+Section~\ref{sec:related} states the gap that survives the literature.

@@ -1,0 +1,76 @@
+\section{Restoring the guarantee as a dial}
+\label{sec:dial}
+
+\input{tables/acceptance}
+
+We fit a Student-$t$ copula over the horizon and sample joint trajectories
+--- the marginals-to-scenarios construction of \citet{pinson2009scenarios},
+with a heavier-tailed dependence family --- which a scenario MILP then
+constrains with a CVaR surrogate \citep{rockafellar2000cvar,nemirovski2006convex}
+on the probability mass permitted to violate. The copula reproduces the calibrated marginals to
+within $4.6\%$ of mean interval width at $4{,}000$ paths per origin, so it adds
+dependence and disturbs nothing upstream, and it predicts horizon exceedance far
+closer than either substitute: $0.497$ against a realised $0.405$ (interval
+$0.28$--$0.53$) at $H=64$,
+where \eqref{eq:marginal} implies $0.05$ and the independence figure is $0.983$.
+
+Table~\ref{tab:acceptance} is a closed-loop run over a real billing month at two
+demand targets and four risk levels. The acceptance metric is violation of the
+ceiling \emph{the optimiser itself committed to at each origin}, because that is
+the event $\varepsilon$ is a statement about. The operator's monthly demand
+target is a business metric the chance constraint never promised: the committed
+peak is a decision variable, and an optimiser short of capacity may lift it, pay
+the demand charge, and honour its constraint exactly. Grading a chance
+constraint against a number it never promised is the usual way this test is made
+meaningless, so both columns are shown and only one is the acceptance criterion.
+
+The result is that $\varepsilon$ becomes a dial. Realised commit violation
+tracks the requested level with rank correlation $0.957$ across the sweep, mean
+absolute gap $0.057$, and lands conservative at five of eight levels. The
+formulation errs safe by construction: the CVaR surrogate admits a strict subset
+of the chance-constrained feasible set, so it defends the committed ceiling
+harder than asked.
+
+\paragraph{What it does not do, stated in full.} It is not exact. At the
+tightest setting, $\varepsilon=0.05$ delivers $0.097$ at the tight target,
+nearly twice the requested risk and on the unsafe side. There is a hard
+resolution floor at $1/S = 0.025$: with $S$ scenarios the finest expressible
+risk level is one scenario's worth of probability mass, below which the CVaR
+surrogate collapses onto the sample maximum and successive $\varepsilon$ cease
+to be distinguishable. That is a property of sample average approximation rather
+than a tuning artefact, and a finer dial costs scenarios and solve time.
+
+\input{tables/copula_df}
+
+Two further caveats belong here rather than in a footnote, and one that was a
+caveat has been measured. The copula's degrees of freedom are selected on the
+validation block by matching predicted to realised horizon exceedance, which is
+the quantity the copula is later judged on; the split is honest, but the
+criterion knows what it will be graded on. Table~\ref{tab:copula-df} bounds what
+that choice contributes. Holding $\nu$ at the Phoenix value of $7$ and applying
+it unchanged to the thirteen Indian windows, the copula still lies inside the
+realised interval on nine of thirteen, with mean absolute error $0.098$ against
+$0.063$ when $\nu$ is selected per window: the selection buys accuracy, not the
+agreement. The textbook alternative --- choosing $\nu$ by the $t$-copula
+pseudo-likelihood on the same validation block --- selects $\nu \geq 25$ or the
+Gaussian on every one of the fourteen windows, over-predicts on all fourteen,
+and lies inside the interval on two. The likelihood is dominated by the body of
+the distribution, where the two families agree; the horizon event is a statement
+about the joint upper tail, where they do not. That is why the one free
+parameter is fitted to the decision-relevant statistic rather than to the
+likelihood, and it is a warning for anyone fitting a dependence model for a
+tail event by the default criterion. Base-load and PV scenarios are drawn
+independently, while cloud physically raises cooling load at the same moment it
+cuts PV output, so the true joint law has worse afternoons than these scenarios
+contain. And the horizon is sixteen hours while the demand charge bills a
+monthly maximum over roughly $2{,}880$ intervals: a joint guarantee over the
+window is strictly stronger than a marginal one and strictly weaker than a
+monthly one. Extending it needs the copula fitted over a month-length horizon,
+which is a $2{,}880$-square correlation matrix and needs structure rather than a
+raw estimate.
+
+The honest summary is not that the guarantee is restored exactly. It is that a
+risk level which was previously an \emph{emergent property of horizon length}
+--- unstated, unsettable, and equal to $0.106$ at the tight target under the
+incumbent marginal controller --- is now a parameter with a monotone and
+conservative response, at a cost of \rupee{3{,}339} on the month.

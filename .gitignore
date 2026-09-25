@@ -39,3 +39,9 @@ docs/paper_ieee/*.blg
 docs/paper_ieee/*.log
 docs/paper_ieee/*.out
 docs/paper_ieee/main.pdf
+docs/paper_journal/*.aux
+docs/paper_journal/*.bbl
+docs/paper_journal/*.blg
+docs/paper_journal/*.log
+docs/paper_journal/*.out
+docs/paper_journal/main.pdf

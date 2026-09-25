@@ -100,6 +100,12 @@ def build(dest: Path, make_zip: bool = True) -> None:
         shutil.copytree(tables, dest / "tables")
 
     # any figures the paper grows later come along automatically
+    # the body lives in sections/ so the journal build can share it; the
+    # bundle needs it or main.tex has nothing to \input
+    secs = SRC / "sections"
+    if secs.exists():
+        shutil.copytree(secs, dest / "sections")
+
     figs = SRC / "figures"
     if figs.exists():
         shutil.copytree(figs, dest / "figures")

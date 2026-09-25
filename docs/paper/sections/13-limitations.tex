@@ -1,0 +1,34 @@
+\section{Limitations}
+
+The system tier is a forecasting benchmark, not a control benchmark: there is no
+thermal mass to shift at grid level and no savings claim is made from it. The
+Delhi window (2011--12) does not overlap the European one (2016--17) or the
+Chinese one (2018), which motivates reporting within-series skill rather than
+absolute loss but does not eliminate the concern. Capital-city temperature
+proxies national load-weighted temperature, acceptable for Great Britain and
+Ireland and rough for Germany, France, Spain and every Chinese province.
+Nothing here claims that model \emph{weights} transfer across countries --- our
+own cold-start study finds the model losing to seasonal naive on an unseen
+building at the same site, scoring $3.546$ pinball against that baseline's
+$3.037$ --- only that the architecture and protocol do. The demographic arm is a
+single city and cannot separate demographic from local building stock. Delhi is
+one Indian city, and is real Indian data rather than a claim about India. The
+China arm is reconstructed data and Section~\ref{sec:china} states exactly which
+of its columns may be read. The acceptance result of Section~\ref{sec:dial} is
+one building over one month; it is the deepest measurement in the study and the
+narrowest.
+
+The five arms were run once, with the adaptive step that
+Section~\ref{sec:calibration} then found to be stated in the wrong units, and
+they have deliberately not been rerun. Tables~\ref{tab:climate}--\ref{tab:china}
+and Table~\ref{tab:calibration} are therefore reported as what that protocol
+produced, and Table~\ref{tab:aci-step} --- the same forecaster, the same
+supplies, the same predictions, calibrated three ways --- is the correction. We
+prefer this to a silent regeneration for two reasons. A study that quietly
+reruns itself after finding its own confound leaves a reader unable to see
+either the confound or its size; and the pinball and skill columns of the five
+arms do not depend on the question at issue, because every forecaster in a row
+passes through the identical calibration layer, so the comparison between
+forecasters is unaffected by which step that layer used. What the step changes
+is the coverage column, and that column is re-reported in
+Table~\ref{tab:aci-step} rather than overwritten.

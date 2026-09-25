@@ -85,6 +85,7 @@ def ci(bounds, nd: int = 2) -> str:
 #: face. Set by --ieee so that one generator serves both documents and no
 #: number is ever retyped into the conference version.
 IEEE = False
+SHORT_CAPTIONS = False
 
 #: IEEEtran sets table captions in small caps, where the report's
 #: paragraph-length ones are unreadable. The conference build keeps whole
@@ -119,9 +120,13 @@ def table(path: Path, header: list[str], rows: list[list[str]], align: str,
     """
     wide = len(header) >= 8
     if IEEE:
-        env = "table*" if len(header) >= 6 else "table"
+        # Everything spans. A five-column table looks narrow until its first
+        # column carries "System demand, reconstructed", and a table that
+        # overruns an IEEE column is worse than one that takes the page width.
+        env = "table*"
         size = r"\scriptsize" if wide else r"\footnotesize"
-        caption = _short_caption(caption)
+        if SHORT_CAPTIONS:
+            caption = _short_caption(caption)
         L = [rf"\begin{{{env}}}[t]", r"\centering", size,
              r"\setlength{\tabcolsep}{3pt}",
              r"\begin{tabular}{" + align + "}", r"\toprule",
@@ -1000,12 +1005,23 @@ def main() -> None:
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("--ieee", action="store_true",
-                    help="emit the two-column IEEEtran variants into docs/paper_ieee/tables")
+                    help="emit two-column IEEEtran variants instead of single-column ones")
+    ap.add_argument("--out", type=Path, default=None,
+                    help="where to write them (default: docs/paper/tables, or "
+                         "docs/paper_ieee/tables with --ieee)")
+    ap.add_argument("--short-captions", action="store_true",
+                    help="cut each caption to whole sentences within a budget. The "
+                         "conference build needs it, because IEEEtran sets captions in "
+                         "small caps where a paragraph is unreadable; the journal build "
+                         "has room for the whole thing and does not")
     args = ap.parse_args()
     if args.ieee:
         IEEE = True
-        OUT = ROOT / "docs/paper_ieee/tables"
-        OUT.mkdir(parents=True, exist_ok=True)
+        OUT = args.out or ROOT / "docs/paper_ieee/tables"
+    elif args.out:
+        OUT = args.out
+    globals()["SHORT_CAPTIONS"] = bool(args.short_captions)
+    OUT.mkdir(parents=True, exist_ok=True)
     OUT.mkdir(parents=True, exist_ok=True)
     print("emitting LaTeX tables:")
     horizon_table()

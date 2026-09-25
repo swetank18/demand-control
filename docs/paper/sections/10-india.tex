@@ -1,0 +1,79 @@
+\section{India in comparison}
+\label{sec:india}
+
+\input{tables/india}
+
+Table~\ref{tab:india} is the comparison the benchmark exists to make, and it
+resolves into a single sentence: \textbf{India is the place this method is most
+worth deploying and the place it is currently least trustworthy.}
+
+\paragraph{Why India is the favourable case.} Delhi has the highest
+cooling-degree-day share of any metered series in the benchmark at $0.89$, and
+it is the only series whose demand rises \emph{strongly} with temperature
+($+0.59$). France is its mirror at $-0.64$: French demand rises when it gets
+cold, because the building stock is electrically heated. That distinction is the
+whole economic argument. A controller that buys down a cooling peak inside a
+demand-charge tariff has something to work with in the first regime and almost
+nothing in the second. Delhi is also among the peakiest profiles in the set
+($p99/$median $1.61$), which is precisely the shape a demand charge punishes.
+
+\paragraph{Why India is the difficult case.} On both axes that determine whether
+the controller can be relied upon, India is last among metered supplies. Skill
+over a seasonal-naive baseline is $+0.097$, against $+0.713$ for Germany,
+$+0.636$ for France and $+0.619$ for Spain --- a model that needs no training at
+all is nearly as good on Delhi as ours. And coverage of the nominal $90\%$
+interval is $0.762$ under the benchmark's calibration, the worst metered figure
+anywhere in the study against $0.911$ for Ireland --- and $0.904$ once the
+adaptive step is stated in the interval's units (Table~\ref{tab:aci-step}),
+which is the reading that stands.
+
+The second of these is the serious one. The controller's $q95$ is read from the
+same object as that interval, so an interval that is too narrow yields a demand
+ceiling that is too narrow, and the safety property is weakest on exactly the
+load the project targets.
+
+\input{tables/iblend}
+
+\paragraph{At building level, the verdict is the same.} Table~\ref{tab:iblend}
+is the Indian building arm: the IIIT-Delhi campus, thirteen windows, the
+unchanged protocol. The skill column says what the city-level row said. Over
+the twelve building windows the model beats a seasonal-naive baseline on six
+and loses on six, with mean skill $-0.037$; the worst row in the entire study
+is now an Indian one (Library, June 2016, $-0.965$, on a seven-month training
+block). Skill tracks the length of the training block --- $+0.060$ on the four
+windows with thirteen months or more, $-0.086$ on the eight shorter ones ---
+which is the direction the China arm's adaptation was argued to err in, now
+measured. The campus feed, the one object here that a demand charge is actually
+levied on, returns $+0.083$: a model that needs no training is nearly as good.
+That is India's skill verdict, and it no longer rests on a decade-old city
+archive.
+
+The calibration column says something the city-level row could not, and it
+says it twice. Under the benchmark's calibration coverage holds at building
+scale, $0.897$--$0.941$ on every window, exactly as it did on the eighteen BDG2
+buildings; it is $0.873$ on the campus feed, and $0.762$ on the city.
+Table~\ref{tab:calibration} carries this as its lower panel: one city, one
+weather feed, three levels of aggregation, and coverage falling with each step
+up the ladder --- which reproduced the first draft's aggregation effect inside
+a single city with nothing else varying, and reproduced its confound with it.
+Under the adaptive step stated in the interval's units the same three levels
+read $0.908$, $0.888$ and $0.904$ (Table~\ref{tab:aci-step}): flat within
+$0.02$, in a city where the step the building used was one sixth of the
+building's on the campus feed and one twentieth on the city. The campus row is
+the one that matters for control: the per-step exceedance of its $q95$ is
+$0.079$ against a nominal $0.05$ under the benchmark's calibration, the only
+window in Table~\ref{tab:horizon-panel} that is over the line. It is also the
+one window in that table where the absolute step was \emph{slower} than the
+relative one rather than faster ($\kappa=0.0015$ against $0.006$), which is
+the campus feed being the largest Indian meter in the study; restated in the
+interval's units its per-step rate falls to $0.069$ and its horizon exceedance
+is unchanged at $0.438$ (Table~\ref{tab:horizon-kappa}).
+
+\paragraph{What this arm cannot say.} Six of the seven buildings are on a
+central chiller that is not on their meter, so the building rows are
+forecasting and calibration results and no savings figure is claimed from them.
+The campus feed is a control object --- it carries the chiller, and it is the
+consumer the tariff bills --- and running the closed loop of
+Section~\ref{sec:dial} on it under Delhi's own tariff is the experiment that
+would close the loop on an Indian consumer for the first time. It is the next
+thing to do, and it is not done here.

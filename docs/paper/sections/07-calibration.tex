@@ -1,0 +1,141 @@
+\section{What degrades with aggregation, and what does not}
+\label{sec:calibration}
+
+One protocol --- 15 months train, 2 months validate, 1 month test, temporal
+throughout, conformal calibration on the validation block --- run unchanged over
+thirty supplies. Tables~\ref{tab:climate}--\ref{tab:china} give the five arms.
+
+\input{tables/climate}
+\input{tables/office}
+\input{tables/demographic}
+\input{tables/national}
+\input{tables/china}
+
+\input{tables/calibration}
+\input{tables/aci_step}
+
+\paperfig{fig_calibration.pdf}{One dot per supply, twice. Top, as the benchmark calibrated it: the
+nominal $90\%$ interval very nearly holds on individual buildings and fails
+once demand is aggregated to system level, on the metered panel and the
+reconstructed one alike, two populations sharing no country, no year and no
+data-generating process whose means differ by $0.005$. Bottom, the same
+supplies with the adaptive layer's step stated as a fraction of the interval
+width rather than as a number in the series' units: every tier is at the level
+and the ladder is gone.}{fig:calibration}
+
+Table~\ref{tab:calibration} and the upper panel of Figure~\ref{fig:calibration}
+are the benchmark's own reading, and they were the third contribution of the
+first draft of this paper. A nominal $90\%$ interval holds at building level
+(mean $0.901$; one row of eighteen below $0.85$) and fails at system level
+(mean $0.829$ metered, $0.824$ reconstructed; five of six and two of six below
+$0.85$ respectively); Delhi is the worst metered row at $0.762$ and
+Heilongjiang the worst row anywhere at $0.565$. The audit of the adaptive layer
+at system scale, later in this section, is where that reading came apart.
+Every row of the benchmark was calibrated with split conformal and an adaptive
+layer whose step, $\gamma=0.35$, is a number in the units of the series: on a
+building whose intervals are tens of kilowatts wide it is a working layer, and
+on a grid whose intervals are thousands of megawatts wide it is one that does
+not move. The building rows carried a remedy the system rows did not, and the
+ladder measured the remedy's absence.
+
+Table~\ref{tab:aci-step} is the same measurement without the confound: the
+paper's forecaster refitted once on every supply and the same predictions
+calibrated three ways. Under split conformal alone the tiers sit within $0.03$
+of each other --- $0.820$ on buildings, $0.791$ on metered system demand,
+$0.785$ reconstructed --- and eleven of the eighteen buildings are below
+$0.85$. The exchangeability failure is universal, not a property of
+aggregation. Under the adaptive layer with its step stated as a fraction of the
+interval width --- $\kappa=0.006$, the width read from the validation block so
+that nothing from the test month is used --- every tier is at the level,
+$0.898$, $0.914$ and $0.925$, and no supply in the study is below $0.85$:
+Heilongjiang is $0.937$ and Delhi $0.904$. The building--system gap is
+$+0.029$, $+0.073$ and $-0.016$ under the three calibrations. What degraded
+with aggregation was the step.
+
+This is consequential rather than curious, because the controller's $q95$ is
+read from the same object, and the consequence has changed sign since the first
+draft. The hazard is not a tier the guarantee cannot reach. It is a parameter
+that goes quietly inert when the layer is moved to a larger meter, while the
+coverage it reports looks like a property of the meter.
+
+\paragraph{The mechanism.} Split conformal guarantees coverage when the
+calibration and test blocks are exchangeable
+\citep{vovk2005algorithmic,romano2019cqr}. A Delhi May is not exchangeable with
+a Delhi June, because the monsoon arrives between them and changes the
+relationship between temperature and load. This is an assumption failure, not a
+tuning failure, and it is diagnosable rather than speculative: our own audit
+partitions May into six disjoint calibration blocks and finds coverage varying
+from $0.710$ to $0.861$ with a block-bootstrap standard error of $0.031$,
+failing every acceptance criterion stated in advance.\footnote{The bootstrap
+resamples thirty whole test days rather than $184{,}320$ overlapping 15-minute
+forecasts, because those are not $184{,}320$ independent observations. The naive
+standard error is under $0.001$ and would pass any model ever built.}
+
+\paperfig{fig_aci.pdf}{The remedy, measured at both tiers. Twelve monthly folds, each
+trained strictly on its own past and calibrated on the thirty days immediately
+before it. Top, the Phoenix office: raw quantiles are not calibrated out of
+sample at all; split conformal --- the layer with the theorem attached ---
+narrows the failure and does not remove it, bottoming out at $0.447$ in a month
+whose ceiling was being defended against a bound reality broke through a third
+of the time; adaptive conformal inference holds $0.867$--$0.928$ in every month.
+Bottom, the Delhi city feed under the identical protocol moved five years back
+onto its archive. Red is ACI at the building's step $\gamma=0.35$, a number in
+the series' units; blue is the same step carried over as the building's
+fraction of the interval width, $\kappa=0.006$, with nothing tuned on Delhi.}{fig:aci}
+
+\input{tables/aci}
+
+\paragraph{The remedy, at building scale.} Table~\ref{tab:aci} and
+Figure~\ref{fig:aci} run a walk-forward year. Split conformal ranges over
+$0.447$--$0.936$ by month and spends $52\%$ of the year inside a
+$0.85$--$0.95$ band; adaptive conformal inference \citep{gibbs2021adaptive}
+ranges over $0.867$--$0.928$ and spends $87\%$. Under a frozen model and a
+synthetic distribution shift the same ordering holds: split conformal settles at
+$0.770$ coverage and never recovers within the run, ACI at $0.885$. The layer
+with the finite-sample theorem is not the layer that delivers the level here,
+and that is worth stating plainly because it inverts the usual presentation
+order.
+
+\input{tables/aci_gamma}
+
+\paragraph{The remedy, at system scale.} The same audit on the Delhi city feed
+--- the tier where the failure is systematic, and the tier India sits in --- is
+the second and third rows of Table~\ref{tab:aci} and the lower panel of
+Figure~\ref{fig:aci}, the 2016--17 protocol moved five years back onto the
+2011--12 archive so that the calendar position is identical. Split conformal
+fails harder here than at the building. Six disjoint May calibration blocks
+give June coverage from $0.344$ to $0.728$, mean $0.524$ with a day-block
+bootstrap standard error of $0.044$; the walk-forward year ranges
+$0.628$--$0.980$ by month and spends $48\%$ in band; after the frozen shift it
+settles at $0.358$. The adaptive layer, carried over with the step it had at
+the building, $\gamma=0.35$, reaches $69\%$ in band and $0.733$ after the
+shift: better, and not the level.
+
+But $\gamma$ is a number in the units of the series. On a building whose
+intervals are $58$\,kW wide it moves the bound by $0.6\%$ of the interval per
+step; on a city whose intervals are $739$\,MW wide, by $0.05\%$. The same
+setting is a layer twelve times slower, and Table~\ref{tab:aci-gamma} shows
+that this is the whole of the difference: ACI replayed over the saved year at a
+grid of steps stated as a fraction $\kappa$ of the interval width, nothing
+retrained, reaches the level at the city as it does at the building. Carried
+over as the building's $\kappa=0.006$ rather than its $\gamma$ --- nothing
+tuned on Delhi --- the adaptive layer spends $100\%$ of the year in band with
+by-month coverage $0.874$--$0.935$, holds the monsoon June that the benchmark
+row reports at $0.762$ at $0.895$, and settles at $0.887$ after the shift,
+where the building settled at $0.885$. The level is restored at system scale.
+What did not transfer was the parameter's units, and a practitioner moving the
+layer from a building to a feeder would hit exactly this. One caveat is due:
+above $\kappa\approx0.01$ the interval is a fast tracker rather than a
+forecast interval, since the recursion pins the long-run exceedance rate
+whatever the model and the width it reports is no longer the forecaster's; the
+sweep is read for the transfer, not for the numbers at its top.
+
+\paragraph{Selection is regional, and we found that out the hard way.} The
+rule's final clause --- positive load--temperature correlation --- is a sanity
+check in Phoenix, where every candidate is cooling-dominated, and a
+site-destroying filter in Minneapolis or Dublin, where buildings consume
+electricity when it is cold. Seventy-seven buildings across nine sites pass every
+clause but that one. Separately, the two hottest sites in the corpus, the closest
+available analogues to an Indian metro climate, yield no admissible building at
+all for want of coverage in the split window. Both facts were discovered by
+applying the rule, not anticipated when writing it.

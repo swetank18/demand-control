@@ -1,0 +1,45 @@
+\subsection*{Reproducibility}
+
+Every number in this paper is written by a script from a file in
+\texttt{results/}; none is typed into the text. From a clean checkout the whole
+study regenerates in the order below: cache the system-level series and
+I-BLEND, run the protocol over the thirty-eight supplies, then the Indian arm
+window by window --- once with the adaptive step as an absolute number and once
+as a fraction of interval width --- then the audits of the China arm, the
+horizon bracket and closed loop, the calibration year, the step sweep, the
+aggregation ladder under three calibrations, the copula's one free parameter,
+and the references against their index. The last two commands emit every table
+and figure. Each stage is resumable and skips work whose output already exists,
+so an interrupted run continues rather than restarts.
+
+{\footnotesize
+\begin{verbatim}
+python data/national.py
+python data/iblend.py
+python eval/comparative.py
+./reproduce_india.sh
+./reproduce_india_kappa.sh
+python eval/china_audit.py
+python eval/horizon_risk.py
+python eval/conformal_audit.py
+python eval/aci_gamma.py
+python eval/aci_step_check.py
+python eval/copula_df_check.py
+python eval/bibcheck.py
+python eval/paper_tables.py
+python eval/paper_figures.py
+\end{verbatim}}
+
+\noindent The calibration audit is run a second and third time on the Delhi
+system series, with the protocol's own dates shifted five years onto that
+series' archive, and the adaptive step stated first as the absolute number the
+benchmark used and then as a fraction of interval width:
+
+{\footnotesize
+\begin{verbatim}
+python eval/conformal_audit.py \
+    --building IN_Delhi --shift-years 5
+python eval/conformal_audit.py \
+    --building IN_Delhi --shift-years 5 \
+    --reuse --gamma-rel 0.006 --tag @rel
+\end{verbatim}}

@@ -1,0 +1,32 @@
+\section{Results that argue against the method}
+\label{sec:against}
+
+Five rows are reported unchanged, and three of them are outright negative ---
+worse than a baseline that needs no training at all.
+
+The London office returns skill $-0.463$ and public services in Washington DC
+returns $+0.052$. Both sit at $1$--$3\%$ HVAC share, where a weather-aware model
+has little to add over ``last week, same time'' --- a coherent and testable
+explanation rather than an excuse. Delhi returns $+0.097$ with the study's worst
+metered calibration, and its explanation is different and given in
+Section~\ref{sec:india-fix}: a system-level series carrying calendar structure
+the feature set does not encode. Guangdong and Heilongjiang return $-0.314$ and
+$-0.294$, the two lowest figures in the study, and Section~\ref{sec:china}
+explains why those two should not be used against the method any more than they
+should have been used for it.
+
+Two defects in our own pipeline were exposed by running it outside its home
+site. A hard-coded United States federal holiday calendar would have inverted
+the holiday flag on two of the largest annual load anomalies for every European
+building; holidays are now resolved per country, and India is the case that
+forces it, its calendar being substantially lunisolar and therefore not
+expressible as a fixed list. And a data-preparation stage overwrote its own
+manifest, silently discarding every site but the last, which single-site work
+had never exposed.
+
+A third is worth recording because it is the kind that survives review. The
+column commonly written as ``the Boole bound'' in applied chance-constraint work
+is usually $1-(1-\alpha)^H$, which is the independence calculation and is not a
+bound. Our own tables carried that label until this draft. The corrected reading
+in Section~\ref{sec:horizon} is stronger than the one it replaces, because the
+valid bound turns out to be vacuous over the horizon that matters.

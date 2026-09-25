@@ -1,0 +1,32 @@
+\section{Skill and flexibility are independent axes}
+\label{sec:axes}
+
+\input{tables/correlations}
+
+\paperfig{fig_null.pdf}{(a) The null. (b) The same null on a panel it was not fitted to, in a
+different country, year and data-generating process; panels (a) and (b) share a
+vertical scale. (c) The same eighteen buildings, the same horizontal axis, and
+the one relationship in the study that is real. How much load there is to shift
+tracks climate. How well it can be predicted does not.}{fig:null}
+
+We expected forecast skill --- measured with pinball loss, a strictly proper
+scoring rule \citep{gneiting2007strictly}, against each series' own
+seasonal-naive baseline --- to increase with cooling load, on the reasoning that
+weather-driven demand is the learnable part. Table~\ref{tab:correlations} and
+Figure~\ref{fig:null} report the opposite: a null. Every correlation against
+skill is indistinguishable from zero and every leave-one-out range straddles or
+nearly straddles the sign line, which at these sample sizes is what a null
+result looks like. It replicates at $r=+0.054$ on the Chinese provincial panel,
+which was added afterwards and spans a wider climate range than the whole
+European set.
+
+The controllable fraction, by contrast, tracks climate strongly ($r=+0.489$),
+running from $37.6\%$ of the meter in Phoenix to $0.8\%$ in London.
+
+The deployment consequence is a screening rule. Do not ask whether a site's load
+is predictable; ask how much of it is weather-driven. A Dublin office is highly
+predictable (skill $+0.513$) with roughly $3\%$ controllable load, and there is
+nothing to sell there. Conflating the axes inverts the decision. For the target
+market this is favourable: Delhi demand correlates $+0.59$ with outdoor
+temperature against $-0.64$ for France, placing India at the useful end of the
+axis that matters.

@@ -1,0 +1,66 @@
+\section{What India must fix}
+\label{sec:india-fix}
+
+Stated as work rather than as caveats, in descending order of how much they
+cost.
+
+\paragraph{1. No row of this study is both Indian and building-level.} The
+Building Data Genome Project 2 harmonises $1{,}636$ buildings across three
+countries and contains no Indian building, so the \emph{controller} was tested
+on American buildings under an Indian tariff and the \emph{forecaster} on Indian
+city demand, and no single row here is both. Relabelling an American building as
+Indian would have been worse than the gap, so the gap is reported. An earlier
+draft stated that no Indian building-level load dataset exists; that was wrong.
+I-BLEND \citep{rashid2019iblend} provides 52 months (August 2013 to December
+2017) of one-minute mains power and power factor for seven buildings on the
+IIIT-Delhi campus --- academic, lecture, library, facilities, dining and two
+dormitories --- under a CC0 licence. Three properties make it the right
+corpus to close this gap and not merely a convenient one. It is in Delhi, the
+city whose system demand is the study's focal series. It is sampled at one
+minute, so the 15- and 30-minute billing blocks Indian demand charges are
+assessed on can be formed by averaging rather than, as for every BDG2 building
+here, interpolated up from hourly data that has already smoothed the peak. And
+it spans four Junes, so the horizon-gap measurement of
+Section~\ref{sec:horizon} can be replicated across years on one building rather
+than reported once. What it lacks is submetering of HVAC, so the base-load
+split remains a changepoint inference. The unchanged forecasting protocol has now been run on it
+(Table~\ref{tab:iblend}); the closed loop under the Delhi (DERC) tariff has
+not, and nothing in this paper anticipates its result.
+
+\paragraph{2. Calibration collapses across the monsoon.} Coverage of $0.762$ is
+an assumption failure, not a tuning failure: split conformal requires
+calibration and test blocks to be exchangeable
+\citep{vovk2005algorithmic,romano2019cqr}, and a Delhi May is not exchangeable
+with a Delhi June. Section~\ref{sec:calibration} measures the remedy on this
+feed: across a walk-forward year the adaptive layer, with its step carried over
+from the building as a fraction of the interval width, holds $0.874$--$0.935$
+by month where split conformal falls to $0.628$, and holds this June at
+$0.895$; on the benchmark's own June, refitted and recalibrated
+(Table~\ref{tab:aci-step}), it is $0.904$. The $0.762$ of
+Table~\ref{tab:calibration} is the benchmark row under the step the building
+used, and it is a units artefact rather than a monsoon one: the monsoon breaks
+exchangeability, which split conformal cannot survive anywhere, and the layer
+that survives it had been switched off by its units.
+
+\paragraph{3. Indian load carries calendar structure the model does not encode.}
+A large share of Indian public holidays are lunisolar --- Diwali, Holi, Eid ---
+and move against the Gregorian calendar, so they cannot be expressed as the
+fixed date list that load-forecasting pipelines conventionally use, including
+ours until this study forced the change. Beyond holidays, Indian demand carries
+load-shedding events, agricultural pumping schedules and festival periods that
+have no counterpart in the European series and no representation in our feature
+set. The low skill figure of $+0.097$ should be read partly as a statement about
+missing features rather than solely about the data.
+
+\paragraph{4. The Indian series is a decade old.} The Delhi archive covers
+2011--2012. India's generation mix, air-conditioning penetration and peak demand
+have all moved substantially since. The load \emph{shape} conclusions are the
+durable ones; the levels are not, and nothing in this paper should be read as a
+statement about the present Indian grid. We had a candidate answer to this
+objection in the China arm and Section~\ref{sec:china} withdrew it.
+
+\paragraph{What this does not undermine.} The favourable half of
+Table~\ref{tab:india} rests on physical structure --- cooling share, the sign of
+the load--temperature relationship, peakiness --- which is the part least likely
+to have inverted since 2012. Indian demand has not stopped rising with
+temperature.

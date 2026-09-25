@@ -1,0 +1,68 @@
+\section{Data}
+\label{sec:data}
+
+Six public sources, all fetched by script rather than vendored, and named in
+full because the benchmark's credibility rests on them.
+
+\paragraph{Building Data Genome Project 2} \citep{miller2020bdg2}. $1{,}636$
+metered non-residential buildings across nineteen sites, of which $1{,}578$
+carry an electricity meter, hourly with matched weather, two years. It is the
+only harmonised multi-country building corpus in existence, which is why it
+carries the controlled comparison: the same physical quantity, the same metering
+convention, the same period. It contains \emph{no Indian buildings}, which is
+why the next source is in the study.
+
+\paragraph{I-BLEND} \citep{rashid2019iblend}. One-minute mains power and power
+factor for seven buildings on the IIIT-Delhi campus --- academic, lecture,
+library, facilities, dining and two dormitories --- and for the three
+transformers that feed the whole campus, from August 2013 to December 2017,
+CC0. The billing blocks are formed by averaging sixty one-minute readings, not
+by interpolating up from hourly data, so this is the only building-level
+source in the study at the cadence Indian demand charges are assessed on. Its
+documentation states, and the load--temperature signature of each meter
+confirms, that every building except Facilities is served by a central chiller
+plant that is \emph{not} on the building's own meter: at building level the
+corpus is therefore a forecasting and calibration benchmark rather than a
+control one, and the selection rule's chilled-water clause records it as such.
+The campus feed is the exception, and it is the more important object: an
+Indian campus is billed as a single high-tension consumer with one contract
+demand and one monthly demand charge, so the transformer total --- median
+$199$\,kW, peak $842$\,kW, chiller included --- is what the tariff actually
+sees. Meter uptime varies by feed; each series' admissible test Junes and the
+training months behind each are recorded by \texttt{data/iblend.py} and
+printed in the table.
+
+\paragraph{Delhi State Load Despatch Centre.} Fifteen-minute metered demand for
+the city of Delhi, disaggregated across five distribution companies (BRPL, BYPL,
+NDPL, NDMC and MES) plus the total, two complete years at full coverage. With
+I-BLEND this gives three levels of aggregation --- building, campus, city --- in
+one city, at native resolution, under one weather feed. Every non-Indian series
+in the study is interpolated up from hourly.
+
+\paragraph{ENTSO-E transmission data, via Open Power System Data.} Hourly
+national load for the United Kingdom, Ireland, Germany, France and Spain, drawn
+from the European transmission system operators' transparency platform.
+
+\paragraph{Chinese provincial demand} \citep{wu2023china}. Hourly load for the
+31 provinces of mainland China, 2018, from which six are drawn. This source was
+added after the study was otherwise complete, and it is the only tier-2 series
+that is constructed rather than metered. Section~\ref{sec:china} audits it.
+
+\paragraph{ERA5 reanalysis, via the Open-Meteo archive.} Hourly temperature, dew
+point and cloud cover at each location, used identically for every series.
+
+\paragraph{Windows.} The building tier and the European national tier share
+2016--2017. The Delhi archive covers 2011--2012, so the same protocol is shifted
+back five years with its shape preserved. The Chinese series is a single
+calendar year, 2018. In every row of the study the test month is June, and the
+headline metric is skill against each series' own seasonal-naive baseline: a
+ratio computed inside one series' own data and its own period, which is what
+makes rows with different units and different years comparable at all. Absolute
+losses are not comparable across groups and are never compared.
+
+\paragraph{Selection.} One rule, stated in advance and applied uniformly: no
+district chilled-water meter, $>$$97\%$ coverage, median load 40--800\,kW,
+positive load--temperature correlation; ties within a (site, usage) cell broken
+by highest $p99/\text{median}$. Thirty supplies pass. Two facts about the rule
+were discovered by applying it rather than anticipated when writing it, and both
+are reported in Section~\ref{sec:calibration}.
