@@ -37,9 +37,11 @@ against a nominal $0.05$ on every window --- marginally, the forecaster does
 what it promised --- while the probability of breaching the ceiling
 \emph{somewhere} in the controller's 16-hour planning window is $0.39$ to
 $0.82$, median $0.57$: eight to sixteen times the level the constraint appears
-to promise, with no window's day-block bootstrap lower bound under five times,
-and not a constant, since one meter returns $0.39$, $0.64$ and $0.42$ in three
-successive Junes while its per-step rate does not move.
+to promise, and not a constant, since one meter returns $0.39$, $0.64$ and
+$0.42$ in three successive Junes while its per-step rate does not move. The gap
+narrows but persists --- median nine times, lowest day-block bootstrap bound
+three times --- when the per-step layer's adaptive step is restated in units
+that transfer across meter sizes.
 Neither textbook substitute recovers it: the independence calculation
 $1-(1-\alpha)^H$ overstates the risk by $1.7\times$ at the median because
 load errors are strongly autocorrelated, and the Boole/Bonferroni union bound
@@ -130,7 +132,9 @@ state.
         meter data (Section~\ref{sec:horizon}), over fourteen windows in two
         countries: claimed $0.05$, realised $0.39$--$0.82$ (median $0.57$;
         no $95\%$ lower bound under $0.28$), independence calculation
-        $0.87$--$0.99$, union bound vacuous on every row. The common formulation is under-protected by a factor of eight to
+        $0.87$--$0.99$, union bound vacuous on every row, and the gap surviving
+        a restatement of the per-step layer's own tuning parameter in units
+        that transfer across meter sizes. The common formulation is under-protected by a factor of eight to
         sixteen, the usual correction is $1.7\times$ too conservative at the
         median, and the gap is a distribution rather than a number.
   \item A closed-loop demonstration that this risk level can be made an
@@ -461,6 +465,42 @@ none. It is not exact --- it misses the two most extreme rows by $0.11$ and $0.1
 Section~\ref{sec:dial} states its limits. But it is the only quantity in the
 table that moves with the truth, and that is the property the dial in the next
 section depends on.
+
+\input{tables/horizon_kappa}
+
+\paragraph{The gap is not an artefact of how the per-step layer was tuned, but
+its size is not independent of it either.} Every row above was calibrated with
+an adaptive layer whose step is a number in the units of its own series, and
+these meters run from intervals of five kilowatts to two hundred and twenty.
+Section~\ref{sec:calibration} shows what that did to the calibration table;
+the same objection applies here, because a per-step rate is what the first
+column reports. Table~\ref{tab:horizon-kappa} repeats all fourteen windows
+with the step restated as a fraction of the interval width, $\kappa=0.006$,
+the width read on the validation block. Two things follow, and only one of them
+was expected. The gap survives: realised 16-hour exceedance runs $0.254$ to
+$0.660$, median $0.440$, nine times the level the constraint appears to
+promise, and the lowest bound anywhere in the table is $0.15$, three times
+nominal. But the gap also shrinks, by $0.111$ on average, and on six of the
+fourteen windows the two measurements are separated by more than sampling
+error. The mechanism is visible in the first two columns: on these small meters
+the absolute step was $\kappa=0.02$ to $\kappa=0.07$, a \emph{faster} layer
+than the relative one and not a slower one, and a fast layer produces a bound
+that jumps after each exceedance and decays between them. That bound is
+noisier, its exceedances are closer to independent across the horizon, and the
+probability that at least one occurs is correspondingly higher. A slower layer
+gives a smoother bound, more clustered exceedances, and a smaller joint
+probability --- at the cost of tracking the nominal per-step rate less
+tightly, which is why the panel above, whose per-step column is the better
+calibrated of the two ($0.0073$ against $0.0144$ mean absolute distance from
+nominal), is the one reported as the measurement.
+
+The honest statement is therefore narrower than ``the gap is $8$ to $16$
+times'' and survives being narrowed. Under both calibrations of the per-step
+layer, on every one of fourteen windows in two countries, a marginally
+calibrated $q95$ constraint delivers a horizon-level breach probability
+between three and sixteen times its nominal level, and which end of that range
+a particular deployment lands on depends on a tuning choice nobody making it
+would expect to be choosing a risk level.
 
 \section{Restoring the guarantee as a dial}
 \label{sec:dial}
@@ -867,8 +907,12 @@ $0.02$, in a city where the step the building used was one sixth of the
 building's on the campus feed and one twentieth on the city. The campus row is
 the one that matters for control: the per-step exceedance of its $q95$ is
 $0.079$ against a nominal $0.05$ under the benchmark's calibration, the only
-window in Table~\ref{tab:horizon-panel} that is over the line, and the horizon
-arm has not been rerun at the relative step.
+window in Table~\ref{tab:horizon-panel} that is over the line. It is also the
+one window in that table where the absolute step was \emph{slower} than the
+relative one rather than faster ($\kappa=0.0015$ against $0.006$), which is
+the campus feed being the largest Indian meter in the study; restated in the
+interval's units its per-step rate falls to $0.069$ and its horizon exceedance
+is unchanged at $0.438$ (Table~\ref{tab:horizon-kappa}).
 
 \paragraph{What this arm cannot say.} Six of the seven buildings are on a
 central chiller that is not on their meter, so the building rows are
@@ -1041,6 +1085,7 @@ python data/national.py        # fetch and cache every system-level series
 python data/iblend.py          # fetch I-BLEND, form 15-min blocks, apply the rule
 python eval/comparative.py     # run the protocol over the thirty supplies
 ./reproduce_india.sh           # the Indian arm: benchmark and horizon gap per window
+./reproduce_india_kappa.sh     # the same windows, adaptive step as a fraction
 python eval/china_audit.py     # audit the China arm against its own data
 python eval/horizon_risk.py    # the bracket, the copula and the closed loop
 python eval/conformal_audit.py # the walk-forward calibration year, building tier

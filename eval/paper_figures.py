@@ -32,6 +32,8 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from eval.windows import primary_results
+
 RESULTS = ROOT / "results"
 OUT = ROOT / "docs/paper/figures"
 OURS = "lightgbm_quantile"
@@ -333,8 +335,7 @@ def fig_horizon_panel() -> None:
     per-step rate (red diamond), the realised horizon exceedance (black dot),
     the independence figure (grey square) and the copula's prediction (blue
     triangle), on one probability axis, rows sorted by the realised value."""
-    files = [RESULTS / "horizon_risk_Fox_office_Gaylord.json"] + \
-            sorted(RESULTS.glob("horizon_risk_IIITD_*.json"))
+    files = [RESULTS / "horizon_risk_Fox_office_Gaylord.json"] + primary_results(RESULTS)
     rows = []
     for f in files:
         if not f.exists():

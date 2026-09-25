@@ -16,7 +16,10 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from eval.windows import primary_results
+
 RESULTS = ROOT / "results"
+MODELS = ROOT / "models"
 CACHE = ROOT / "data/cache"
 OUT = ROOT / "docs/paper/tables"
 OURS = "lightgbm_quantile"
@@ -215,8 +218,7 @@ def iblend_table() -> None:
 
 def horizon_panel_table() -> None:
     """The bracket, replicated: one row per window, Fox first."""
-    files = [RESULTS / "horizon_risk_Fox_office_Gaylord.json"] + \
-            sorted(RESULTS.glob("horizon_risk_IIITD_*.json"))
+    files = [RESULTS / "horizon_risk_Fox_office_Gaylord.json"] + primary_results(RESULTS)
     rows, vals, cis, two_day = [], [], [], []
     for f in files:
         if not f.exists():
@@ -397,6 +399,95 @@ def aci_gamma_table() -> None:
           "forecast interval: the recursion pins the long-run rate whatever the model, "
           "and the width it reports is no longer the forecaster's.",
           "tab:aci-gamma")
+
+
+def horizon_kappa_table() -> None:
+    """The horizon rows again with a per-step layer whose step transfers.
+
+    Every window in Table horizon-panel was calibrated with an adaptive step
+    in the units of its own series, and those series run from 5 kW intervals
+    to 800 kW ones. This is the same measurement with the step stated as a
+    fraction of the interval width, so the per-step column is comparable
+    across rows -- and the question is whether the horizon gap survives it.
+    """
+    pairs = []
+    for f in sorted(RESULTS.glob("horizon_risk_*k.json")):
+        key = f.stem.replace("horizon_risk_", "")
+        base = key[:-1] if not key.endswith("@k") else key[:-2] + "@g"
+        b = RESULTS / f"horizon_risk_{base}.json"
+        if not b.exists():
+            continue
+        dk, db = json.loads(f.read_text()), json.loads(b.read_text())
+        rk = [x for x in dk["marginal_vs_joint"] if x["H"] == 64][0]
+        rb = [x for x in db["marginal_vs_joint"] if x["H"] == 64][0]
+        fox = dk["building"].startswith("Fox")
+        name = "Phoenix office (BDG2)" if fox else esc(dk["building"].replace("IIITD_", "IIIT-Delhi "))
+        june = "2017" if fox else dk.get("tag", "").lstrip("@").rstrip("k")
+        pairs.append((fox, name, june, rb, rk, dk))
+    if not pairs:
+        return
+    pairs.sort(key=lambda t: (not t[0], t[1], t[2]))
+    rows = []
+    for i, (fox, name, june, rb, rk, dk) in enumerate(pairs):
+        rows.append([name, june,
+                     f"{rb['per_step_exceedance']:.3f}", f"{rk['per_step_exceedance']:.3f}",
+                     f"{rb['empirical_horizon']:.3f}",
+                     f"\\textbf{{{rk['empirical_horizon']:.3f}}}",
+                     ci(rk.get("empirical_horizon_ci")),
+                     f"{rk['copula_predicted']:.3f}"])
+        if fox and len(pairs) > 1:
+            rows.append(["\\midrule"])
+    pb = np.array([p[3]["per_step_exceedance"] for p in pairs])
+    pk = np.array([p[4]["per_step_exceedance"] for p in pairs])
+    eb = np.array([p[3]["empirical_horizon"] for p in pairs])
+    ek = np.array([p[4]["empirical_horizon"] for p in pairs])
+    lo = np.array([p[4]["empirical_horizon_ci"][0] for p in pairs])
+    cop = np.array([p[4]["copula_predicted"] for p in pairs])
+    cin = int(sum(p[4]["empirical_horizon_ci"][0] <= p[4]["copula_predicted"] <= p[4]["empirical_horizon_ci"][1]
+                  for p in pairs))
+    #: whether the two columns differ by more than the measurement can resolve:
+    #: the absolute-step value against the relative-step row's own interval
+    inside = int(sum(p[4]["empirical_horizon_ci"][0] <= p[3]["empirical_horizon"] <= p[4]["empirical_horizon_ci"][1]
+                     for p in pairs))
+    #: the absolute step, expressed in the units the relative one is stated in,
+    #: is what varied across these series and is the reason for the rerun
+    kap = np.array([0.35 / json.loads((MODELS / f"{p[5]['building']}{p[5].get('tag','')}" / "meta.json").read_text())
+                    ["adaptive_gamma_width"] for p in pairs])
+    table(OUT / "horizon_kappa.tex",
+          ["Series", "June", "$\\hat\\alpha$ abs.", "$\\hat\\alpha$ rel.",
+           "realised abs.", "realised rel.", "95\\% CI", "copula"],
+          rows, "llrrrrcr",
+          "The horizon rows of Table~\\ref{tab:horizon-panel} with the per-step "
+          "layer's adaptive step stated as a fraction of the interval width "
+          "($\\kappa=0.006$, the width read on the validation block) instead of as "
+          "an absolute number in the units of each series. These meters run from "
+          "intervals of a few kilowatts to several hundred, so the absolute step "
+          f"was a different layer on every row --- $\\kappa={kap.min():.4f}$ to "
+          f"$\\kappa={kap.max():.4f}$ across these windows, so on all but the campus feed "
+          "it was faster than the step the building audit settled on, not slower. "
+          f"Under the relative step the per-step rate spans ${pk.min():.3f}$--${pk.max():.3f}$ "
+          f"against ${pb.min():.3f}$--${pb.max():.3f}$ before, and its mean absolute "
+          f"distance from the nominal $0.05$ moves from ${np.abs(pb - 0.05).mean():.4f}$ to "
+          f"${np.abs(pk - 0.05).mean():.4f}$: a slower layer tracks the nominal rate less "
+          "tightly, which is why the per-step column of "
+          "Table~\\ref{tab:horizon-panel} is the one reported there. The horizon gap "
+          f"survives and shrinks. Realised 16-hour exceedance runs "
+          f"${ek.min():.3f}$--${ek.max():.3f}$ (median ${np.median(ek):.3f}$, "
+          f"${np.median(ek) / 0.05:.0f}\\times$ nominal) against "
+          f"${eb.min():.3f}$--${eb.max():.3f}$ (median ${np.median(eb):.3f}$) before; the "
+          f"paired change is ${(ek - eb).mean():+.3f}$ on average, and the absolute-step "
+          f"value lies inside the relative-step row's own $95\\%$ interval on {inside} of "
+          f"{len(pairs)} windows, so on {len(pairs) - inside} the two are separated by more "
+          "than sampling error. The magnitude of the gap is therefore not independent of how "
+          "the per-step layer is tuned --- a faster layer produces a noisier bound and more "
+          "nearly independent exceedances across the horizon --- but no choice of step makes "
+          f"it go away: the lowest lower bound anywhere in this table is ${lo.min():.2f}$, "
+          f"${lo.min() / 0.05:.1f}\\times$ the level the constraint appears to promise. The copula "
+          f"lies inside the realised interval on {cin} of {len(pairs)} windows. "
+          "Fox is run through this trainer at both steps, because its row in "
+          "Table~\\ref{tab:horizon-panel} comes from the benchmark harness and "
+          "would not otherwise be a paired comparison.",
+          "tab:horizon-kappa")
 
 
 def aci_step_table() -> None:
@@ -869,6 +960,7 @@ def main() -> None:
     aci_table()
     aci_gamma_table()
     aci_step_table()
+    horizon_kappa_table()
     acceptance_table()
     iblend_table()
     df = load_study()

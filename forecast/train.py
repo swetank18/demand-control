@@ -59,6 +59,8 @@ def train_building(
     conformal: bool = True,
     adaptive: bool = True,
     adaptive_gamma: float = 0.35,
+    adaptive_gamma_rel: float | None = None,
+    adaptive_lead: int = 4,
     train_start: str | None = None,
     tag: str = "",
 ) -> dict:
@@ -127,8 +129,19 @@ def train_building(
     # is exogenous, so running it offline over the window is equivalent to
     # running it online.
     aci_trace = {}
+    gamma_width = None
     if adaptive:
         gamma = adaptive_gamma
+        if adaptive_gamma_rel is not None:
+            # The step is in the units of the series, so the same number is a
+            # fast layer on a 100 kW meter and an inert one on a city feed
+            # (eval/aci_step_check.py measures what that did to this study).
+            # Stated as a fraction of the split-conformal interval width it
+            # transfers across scales. The width is read on the *validation*
+            # block, which is known before the test month begins.
+            m = va["horizon"].to_numpy() == adaptive_lead
+            gamma_width = float(np.mean(va_pred[quantiles[-1]][m] - va_pred[quantiles[0]][m]))
+            gamma = adaptive_gamma_rel * gamma_width
         te = te.sort_values(["target_time", "horizon"]).copy()
         order = te.index
         hte = te["horizon"].to_numpy()
@@ -209,7 +222,11 @@ def train_building(
                    "n_train": int(len(tr)), "n_valid": int(len(va)), "n_test": int(len(te))},
         "conformal": conformal,
         "adaptive_conformal": adaptive,
-        "adaptive_gamma": adaptive_gamma,
+        "adaptive_gamma": (adaptive_gamma_rel * gamma_width
+                           if adaptive_gamma_rel is not None and gamma_width else adaptive_gamma),
+        "adaptive_gamma_rel": adaptive_gamma_rel,
+        "adaptive_gamma_width": gamma_width,
+        "adaptive_lead": adaptive_lead,
         "aci": aci_trace,
         "weather_noise_c": weather_noise_c,
         "weather_assumption": (
@@ -236,6 +253,13 @@ def main() -> None:
     ap.add_argument("--no-conformal", action="store_true")
     ap.add_argument("--no-adaptive", action="store_true")
     ap.add_argument("--adaptive-gamma", type=float, default=0.35)
+    ap.add_argument("--adaptive-gamma-rel", type=float, default=None,
+                    help="state the adaptive step as this fraction of the split-conformal "
+                         "90%% interval width at --adaptive-lead on the validation block, "
+                         "instead of the absolute --adaptive-gamma. 0.006 is the step the "
+                         "building-scale audit ran at; an absolute step does not transfer "
+                         "between meters of different size")
+    ap.add_argument("--adaptive-lead", type=int, default=4)
     ap.add_argument("--train-start", default=None, help="lower bound on the training block (default: none)")
     ap.add_argument("--tag", default="", help="suffix on the model directory, e.g. @2016")
     args = ap.parse_args()
@@ -247,6 +271,7 @@ def main() -> None:
             b, args.cache, args.train_end, args.valid_end, args.test_start, args.test_end,
             weather_noise_c=args.weather_noise_c, conformal=not args.no_conformal,
             adaptive=not args.no_adaptive, adaptive_gamma=args.adaptive_gamma,
+            adaptive_gamma_rel=args.adaptive_gamma_rel, adaptive_lead=args.adaptive_lead,
             train_start=args.train_start, tag=args.tag,
         )
         for r in meta["reports"]:

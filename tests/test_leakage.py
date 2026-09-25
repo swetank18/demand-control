@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from string import ascii_letters
 
 import numpy as np
 import pandas as pd
@@ -178,15 +179,24 @@ def test_trained_artefacts_used_the_frozen_split(d: Path):
     if not s:
         pytest.skip(f"{d.parent.name} carries no split record")
     name = d.parent.name
-    if "@" in name:
+    #: A tag is "@<June>" for one of the I-BLEND windows, optionally followed by
+    #: a letter denoting a calibration variant of the same window (@2016k is the
+    #: 2016 window with the adaptive step stated as a fraction of interval
+    #: width), or a bare letter for a variant of the frozen split (@g, @k on the
+    #: Fox office). A variant changes how the forecast is calibrated and never
+    #: which dates it was trained on, so the split it must match is the same one.
+    series, _, tag = name.partition("@")
+    june = tag.rstrip(ascii_letters)
+    if june:
         # A window of a series with several admissible test months (the I-BLEND
         # arm). The frozen split does not apply; the split the manifest declared
         # for that window does, and the artefact must match it exactly.
-        series, june = name.split("@")
         man = ROOT / "data/cache/manifest_iblend.json"
         if not man.exists():
             pytest.skip("no I-BLEND manifest to check the window against")
-        wins = json.loads(man.read_text())["series"][series]["windows"]
+        by_series = json.loads(man.read_text())["series"]
+        assert series in by_series, f"{name}: {series} is not an I-BLEND series"
+        wins = by_series[series]["windows"]
         w = next((w for w in wins if str(w["test_june"]) == june), None)
         assert w is not None, f"{name}: no admissible window for June {june} in the manifest"
         assert s["train_end"] == w["train_end"]

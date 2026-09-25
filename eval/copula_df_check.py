@@ -39,6 +39,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from eval.horizon_risk import pivot_paths
+from eval.windows import primary_results
 from forecast.predict import QuantileModels
 from forecast.trajectories import (DF_GRID, LEVELS, CopulaModel, _EPS, _pivot,
                                    nearest_psd, path_exceedance, value_to_z)
@@ -143,7 +144,7 @@ def main() -> None:
     ap.add_argument("--out", type=Path, default=RESULTS / "copula_df_check.json")
     ap.add_argument("--only", default=None, help="one window key, e.g. IIITD_Girls@2017")
     args = ap.parse_args()
-    files = [RESULTS / "horizon_risk_Fox_office_Gaylord.json"] + sorted(RESULTS.glob("horizon_risk_IIITD_*.json"))
+    files = [RESULTS / "horizon_risk_Fox_office_Gaylord.json"] + primary_results(RESULTS)
     done = {}
     if args.out.exists():
         done = {r["key"]: r for r in json.loads(args.out.read_text())["windows"]}

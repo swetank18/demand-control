@@ -13,7 +13,12 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
+import sys
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from eval.windows import primary_results
+
 STATUS = ROOT.parent / "ieee_paper_status.md"
 RESULTS = ROOT / "results"
 FOX_H64 = 0.405   # the paper's original single-building figure, for reference
@@ -50,7 +55,7 @@ def india_benchmark() -> str:
 
 
 def india_horizon() -> str:
-    files = sorted(RESULTS.glob("horizon_risk_IIITD_*.json"))
+    files = primary_results(RESULTS)
     if not files:
         return "_horizon stage not started_\n"
     out = ["| series | June | per-step α̂ | realised H=64 | 95% CI (day-block) | independence | Boole | copula | lag-1 ρ |",
