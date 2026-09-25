@@ -1039,8 +1039,24 @@ $3.037$ --- only that the architecture and protocol do. The demographic arm is a
 single city and cannot separate demographic from local building stock. Delhi is
 one Indian city, and is real Indian data rather than a claim about India. The
 China arm is reconstructed data and Section~\ref{sec:china} states exactly which
-of its columns may be read. The horizon and acceptance results are one building
-over one month; they are the deepest measurements in the study and the narrowest.
+of its columns may be read. The acceptance result of Section~\ref{sec:dial} is
+one building over one month; it is the deepest measurement in the study and the
+narrowest.
+
+The five arms were run once, with the adaptive step that
+Section~\ref{sec:calibration} then found to be stated in the wrong units, and
+they have deliberately not been rerun. Tables~\ref{tab:climate}--\ref{tab:china}
+and Table~\ref{tab:calibration} are therefore reported as what that protocol
+produced, and Table~\ref{tab:aci-step} --- the same forecaster, the same
+supplies, the same predictions, calibrated three ways --- is the correction. We
+prefer this to a silent regeneration for two reasons. A study that quietly
+reruns itself after finding its own confound leaves a reader unable to see
+either the confound or its size; and the pinball and skill columns of the five
+arms do not depend on the question at issue, because every forecaster in a row
+passes through the identical calibration layer, so the comparison between
+forecasters is unaffected by which step that layer used. What the step changes
+is the coverage column, and that column is re-reported in
+Table~\ref{tab:aci-step} rather than overwritten.
 
 \section{Conclusion}
 
@@ -1051,7 +1067,10 @@ controller's guarantees actually hold.
 The central result is that the guarantee most commonly deployed is not the
 guarantee most commonly claimed. A per-step chance constraint on a demand
 ceiling, marginally calibrated and behaving exactly as specified, is
-under-protected over a sixteen-hour planning window by a factor of eight; the
+under-protected over a sixteen-hour planning window by a factor of eight on the
+building where it was first measured, and by between three and sixteen across
+fourteen windows in two countries under either way of tuning the layer beneath
+it; the
 figure usually quoted as the conservative correction is not a bound and
 overstates the risk by $2.4\times$; and the correction that is a bound is
 vacuous four hours in. That risk level can be turned into an operator-set
