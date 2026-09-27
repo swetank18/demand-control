@@ -93,3 +93,20 @@ def test_the_supply_count_the_paper_claims_is_the_count_that_ran():
     for doc in (Path("docs/paper/main.tex"), Path("docs/paper_journal/main.tex")):
         if doc.exists():
             assert claimed in doc.read_text(), f"{doc} does not state the count"
+
+
+def test_the_prose_figures_agree_with_the_results():
+    """Tables cannot drift because a script writes them; prose can. This runs
+    eval/paper_numbers.py, which lists every figure the text asserts against
+    the file it came from."""
+    import pytest
+    from pathlib import Path
+    if not (Path("results") / "aci_step_check.json").exists():
+        pytest.skip("no results/; run the study first")
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("paper_numbers", "eval/paper_numbers.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    stale = [(t, s, a) for t, s, a, tol in m.claims() if abs(s - a) > tol]
+    assert not stale, "the text states figures the study no longer produces: " + "; ".join(
+        f"{t}: text {s}, results {a:.4f}" for t, s, a in stale)

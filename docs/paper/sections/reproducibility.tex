@@ -8,7 +8,7 @@ window by window --- once with the adaptive step as an absolute number and once
 as a fraction of interval width --- then the audits of the China arm, the
 horizon bracket and closed loop, the calibration year, the step sweep, the
 aggregation ladder under three calibrations, the copula's one free parameter,
-and the references against their index. The last two commands emit every table
+the figures the prose states, and the references against their index. The last two commands emit every table
 and figure. Each stage is resumable and skips work whose output already exists,
 so an interrupted run continues rather than restarts.
 
@@ -25,6 +25,7 @@ python eval/conformal_audit.py
 python eval/aci_gamma.py
 python eval/aci_step_check.py
 python eval/copula_df_check.py
+python eval/paper_numbers.py
 python eval/bibcheck.py
 python eval/paper_tables.py
 python eval/paper_figures.py

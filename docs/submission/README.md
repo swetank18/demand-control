@@ -28,10 +28,11 @@ is typed by hand and the two cannot disagree.
 
 ## Before you submit
 
-    ../.venv/bin/python -m pytest tests -q          # 98 tests
+    ../.venv/bin/python -m pytest tests -q          # the full suite
     ../.venv/bin/python eval/paper_tables.py        # report tables
     ../.venv/bin/python eval/paper_tables.py --ieee # conference tables
     ../.venv/bin/python eval/paper_figures.py
+    ../.venv/bin/python eval/paper_numbers.py       # every figure the prose states
     ../.venv/bin/python eval/bibcheck.py            # every reference against its index
     ../.venv/bin/python eval/paper_bundle.py        # Overleaf bundle for the report
 
