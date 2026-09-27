@@ -54,17 +54,31 @@ study whose per-step layer \emph{under}-covers --- $\hat\alpha = 0.079$
 against a nominal $0.05$, the only figure above the line --- and $\varepsilon$
 is a statement built on top of that layer. A joint guarantee cannot be more
 exact than the marginals it composes, and here the marginals are optimistic by
-half again. Restating the adaptive step in the interval's units, which
-Section~\ref{sec:calibration} shows is the defensible way to set it, moves the
-campus per-step rate to $0.069$; whether that carries through to the dial is
-the experiment we have not run.
+half again.
+
+That is a testable claim, so we tested it. Restating the adaptive step in the
+interval's units --- which Section~\ref{sec:calibration} shows is the
+defensible way to set it --- moves the campus per-step rate from $0.079$ to
+$0.069$, and the whole sweep was rerun on that calibration with nothing else
+changed. The dial's exactness improves in the direction the explanation
+predicts and by less than the explanation would need. Mean absolute gap falls
+from $0.100$ to $0.083$, which is $41\%$ of the distance to the $0.057$ of the
+well-calibrated plant, and realised violation at $\varepsilon=0.05$ falls from
+$0.178$ to $0.158$; rank correlation is unchanged at $0.988$, and the sweep is
+still conservative at none of its eight levels. So the marginal layer's
+calibration is part of the explanation and not the whole of it. We do not know
+what the rest is. The honest form of this result is that a per-step layer that
+under-covers is one identified cause of a dial that over-delivers risk, worth
+perhaps two fifths of the effect on this feed, and that something else on this
+plant accounts for the remainder.
 
 The honest summary of Contribution~2 is therefore narrower than one control
 object suggested. On both plants $\varepsilon$ converts a risk level that was
 an emergent property of horizon length into one an operator sets and gets a
 monotone response from. On the plant whose marginals are calibrated it is also
 roughly exact and errs safe; on the plant whose marginals are not, it is
-monotone and optimistic. That is a useful thing for a deployment to know, and
+monotone and optimistic, and repairing those marginals recovers two fifths of
+the difference and not all of it. That is a useful thing for a deployment to know, and
 it says the marginal calibration layer is not a preliminary to the guarantee
 but part of it.
 

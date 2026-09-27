@@ -47,6 +47,7 @@ def claims() -> list[tuple[str, float, float, float]]:
     camp = load("horizon_risk_IIITD_Campus@2017.json")
     c64, ca = h64(camp), camp["acceptance"]
     step = _dedup(load("aci_step_check.json"))
+    kapc = load("horizon_risk_IIITD_Campus@2017k.json")
 
     def pop(pred, col):
         g = [v for v in step if pred(v)]
@@ -96,6 +97,13 @@ def claims() -> list[tuple[str, float, float, float]]:
         ("campus marginal commit 0.297", 0.2972, ca["marginal_plan_rate"]["tight"], 5e-4),
         ("campus per-step 0.079", 0.079, c64["per_step_exceedance"], 6e-4),
         ("resolution floor 1/S = 0.025", 0.025, fa["resolution_floor"], 1e-9),
+        # Section: the dial, tested against its own explanation
+        ("campus at kappa, mean abs gap 0.083", 0.083, kapc["acceptance"]["mean_abs_gap"], 5e-4),
+        ("campus at kappa, rank corr 0.988", 0.988, kapc["acceptance"]["rank_corr"], 5e-4),
+        ("campus at kappa, conservative 0 of 8", 0, kapc["acceptance"]["n_conservative"], 0),
+        ("campus at kappa, per-step 0.069", 0.069, h64(kapc)["per_step_exceedance"], 6e-4),
+        ("campus at kappa, commit at eps=0.05 0.158",
+         0.158, kapc["acceptance"]["scenario_plan_rate_at_min_eps"]["tight"], 5e-4),
         # Section: what degrades with aggregation
         ("buildings, split only 0.820", 0.820, pop(bld, "split"), 5e-4),
         ("system metered, split only 0.791", 0.791, pop(sysm, "split"), 5e-4),
