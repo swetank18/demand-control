@@ -49,6 +49,29 @@ rank correlation $0.988$, and realised commit violation rises through $0.172$,
 $0.236$, $0.300$, $0.392$ as $\varepsilon$ is set to $0.05$, $0.10$, $0.20$,
 $0.35$. An operator turning the dial gets a monotone response on both plants.
 
+Whether one month \emph{resolves} that response is a different question from
+whether each level's rate is exact, and it has a sharper answer than the
+intervals in the tables suggest. Those intervals are wider than the spacing
+between adjacent levels, but they are the wrong instrument for comparing
+levels: every level at a target is tested from the same states, so the
+commitments can be matched origin by origin. Matched, the outcomes are almost
+nested. Across the $4{,}320$ pairs of commitments at adjacent settings on the
+two plants, loosening $\varepsilon$ turned a held ceiling into a breach $250$
+times and a breach into a held ceiling $3$ times. An exact day-level sign-flip
+test on those pairs separates the two ends of the sweep at both targets on both
+plants ($p < 0.001$), and separates $11$ of the $12$ adjacent steps at the
+$5\%$ level. The exception is the office's smallest step, $0.05$ to $0.10$ at
+the tight target, where seven extra breaches and one reversal leave only five
+days with any net difference ($p = 0.0625$). A day-block bootstrap calls that
+step resolved too, and we do not: when the evidence sits on a handful of days,
+a bootstrap that resamples only what was observed is overconfident. The same
+matched comparison settles a question the tables leave open. On the campus the
+tightest scenario setting cuts commit violation below the incumbent marginal
+controller's by $0.119$ and $0.125$ at the two targets ($p \leq 0.001$); on the
+office the two cannot be told apart ($p = 0.6875$ and $0.125$). So within one billing month the
+dial's response is resolved step by step; what one month does not resolve is
+how close each level lands to the $\varepsilon$ it was asked for.
+
 The dial's \emph{calibration} does not replicate. Mean absolute gap is $0.100$
 against $0.057$, and the sweep is conservative at \emph{none} of its eight
 levels rather than five: on this feed the formulation delivers more risk than
@@ -98,10 +121,11 @@ but part of it.
 tightest setting, $\varepsilon=0.05$ delivers $0.097$ at the tight target,
 nearly twice the requested risk and on the unsafe side --- though one month's
 interval on it, $0.04$--$0.17$, cannot tell that miss from none. The dial has
-two resolution limits. One is statistical: the intervals are wider than the
-spacing between adjacent levels, so the monotone ordering above is a property
-of the point estimates, and resolving neighbouring settings one from another
-would take more billing months, not more scenarios. The other is a hard floor
+two resolution limits. One is statistical, and it bears on exactness rather
+than response: one month separates the settings from one another, as shown
+above, but each level's own interval is too wide to say how far it lands from
+its $\varepsilon$, and narrowing that would take more billing months, not more
+scenarios. The other is a hard floor
 at $1/S = 0.025$: with $S$ scenarios the finest expressible
 risk level is one scenario's worth of probability mass, below which the CVaR
 surrogate collapses onto the sample maximum and successive $\varepsilon$ cease

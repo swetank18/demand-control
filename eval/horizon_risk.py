@@ -301,7 +301,7 @@ def commitment_test(
     true_net = loss.exog["base_kw"].to_numpy() - loss.exog["pv_kw"].to_numpy()
 
     viol, viol_target, margins, n = 0, 0, [], 0
-    flags, days = [], []
+    flags, days, origins = [], [], []
     for snap in trace[::stride]:
         obs = _place(sim, snap)
         ctrl.d_committed_kw = float(snap["d_committed_kw"])
@@ -321,6 +321,7 @@ def commitment_test(
         margins.append(float(r.d_peak_kw - blocks.max()))
         flags.append(float(hit))
         days.append(loss.exog.index[k0].normalize())
+        origins.append(k0)
         n += 1
 
     if not n:
@@ -341,7 +342,140 @@ def commitment_test(
         "n_commitments": n,
         "n_commitment_days": int(len(set(days))),
         "median_margin_kw": float(np.median(margins)),
+        # kept per commitment so two risk levels can be compared origin by
+        # origin -- see paired_contrasts
+        "commit_flags": [int(f) for f in flags],
+        "commit_origins": origins,
+        "commit_days": [str(d.date()) for d in days],
     }
+
+
+def signflip_p(day_sums: np.ndarray, seed: int = 0, exact_upto: int = 20,
+               n_draws: int = 1 << 20) -> float:
+    """Two-sided day-level sign-flip p-value for a paired difference.
+
+    Exact (every sign assignment) when at most ``exact_upto`` days carry a
+    nonzero difference, Monte Carlo otherwise. Days with no difference carry no
+    information about the sign and are dropped."""
+    v = np.abs(np.asarray(day_sums, float))
+    obs = abs(float(np.sum(day_sums)))
+    v = v[v > 0]
+    if not len(v):
+        return 1.0
+    if len(v) <= exact_upto:
+        signs = ((np.arange(1 << len(v))[:, None] >> np.arange(len(v))) & 1) * 2 - 1
+    else:
+        signs = np.random.default_rng(seed).choice([-1, 1], size=(n_draws, len(v)))
+    return float(np.mean(np.abs(signs @ v) >= obs - 1e-9))
+
+
+def paired_contrasts(rows: list[dict], seed: int = 0) -> list[dict]:
+    """Is one risk level's commit violation really higher than another's?
+
+    Each level's rate carries its own day-block interval, and at one billing
+    month those intervals are wider than the spacing between levels, so laying
+    two of them side by side cannot answer the question. But every level at a
+    target is tested from the *same* state trace, so the commitments line up
+    origin by origin, and on a given day the levels face the same load. The
+    difference is therefore measured on matched pairs: per-origin outcome of
+    the looser level minus the tighter one, resampled by whole days. That
+    interval is narrower than either marginal one by however much the two
+    levels' outcomes share, which is the point.
+
+    The interval gives the size. Whether a contrast is *resolved* is decided by
+    an exact day-level sign-flip test instead, because the outcomes are nearly
+    nested -- a looser level almost never holds where a tighter one breached --
+    and when the extra breaches fall on a handful of days a percentile
+    bootstrap, which resamples only what was observed, is overconfident. Under
+    the null that the two levels are exchangeable within a day, each day's net
+    difference is as likely negative as positive; the two-sided p-value is the
+    share of sign assignments whose total is at least as extreme as observed.
+
+    Returns, per target, the contrast between each adjacent pair of levels, the
+    two ends of the sweep, and the incumbent marginal controller against the
+    tightest scenario level.
+    """
+    lo_q, hi_q = (1 - BOOT_LEVEL) / 2, 1 - (1 - BOOT_LEVEL) / 2
+    out = []
+    for tname in dict.fromkeys(r["target"] for r in rows):
+        at = [r for r in rows if r["target"] == tname and "commit_flags" in r]
+        sc = sorted((r for r in at if r["epsilon"] is not None), key=lambda r: r["epsilon"])
+        marg = [r for r in at if r["epsilon"] is None]
+        pairs = [(a, b, "adjacent") for a, b in zip(sc, sc[1:])]
+        if len(sc) > 2:
+            pairs.append((sc[0], sc[-1], "ends"))
+        if marg and sc:
+            pairs.append((sc[0], marg[0], "marginal_vs_tightest"))
+        for a, b, kind in pairs:
+            fa = dict(zip(a["commit_origins"], a["commit_flags"]))
+            fb = dict(zip(b["commit_origins"], b["commit_flags"]))
+            day = dict(zip(b["commit_origins"], b["commit_days"]))
+            common = [k for k in b["commit_origins"] if k in fa]
+            d = np.array([fb[k] - fa[k] for k in common], float)
+            boot = block_bootstrap_means(d, np.array([day[k] for k in common]),
+                                         n_boot=BOOT_N, seed=seed)
+            ci = [float(np.quantile(boot, lo_q)), float(np.quantile(boot, hi_q))]
+            per_day: dict[str, float] = {}
+            for k, x in zip(common, d):
+                per_day[day[k]] = per_day.get(day[k], 0.0) + x
+            p = signflip_p(np.array(list(per_day.values())), seed=seed)
+            out.append({
+                "target": tname, "kind": kind,
+                "from": a["epsilon"], "to": b["epsilon"],
+                "diff": float(d.mean()), "diff_ci": ci,
+                "p_signflip": p,
+                "resolved": bool(p < 1 - BOOT_LEVEL),
+                "n_up": int((d > 0).sum()), "n_down": int((d < 0).sum()),
+                "n_days_nonzero": int(sum(v != 0 for v in per_day.values())),
+                "n_pairs": len(common),
+                # the two marginal half-widths, to show what the pairing bought
+                "unpaired_halfwidths": [
+                    (r["commit_violation_ci"][1] - r["commit_violation_ci"][0]) / 2
+                    for r in (a, b)],
+            })
+    return out
+
+
+def paired_summary(paired: list[dict]) -> dict:
+    """What the matched-pair tests say about the sweep as a whole: whether one
+    month separates its two ends, how many adjacent steps it separates, and how
+    often a looser level held where a tighter one had breached."""
+    adj = [c for c in paired if c["kind"] == "adjacent"]
+    return {
+        "ends_resolved": {c["target"]: c["resolved"] for c in paired if c["kind"] == "ends"},
+        "adjacent_resolved": int(sum(c["resolved"] for c in adj)),
+        "n_adjacent": len(adj),
+        "adjacent_pairs": int(sum(c["n_pairs"] for c in adj)),
+        "adjacent_up": int(sum(c["n_up"] for c in adj)),
+        "adjacent_down": int(sum(c["n_down"] for c in adj)),
+    }
+
+
+def print_paired(paired: list[dict]) -> None:
+    print("\n-- B4: paired contrasts (same origins; day-block interval on the difference, "
+          "exact day-level sign-flip p)")
+    for c in paired:
+        print(f"   {c['target']:<8} {c['kind']:<21} {str(c['from']):>5} -> {str(c['to']):<5} "
+              f"diff {c['diff']:+.3f} [{c['diff_ci'][0]:+.3f}, {c['diff_ci'][1]:+.3f}]  "
+              f"p {c['p_signflip']:.4f}  {'resolved' if c['resolved'] else '-'}")
+
+
+def add_paired(path: Path) -> None:
+    """Recompute the paired contrasts on an existing result from the outcomes it
+    stored, refusing if those outcomes do not reproduce its rates."""
+    d = json.loads(path.read_text())
+    for r in d["closed_loop"]:
+        if "commit_flags" not in r:
+            raise SystemExit(f"{path.name} predates per-commitment outcomes; rerun it")
+        if abs(np.mean(r["commit_flags"]) - r["commit_violation_rate"]) > 1e-12:
+            raise SystemExit(f"{path.name}: stored outcomes do not reproduce the rate")
+    d["paired"] = paired_contrasts(d["closed_loop"])
+    for k in ("ends_resolved", "adjacent_resolved", "n_adjacent"):
+        d["acceptance"].pop(k, None)
+    d["acceptance"].update(paired_summary(d["paired"]))
+    path.write_text(json.dumps(d, indent=2, default=float))
+    print_paired(d["paired"])
+    print(f"\nupdated {path}")
 
 
 def closed_loop_sweep(
@@ -700,10 +834,16 @@ def main() -> None:
                          "results/horizon_risk_<building><tag>.json without refitting "
                          "the copula or re-running the closed loop; every other number "
                          "in the file is left exactly as it was")
+    ap.add_argument("--paired-only", action="store_true",
+                    help="recompute the paired contrasts between risk levels on an "
+                         "existing result from the per-commitment outcomes it stored")
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
 
     model_key = f"{args.building}{args.tag}"
+    if args.paired_only:
+        add_paired(args.out / f"horizon_risk_{model_key}.json")
+        return
     if args.ci_only:
         add_intervals(args.out / f"horizon_risk_{model_key}.json")
         return
@@ -742,6 +882,7 @@ def main() -> None:
 
     closed: list[dict] = []
     acceptance: dict = {}
+    paired: list[dict] = []
     if not args.skip_closed_loop:
         d = json.loads((RESULTS / "demand_targets.json").read_text())[args.building]
         if args.tariff and d.get("tariff") and Tariff.load(args.tariff).order_ref != d["tariff"]:
@@ -791,6 +932,9 @@ def main() -> None:
                 sc[(sc["target"] == "tight") & (sc["epsilon"] == lo)]["bill_inr"].iloc[0]
                 - marg[marg["target"] == "tight"]["bill_inr"].iloc[0]),
         }
+        paired = paired_contrasts(closed)
+        acceptance.update(paired_summary(paired))
+        print_paired(paired)
 
     payload = {
         "building": args.building,
@@ -804,6 +948,7 @@ def main() -> None:
         "copula_marginals": mc,
         "closed_loop": closed,
         "acceptance": acceptance,
+        "paired": paired,
     }
     (args.out / f"horizon_risk_{model_key}.json").write_text(
         json.dumps(payload, indent=2, default=float))

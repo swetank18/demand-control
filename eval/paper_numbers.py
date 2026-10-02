@@ -36,6 +36,12 @@ def _cl(d: dict, target: str, eps: float) -> list[float]:
             if r["target"] == target and r.get("epsilon") == eps][0]["commit_violation_ci"]
 
 
+def _pc(d: dict, target: str, kind: str, frm: float) -> dict:
+    """One paired contrast between risk levels."""
+    return [c for c in d["paired"]
+            if c["target"] == target and c["kind"] == kind and c["from"] == frm][0]
+
+
 def _dedup(store: dict) -> list[dict]:
     out, seen = [], set()
     for v in store.values():
@@ -110,6 +116,31 @@ def claims() -> list[tuple[str, float, float, float]]:
         ("Fox tight eps=0.05 interval high 0.17", 0.17, _cl(fox, "tight", 0.05)[1], 5e-3),
         ("campus mean CI half-width 0.113", 0.113, ca["mean_ci_halfwidth"], 5e-4),
         ("campus eps inside its interval at 4 of 8", 4, ca["n_within_interval"], 0),
+        # Section: the dial, matched pairs between levels
+        ("adjacent matched pairs 4,320", 4320, fa["adjacent_pairs"] + ca["adjacent_pairs"], 0),
+        ("hold-to-breach on loosening 250", 250, fa["adjacent_up"] + ca["adjacent_up"], 0),
+        ("breach-to-hold on loosening 3", 3, fa["adjacent_down"] + ca["adjacent_down"], 0),
+        ("adjacent steps resolved 11 of 12", 11, fa["adjacent_resolved"] + ca["adjacent_resolved"], 0),
+        ("of 12 adjacent steps", 12, fa["n_adjacent"] + ca["n_adjacent"], 0),
+        ("ends resolved on both plants and targets", 4,
+         sum(fa["ends_resolved"].values()) + sum(ca["ends_resolved"].values()), 0),
+        ("ends p < 0.001", 0.0, max(c["p_signflip"] for d in (fox, camp)
+                                    for c in d["paired"] if c["kind"] == "ends"), 1e-3),
+        ("Fox tight 0.05->0.10 p = 0.0625", 0.0625, _pc(fox, "tight", "adjacent", 0.05)["p_signflip"], 1e-9),
+        ("Fox tight 0.05->0.10 seven extra breaches", 7, _pc(fox, "tight", "adjacent", 0.05)["n_up"], 0),
+        ("Fox tight 0.05->0.10 one reversal", 1, _pc(fox, "tight", "adjacent", 0.05)["n_down"], 0),
+        ("Fox tight 0.05->0.10 five days", 5, _pc(fox, "tight", "adjacent", 0.05)["n_days_nonzero"], 0),
+        ("campus marginal over tightest, tight 0.119", 0.119,
+         _pc(camp, "tight", "marginal_vs_tightest", 0.05)["diff"], 5e-4),
+        ("campus marginal over tightest, nominal 0.125", 0.125,
+         _pc(camp, "nominal", "marginal_vs_tightest", 0.05)["diff"], 5e-4),
+        # an upper bound in the text: stated 0.001, checked as "results do not exceed it"
+        ("campus marginal over tightest p <= 0.001", 0.001, max(0.001, max(
+            _pc(camp, t, "marginal_vs_tightest", 0.05)["p_signflip"] for t in ("tight", "nominal"))), 0),
+        ("Fox marginal vs tightest, tight p = 0.6875", 0.6875,
+         _pc(fox, "tight", "marginal_vs_tightest", 0.05)["p_signflip"], 1e-9),
+        ("Fox marginal vs tightest, nominal p = 0.125", 0.125,
+         _pc(fox, "nominal", "marginal_vs_tightest", 0.05)["p_signflip"], 1e-9),
         ("campus gap shift at kappa 0.018", 0.018,
          ca["mean_abs_gap"] - kapc["acceptance"]["mean_abs_gap"], 5e-4),
         # Section: the dial, tested against its own explanation
