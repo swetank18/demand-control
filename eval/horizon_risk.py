@@ -301,6 +301,7 @@ def commitment_test(
     true_net = loss.exog["base_kw"].to_numpy() - loss.exog["pv_kw"].to_numpy()
 
     viol, viol_target, margins, n = 0, 0, [], 0
+    flags, days = [], []
     for snap in trace[::stride]:
         obs = _place(sim, snap)
         ctrl.d_committed_kw = float(snap["d_committed_kw"])
@@ -314,19 +315,31 @@ def commitment_test(
             continue
         grid = true_net[k0:k0 + m] + loss.controllable_kw(r.plan, m)
         blocks = grid.reshape(-1, spb).mean(axis=1)
-        viol += int(bool((blocks > r.d_peak_kw + 1e-6).any()))
+        hit = int(bool((blocks > r.d_peak_kw + 1e-6).any()))
+        viol += hit
         viol_target += int(bool((blocks > target_kw + 1e-6).any()))
         margins.append(float(r.d_peak_kw - blocks.max()))
+        flags.append(float(hit))
+        days.append(loss.exog.index[k0].normalize())
         n += 1
 
     if not n:
         return {"commit_violation_rate": float("nan"), "n_commitments": 0,
                 "commit_violation_vs_target": float("nan"),
                 "median_margin_kw": float("nan")}
+    # The commitments are 16-hour windows opened every `stride` steps, so
+    # consecutive ones overlap almost entirely and a binomial interval on n of
+    # them is far too narrow -- the same objection, and the same remedy, as the
+    # horizon rows: resample whole days.
+    boot = block_bootstrap_means(np.array(flags), np.array(days), n_boot=BOOT_N, seed=seed)
+    lo, hi = (1 - BOOT_LEVEL) / 2, 1 - (1 - BOOT_LEVEL) / 2
     return {
         "commit_violation_rate": viol / n,
+        "commit_violation_ci": [float(np.quantile(boot, lo)), float(np.quantile(boot, hi))],
+        "commit_violation_se": float(boot.std(ddof=1)),
         "commit_violation_vs_target": viol_target / n,
         "n_commitments": n,
+        "n_commitment_days": int(len(set(days))),
         "median_margin_kw": float(np.median(margins)),
     }
 
@@ -757,6 +770,14 @@ def main() -> None:
             "mean_abs_gap": float(gap.mean()),
             "n_levels": int(len(sc)),
             "n_conservative": int((sc["commit_violation_rate"] <= sc["epsilon"] + 1e-9).sum()),
+            #: levels whose interval contains the epsilon asked for -- the
+            #: honest version of "the dial is exact", since a rate measured
+            #: over one month cannot distinguish small misses from none
+            "n_within_interval": int(sum(
+                lo <= e <= hi for e, (lo, hi) in
+                zip(sc["epsilon"], sc["commit_violation_ci"]))),
+            "mean_ci_halfwidth": float(np.mean(
+                [(hi - lo) / 2 for lo, hi in sc["commit_violation_ci"]])),
             "marginal_plan_rate": {
                 str(t): float(g["commit_violation_rate"].iloc[0]) for t, g in marg.groupby("target")},
             "scenario_plan_rate_at_min_eps": {

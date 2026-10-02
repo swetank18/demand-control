@@ -21,6 +21,15 @@
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage[hidelinks]{hyperref}
 \usepackage{url}
+% IEEEtran puts a colon after every run-in \paragraph heading; the shared
+% sections already end theirs with a full stop. Add it only where it is missing.
+% IEEEtran sets \frenchspacing, so a full stop's space factor is restored inside
+% the heading's own group for \@addpunct to see it.
+\makeatletter
+\def\paragraph{\@startsection{paragraph}{4}{2\parindent}{0ex plus 0.1ex minus 0.1ex}%
+{0ex}{\normalfont\normalsize\itshape\sfcode`\.=3000\relax}}
+\def\@IEEEsectpunct{\@addpunct{:}\ \,}
+\makeatother
 \graphicspath{{../paper/figures/}}
 \newcommand{\rupee}[1]{\textsf{Rs}~#1}
 
@@ -83,9 +92,9 @@ parameter, tracking the requested $\varepsilon$ at rank correlation $0.957$ for
 reported. Repeated on a second control object in another country under another
 tariff, the dial's monotonicity replicates (rank correlation $0.988$) and its
 exactness does not, on the one series here whose per-step layer under-covers.
-Repairing that layer recovers two fifths of the difference and not all of it:
-a joint guarantee is no more exact than the marginals it composes, and on this
-plant the marginals are one identified cause among others. The same protocol run over thirty-seven electricity supplies in eight
+Repairing that layer moves the dial the right way by an amount one billing
+month cannot resolve: a joint guarantee is no more exact than the marginals it
+composes, and on this plant the marginals are a partially-supported cause. The same protocol run over thirty-seven electricity supplies in eight
 countries yields two further results. Distribution-free coverage does
 \emph{not} degrade with aggregation level, contrary to a reading this study
 first made and then unmade by its own audit: the adaptive conformal layer's

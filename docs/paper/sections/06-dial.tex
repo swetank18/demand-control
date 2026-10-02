@@ -29,7 +29,12 @@ tracks the requested level with rank correlation $0.957$ across the sweep, mean
 absolute gap $0.057$, and lands conservative at five of eight levels. The
 formulation errs safe by construction: the CVaR surrogate admits a strict subset
 of the chance-constrained feasible set, so it defends the committed ceiling
-harder than asked.
+harder than asked. Those are point estimates over one month, and the
+commitments behind them are overlapping sixteen-hour windows, so each rate
+carries a day-block interval; the mean half-width is $0.081$. The requested
+$\varepsilon$ lies inside its own interval at six of eight levels, and the two
+it does not are both $\varepsilon=0.35$, on the safe side: on this plant the
+dial is never measurably unsafe.
 
 \input{tables/acceptance_campus}
 
@@ -47,7 +52,10 @@ $0.35$. An operator turning the dial gets a monotone response on both plants.
 The dial's \emph{calibration} does not replicate. Mean absolute gap is $0.100$
 against $0.057$, and the sweep is conservative at \emph{none} of its eight
 levels rather than five: on this feed the formulation delivers more risk than
-it was asked for at every setting. We do not think this is the risk
+it was asked for at every setting. The intervals sharpen where that matters:
+they exclude the requested level at $\varepsilon=0.05$ and $0.10$ on both
+targets --- the two tightest settings, the ones an operator would actually use
+--- and contain it at $0.20$ and $0.35$, four of eight in all. We do not think this is the risk
 formulation failing, and the reason is one row of
 Table~\ref{tab:horizon-panel}. The campus feed is the single window in the
 study whose per-step layer \emph{under}-covers --- $\hat\alpha = 0.079$
@@ -61,31 +69,40 @@ interval's units --- which Section~\ref{sec:calibration} shows is the
 defensible way to set it --- moves the campus per-step rate from $0.079$ to
 $0.069$, and the whole sweep was rerun on that calibration with nothing else
 changed. The dial's exactness improves in the direction the explanation
-predicts and by less than the explanation would need. Mean absolute gap falls
-from $0.100$ to $0.083$, which is $41\%$ of the distance to the $0.057$ of the
-well-calibrated plant, and realised violation at $\varepsilon=0.05$ falls from
-$0.178$ to $0.158$; rank correlation is unchanged at $0.988$, and the sweep is
-still conservative at none of its eight levels. So the marginal layer's
-calibration is part of the explanation and not the whole of it. We do not know
-what the rest is. The honest form of this result is that a per-step layer that
-under-covers is one identified cause of a dial that over-delivers risk, worth
-perhaps two fifths of the effect on this feed, and that something else on this
-plant accounts for the remainder.
+predicts, and by an amount this experiment cannot separate from noise. Mean
+absolute gap falls from $0.100$ to $0.083$ and realised violation at
+$\varepsilon=0.05$ from $0.178$ to $0.158$, both toward the $0.057$ and $0.097$
+of the well-calibrated plant; rank correlation is unchanged at $0.988$ and the
+sweep is still conservative at none of its eight levels. But each of those
+rates is a fraction of the commitments sampled over one month, and the
+day-block interval on it is wider than the movement --- a mean half-width of
+$0.113$ on the campus sweep against a shift of $0.018$ --- so what this run
+establishes is a direction and not a size. The claim the paper makes is
+therefore the weak one: a per-step layer that under-covers is a plausible and
+partially-supported cause of a dial that over-delivers risk, the repair moves
+the dial the right way, and the remaining distance to the calibrated plant is
+neither shown to close nor shown to persist. Separating those would need more
+billing months than one.
 
 The honest summary of Contribution~2 is therefore narrower than one control
 object suggested. On both plants $\varepsilon$ converts a risk level that was
 an emergent property of horizon length into one an operator sets and gets a
 monotone response from. On the plant whose marginals are calibrated it is also
 roughly exact and errs safe; on the plant whose marginals are not, it is
-monotone and optimistic, and repairing those marginals recovers two fifths of
-the difference and not all of it. That is a useful thing for a deployment to know, and
+monotone and optimistic, and repairing those marginals moves it the right way
+by an amount one month cannot resolve. That is a useful thing for a deployment to know, and
 it says the marginal calibration layer is not a preliminary to the guarantee
 but part of it.
 
 \paragraph{What it does not do, stated in full.} It is not exact. At the
 tightest setting, $\varepsilon=0.05$ delivers $0.097$ at the tight target,
-nearly twice the requested risk and on the unsafe side. There is a hard
-resolution floor at $1/S = 0.025$: with $S$ scenarios the finest expressible
+nearly twice the requested risk and on the unsafe side --- though one month's
+interval on it, $0.04$--$0.17$, cannot tell that miss from none. The dial has
+two resolution limits. One is statistical: the intervals are wider than the
+spacing between adjacent levels, so the monotone ordering above is a property
+of the point estimates, and resolving neighbouring settings one from another
+would take more billing months, not more scenarios. The other is a hard floor
+at $1/S = 0.025$: with $S$ scenarios the finest expressible
 risk level is one scenario's worth of probability mass, below which the CVaR
 surrogate collapses onto the sample maximum and successive $\varepsilon$ cease
 to be distinguishable. That is a property of sample average approximation rather

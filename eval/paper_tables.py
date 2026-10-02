@@ -738,6 +738,7 @@ def acceptance_table(key: str = "Fox_office_Gaylord", out: str = "acceptance",
         rows.append([
             r["target"], name, eps,
             f"\\textbf{{{commit:.3f}}}{gap}",
+            ci(r.get("commit_violation_ci")),
             f"{r['window_violation_rate']:.3f}",
             f"{r['ceiling_breaches']}",
             f"{r['peak_kva']:.1f}",
@@ -745,9 +746,9 @@ def acceptance_table(key: str = "Fox_office_Gaylord", out: str = "acceptance",
             f"{r['solve_ms_mean']:.0f}",
         ])
     table(OUT / f"{out}.tex",
-          ["Target", "Controller", "$\\varepsilon$", "Commit viol.\\ (gap)",
+          ["Target", "Controller", "$\\varepsilon$", "Commit viol.\\ (gap)", "95\\% CI",
            "vs target", "Breaches", "Peak kVA", "Bill Rs", "Solve ms"],
-          rows, "llrrrrrrr",
+          rows, "llrrcrrrrr",
           (f"Closed loop over one billing month on {what}. " if what
            else "Closed loop over one billing month. ")
           + "\\textbf{Commit violation} is the "
@@ -757,7 +758,14 @@ def acceptance_table(key: str = "Fox_office_Gaylord", out: str = "acceptance",
           "not what the chance constraint promises, since the committed peak is a "
           f"decision variable. Rank correlation {a['rank_corr']:.3f}, mean absolute gap "
           f"{a['mean_abs_gap']:.3f}, conservative at {a['n_conservative']} of "
-          f"{a['n_levels']} levels; resolution floor $1/S={a['resolution_floor']:.3f}$.",
+          f"{a['n_levels']} levels; resolution floor $1/S={a['resolution_floor']:.3f}$."
+          + (" Intervals are a day-block bootstrap over the sampled commitments, "
+             "which are overlapping 16-hour windows and so are not the independent "
+             "draws a binomial interval would assume; the requested $\\varepsilon$ "
+             f"lies inside its own interval at {a['n_within_interval']} of "
+             f"{a['n_levels']} levels, and the mean half-width is "
+             f"${a['mean_ci_halfwidth']:.3f}$, which is the resolution one billing "
+             "month buys." if "n_within_interval" in a else ""),
           label)
 
 

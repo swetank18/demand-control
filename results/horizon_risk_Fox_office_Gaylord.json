@@ -1,5 +1,7 @@
 {
   "building": "Fox_office_Gaylord",
+  "tag": "",
+  "tensor": "models/Fox_office_Gaylord/tensors/lightgbm_quantile.parquet",
   "window": [
     "2017-06-01",
     "2017-06-30 23:45"
@@ -426,17 +428,23 @@
       "worst_breach_kw": 6.139510455536822,
       "comfort_violation_pct": 0.5902777777777778,
       "energy_kwh": 135940.30721339813,
-      "solve_ms_mean": 6.342116673266673,
+      "solve_ms_mean": 5.896321438888839,
       "window_violation_rate": 0.048970901348474094,
       "n_windows": 1409,
       "blocks_breached": 4,
       "n_blocks": 1440,
       "block_breach_rate": 0.002777777777777778,
       "commit_violation_rate": 0.10555555555555556,
+      "commit_violation_ci": [
+        0.027777777777777776,
+        0.19722222222222222
+      ],
+      "commit_violation_se": 0.04252585510324926,
       "commit_violation_vs_target": 0.075,
       "n_commitments": 360,
+      "n_commitment_days": 30,
       "median_margin_kw": 22.162440789984117,
-      "wall_s": 21.196128940999188
+      "wall_s": 19.65306322299989
     },
     {
       "target": "tight",
@@ -451,17 +459,23 @@
       "worst_breach_kw": 11.515280235926184,
       "comfort_violation_pct": 0.7638888888888888,
       "energy_kwh": 135930.53338111984,
-      "solve_ms_mean": 53.078722109396246,
+      "solve_ms_mean": 51.59749512118066,
       "window_violation_rate": 0.0965223562810504,
       "n_windows": 1409,
       "blocks_breached": 9,
       "n_blocks": 1440,
       "block_breach_rate": 0.00625,
       "commit_violation_rate": 0.09722222222222222,
+      "commit_violation_ci": [
+        0.03611111111111111,
+        0.17222222222222222
+      ],
+      "commit_violation_se": 0.03534621401574286,
       "commit_violation_vs_target": 0.06666666666666667,
       "n_commitments": 360,
+      "n_commitment_days": 30,
       "median_margin_kw": 26.492453747257372,
-      "wall_s": 162.74528492099853
+      "wall_s": 157.868889502
     },
     {
       "target": "tight",
@@ -476,17 +490,23 @@
       "worst_breach_kw": 13.55842266254706,
       "comfort_violation_pct": 0.7291666666666666,
       "energy_kwh": 135842.40018319993,
-      "solve_ms_mean": 53.14352441218249,
+      "solve_ms_mean": 52.47895915312155,
       "window_violation_rate": 0.09581263307310149,
       "n_windows": 1409,
       "blocks_breached": 9,
       "n_blocks": 1440,
       "block_breach_rate": 0.00625,
       "commit_violation_rate": 0.11388888888888889,
+      "commit_violation_ci": [
+        0.04159722222222234,
+        0.20555555555555555
+      ],
+      "commit_violation_se": 0.04169218899932702,
       "commit_violation_vs_target": 0.075,
       "n_commitments": 360,
+      "n_commitment_days": 30,
       "median_margin_kw": 23.50579899423829,
-      "wall_s": 162.97852700199837
+      "wall_s": 160.75976498299997
     },
     {
       "target": "tight",
@@ -501,17 +521,23 @@
       "worst_breach_kw": 15.82802380956673,
       "comfort_violation_pct": 0.8333333333333334,
       "energy_kwh": 135687.90014885901,
-      "solve_ms_mean": 53.863333148260985,
+      "solve_ms_mean": 54.535895479513385,
       "window_violation_rate": 0.07310149041873669,
       "n_windows": 1409,
       "blocks_breached": 10,
       "n_blocks": 1440,
       "block_breach_rate": 0.006944444444444444,
       "commit_violation_rate": 0.15555555555555556,
+      "commit_violation_ci": [
+        0.075,
+        0.24722222222222223
+      ],
+      "commit_violation_se": 0.04353725202695117,
       "commit_violation_vs_target": 0.08888888888888889,
       "n_commitments": 360,
+      "n_commitment_days": 30,
       "median_margin_kw": 19.760767184087427,
-      "wall_s": 165.67500338299942
+      "wall_s": 167.0947471200002
     },
     {
       "target": "tight",
@@ -526,17 +552,23 @@
       "worst_breach_kw": 14.245251666858564,
       "comfort_violation_pct": 1.0416666666666665,
       "energy_kwh": 135561.43147541588,
-      "solve_ms_mean": 56.09764707292647,
+      "solve_ms_mean": 55.48148811007039,
       "window_violation_rate": 0.0766501064584812,
       "n_windows": 1409,
       "blocks_breached": 13,
       "n_blocks": 1440,
       "block_breach_rate": 0.009027777777777777,
       "commit_violation_rate": 0.21944444444444444,
+      "commit_violation_ci": [
+        0.12777777777777777,
+        0.325
+      ],
+      "commit_violation_se": 0.0497074145660079,
       "commit_violation_vs_target": 0.11388888888888889,
       "n_commitments": 360,
+      "n_commitment_days": 30,
       "median_margin_kw": 16.26537163776876,
-      "wall_s": 172.1726585230008
+      "wall_s": 170.02655567199986
     },
     {
       "target": "nominal",
@@ -551,17 +583,23 @@
       "worst_breach_kw": 0.0,
       "comfort_violation_pct": 0.5902777777777778,
       "energy_kwh": 135597.38832625657,
-      "solve_ms_mean": 6.366275063876022,
+      "solve_ms_mean": 6.369169207977324,
       "window_violation_rate": 0.0,
       "n_windows": 1409,
       "blocks_breached": 0,
       "n_blocks": 1440,
       "block_breach_rate": 0.0,
       "commit_violation_rate": 0.10277777777777777,
+      "commit_violation_ci": [
+        0.027777777777777776,
+        0.19166666666666668
+      ],
+      "commit_violation_se": 0.04144425204440216,
       "commit_violation_vs_target": 0.016666666666666666,
       "n_commitments": 360,
+      "n_commitment_days": 30,
       "median_margin_kw": 22.388593047015462,
-      "wall_s": 21.322842969000703
+      "wall_s": 21.244906143999742
     },
     {
       "target": "nominal",
@@ -576,17 +614,23 @@
       "worst_breach_kw": 0.0,
       "comfort_violation_pct": 0.625,
       "energy_kwh": 135630.82420827184,
-      "solve_ms_mean": 51.64750993786053,
+      "solve_ms_mean": 62.550156271180406,
       "window_violation_rate": 0.0,
       "n_windows": 1409,
       "blocks_breached": 0,
       "n_blocks": 1440,
       "block_breach_rate": 0.0,
       "commit_violation_rate": 0.07777777777777778,
+      "commit_violation_ci": [
+        0.022222222222222223,
+        0.14722222222222223
+      ],
+      "commit_violation_se": 0.0310295934452564,
       "commit_violation_vs_target": 0.013888888888888888,
       "n_commitments": 360,
+      "n_commitment_days": 30,
       "median_margin_kw": 27.218119105750233,
-      "wall_s": 158.70173068199983
+      "wall_s": 189.95642508899982
     },
     {
       "target": "nominal",
@@ -601,17 +645,23 @@
       "worst_breach_kw": 0.0,
       "comfort_violation_pct": 0.625,
       "energy_kwh": 135620.04458572879,
-      "solve_ms_mean": 53.00913344862389,
+      "solve_ms_mean": 62.864372809029426,
       "window_violation_rate": 0.0,
       "n_windows": 1409,
       "blocks_breached": 0,
       "n_blocks": 1440,
       "block_breach_rate": 0.0,
       "commit_violation_rate": 0.09722222222222222,
+      "commit_violation_ci": [
+        0.030555555555555555,
+        0.18055555555555555
+      ],
+      "commit_violation_se": 0.03717907114351513,
       "commit_violation_vs_target": 0.008333333333333333,
       "n_commitments": 360,
+      "n_commitment_days": 30,
       "median_margin_kw": 24.022121171368383,
-      "wall_s": 162.99118681300024
+      "wall_s": 191.22851693799976
     },
     {
       "target": "nominal",
@@ -626,17 +676,23 @@
       "worst_breach_kw": 0.0,
       "comfort_violation_pct": 0.625,
       "energy_kwh": 135576.1557102911,
-      "solve_ms_mean": 53.32859343436667,
+      "solve_ms_mean": 63.132708300693075,
       "window_violation_rate": 0.0,
       "n_windows": 1409,
       "blocks_breached": 0,
       "n_blocks": 1440,
       "block_breach_rate": 0.0,
       "commit_violation_rate": 0.15,
+      "commit_violation_ci": [
+        0.07222222222222222,
+        0.2388888888888889
+      ],
+      "commit_violation_se": 0.04285176847024435,
       "commit_violation_vs_target": 0.011111111111111112,
       "n_commitments": 360,
+      "n_commitment_days": 30,
       "median_margin_kw": 19.904375816023474,
-      "wall_s": 163.74946068200006
+      "wall_s": 191.61575322599992
     },
     {
       "target": "nominal",
@@ -651,17 +707,23 @@
       "worst_breach_kw": 0.0,
       "comfort_violation_pct": 0.625,
       "energy_kwh": 135524.05766239596,
-      "solve_ms_mean": 53.039380383691224,
+      "solve_ms_mean": 54.66500124757548,
       "window_violation_rate": 0.0,
       "n_windows": 1409,
       "blocks_breached": 0,
       "n_blocks": 1440,
       "block_breach_rate": 0.0,
       "commit_violation_rate": 0.20833333333333334,
+      "commit_violation_ci": [
+        0.12222222222222222,
+        0.3055555555555556
+      ],
+      "commit_violation_se": 0.04704609303220929,
       "commit_violation_vs_target": 0.005555555555555556,
       "n_commitments": 360,
+      "n_commitment_days": 30,
       "median_margin_kw": 16.353631130675517,
-      "wall_s": 163.06561810499988
+      "wall_s": 167.7480542420003
     }
   ],
   "acceptance": {
@@ -671,6 +733,8 @@
     "mean_abs_gap": 0.057291666666666664,
     "n_levels": 8,
     "n_conservative": 5,
+    "n_within_interval": 6,
+    "mean_ci_halfwidth": 0.08090711805555555,
     "marginal_plan_rate": {
       "nominal": 0.10277777777777777,
       "tight": 0.10555555555555556
@@ -682,6 +746,5 @@
     "marginal_tight_rate": 0.048970901348474094,
     "scenario_tight_rate": 0.0965223562810504,
     "tight_bill_delta": 3339.1938100878615
-  },
-  "tensor": "models/Fox_office_Gaylord/tensors/lightgbm_quantile.parquet"
+  }
 }

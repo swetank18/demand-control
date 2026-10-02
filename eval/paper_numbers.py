@@ -30,6 +30,12 @@ def h64(d: dict) -> dict:
     return [x for x in d["marginal_vs_joint"] if x["H"] == 64][0]
 
 
+def _cl(d: dict, target: str, eps: float) -> list[float]:
+    """The day-block interval on one closed-loop row's commit violation."""
+    return [r for r in d["closed_loop"]
+            if r["target"] == target and r.get("epsilon") == eps][0]["commit_violation_ci"]
+
+
 def _dedup(store: dict) -> list[dict]:
     out, seen = [], set()
     for v in store.values():
@@ -97,6 +103,15 @@ def claims() -> list[tuple[str, float, float, float]]:
         ("campus marginal commit 0.297", 0.2972, ca["marginal_plan_rate"]["tight"], 5e-4),
         ("campus per-step 0.079", 0.079, c64["per_step_exceedance"], 6e-4),
         ("resolution floor 1/S = 0.025", 0.025, fa["resolution_floor"], 1e-9),
+        # Section: the dial, with its day-block intervals
+        ("Fox mean CI half-width 0.081", 0.081, fa["mean_ci_halfwidth"], 5e-4),
+        ("Fox eps inside its interval at 6 of 8", 6, fa["n_within_interval"], 0),
+        ("Fox tight eps=0.05 interval low 0.04", 0.04, _cl(fox, "tight", 0.05)[0], 5e-3),
+        ("Fox tight eps=0.05 interval high 0.17", 0.17, _cl(fox, "tight", 0.05)[1], 5e-3),
+        ("campus mean CI half-width 0.113", 0.113, ca["mean_ci_halfwidth"], 5e-4),
+        ("campus eps inside its interval at 4 of 8", 4, ca["n_within_interval"], 0),
+        ("campus gap shift at kappa 0.018", 0.018,
+         ca["mean_abs_gap"] - kapc["acceptance"]["mean_abs_gap"], 5e-4),
         # Section: the dial, tested against its own explanation
         ("campus at kappa, mean abs gap 0.083", 0.083, kapc["acceptance"]["mean_abs_gap"], 5e-4),
         ("campus at kappa, rank corr 0.988", 0.988, kapc["acceptance"]["rank_corr"], 5e-4),

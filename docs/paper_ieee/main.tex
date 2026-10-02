@@ -268,9 +268,12 @@ are shown and only one is the criterion.
 
 The result is that $\varepsilon$ becomes a dial. Realised commit violation
 tracks the requested level at rank correlation $0.957$ across the sweep, mean
-absolute gap $0.057$, conservative at five of eight levels. It is not exact: at
-the tightest setting $\varepsilon=0.05$ delivers $0.097$ at the tight target,
-on the unsafe side. There is a hard resolution floor at $1/S$: with $S$
+absolute gap $0.057$, conservative at five of eight levels; one month's
+day-block intervals contain the requested level at six of eight, and miss it
+only on the safe side. It is not exact: at the tightest setting
+$\varepsilon=0.05$ delivers $0.097$ at the tight target, on the unsafe side,
+though its interval ($0.04$--$0.17$) cannot tell that miss from none. There is
+a hard resolution floor at $1/S$: with $S$
 scenarios the finest expressible level is one scenario's worth of probability
 mass, below which the CVaR surrogate collapses onto the sample maximum. That is
 a property of sample average approximation, not a tuning artefact, and a finer

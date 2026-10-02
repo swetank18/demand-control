@@ -30,16 +30,16 @@ The scenario MILP writes the ceiling once per scenario per block and caps the pr
 
 | Target | Controller | eps | Commit viol. | Closed-loop viol. vs target | Blocks breached | Median margin kW | Peak kVA | Bill INR | Comfort % | Solve ms |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| tight (803 kW) | marginal q95 | — | 0.297 | 0.101 | 13/1440 | +51 | 890.9 | 2,837,240 | 0.21 | 7 |
-| tight (803 kW) | Scenario MPC[cvar, eps=0.05] | 0.05 | 0.178 | 0.101 | 14/1440 | +93 | 885.5 | 2,833,912 | 0.24 | 54 |
-| tight (803 kW) | Scenario MPC[cvar, eps=0.1] | 0.1 | 0.233 | 0.124 | 15/1440 | +73 | 895.3 | 2,835,693 | 0.21 | 52 |
-| tight (803 kW) | Scenario MPC[cvar, eps=0.2] | 0.2 | 0.300 | 0.123 | 14/1440 | +48 | 903.8 | 2,838,637 | 0.21 | 52 |
-| tight (803 kW) | Scenario MPC[cvar, eps=0.35] | 0.35 | 0.392 | 0.075 | 9/1440 | +28 | 915.4 | 2,842,287 | 0.21 | 51 |
+| tight (803 kW) | marginal q95 | — | 0.297 | 0.101 | 13/1440 | +51 | 890.9 | 2,837,240 | 0.21 | 6 |
+| tight (803 kW) | Scenario MPC[cvar, eps=0.05] | 0.05 | 0.178 | 0.101 | 14/1440 | +93 | 885.5 | 2,833,912 | 0.24 | 51 |
+| tight (803 kW) | Scenario MPC[cvar, eps=0.1] | 0.1 | 0.233 | 0.124 | 15/1440 | +73 | 895.3 | 2,835,693 | 0.21 | 61 |
+| tight (803 kW) | Scenario MPC[cvar, eps=0.2] | 0.2 | 0.300 | 0.123 | 14/1440 | +48 | 903.8 | 2,838,637 | 0.21 | 62 |
+| tight (803 kW) | Scenario MPC[cvar, eps=0.35] | 0.35 | 0.392 | 0.075 | 9/1440 | +28 | 915.4 | 2,842,287 | 0.21 | 63 |
 | nominal (873 kW) | marginal q95 | — | 0.297 | 0.000 | 0/1440 | +51 | 914.0 | 2,843,724 | 0.21 | 6 |
-| nominal (873 kW) | Scenario MPC[cvar, eps=0.05] | 0.05 | 0.172 | 0.023 | 1/1440 | +96 | 945.5 | 2,849,643 | 0.24 | 49 |
-| nominal (873 kW) | Scenario MPC[cvar, eps=0.1] | 0.1 | 0.236 | 0.023 | 1/1440 | +73 | 932.7 | 2,846,024 | 0.21 | 51 |
-| nominal (873 kW) | Scenario MPC[cvar, eps=0.2] | 0.2 | 0.300 | 0.023 | 1/1440 | +47 | 931.3 | 2,846,298 | 0.21 | 51 |
-| nominal (873 kW) | Scenario MPC[cvar, eps=0.35] | 0.35 | 0.392 | 0.023 | 1/1440 | +28 | 938.9 | 2,848,913 | 0.21 | 52 |
+| nominal (873 kW) | Scenario MPC[cvar, eps=0.05] | 0.05 | 0.172 | 0.023 | 1/1440 | +96 | 945.5 | 2,849,643 | 0.24 | 61 |
+| nominal (873 kW) | Scenario MPC[cvar, eps=0.1] | 0.1 | 0.236 | 0.023 | 1/1440 | +73 | 932.7 | 2,846,024 | 0.21 | 63 |
+| nominal (873 kW) | Scenario MPC[cvar, eps=0.2] | 0.2 | 0.300 | 0.023 | 1/1440 | +47 | 931.3 | 2,846,298 | 0.21 | 81 |
+| nominal (873 kW) | Scenario MPC[cvar, eps=0.35] | 0.35 | 0.392 | 0.023 | 1/1440 | +28 | 938.9 | 2,848,913 | 0.21 | 59 |
 
 **Acceptance.** Realised violation of the committed ceiling tracks the epsilon it was set: Spearman correlation 0.99 across the sweep, mean absolute gap 0.100, and 0 of 8 levels land on the safe side of nominal. The formulation is conservative rather than exact, which is the direction it should err in: the CVaR surrogate admits a strict subset of the chance-constrained feasible set, so it defends the committed ceiling harder than asked and leaves some headroom unspent.
 
