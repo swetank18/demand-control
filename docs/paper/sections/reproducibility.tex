@@ -44,3 +44,23 @@ python eval/conformal_audit.py \
     --building IN_Delhi --shift-years 5 \
     --reuse --gamma-rel 0.006 --tag @rel
 \end{verbatim}}
+
+\noindent The second control object, the IIIT-Delhi campus feed, is billed
+under the DERC schedule with no photovoltaics. Its demand target is found
+first, and the closed loop is then run once at each adaptive step:
+
+{\footnotesize
+\begin{verbatim}
+python eval/find_target.py \
+    --building IIITD_Campus --tag @2017 \
+    --tariff tariff/orders/derc_2021.json \
+    --pv-kwp 0
+python eval/horizon_risk.py \
+    --building IIITD_Campus --tag @2017 \
+    --tariff tariff/orders/derc_2021.json \
+    --pv-kwp 0
+python eval/horizon_risk.py \
+    --building IIITD_Campus --tag @2017k \
+    --tariff tariff/orders/derc_2021.json \
+    --pv-kwp 0
+\end{verbatim}}

@@ -1,31 +1,33 @@
-# Submission abstract (200 words)
+# Submission abstract (199 words)
 
-For a venue's abstract field, where a 200-word cap is usual. Plain text, no
-markup, em dashes and the rupee sign spelled out so it survives a paste into a
-web form. Every number is one `eval/paper_tables.py` emits; if the study is
-rerun, check them against `docs/paper/tables/horizon_panel.tex` and
-`docs/paper/tables/acceptance.tex` before pasting.
-
----
-
-Indian commercial demand charges are set by the single worst thirty-minute
-block in a month, so defending a demand ceiling is a risk problem, not a
-prediction problem. The standard response substitutes a high forecast quantile
-into the capacity constraint and calls it a 95% guarantee. We measure what
-that delivers on fourteen held-out windows across an American office and an
-Indian campus at native 15-minute resolution. Per step the bound behaves as
-advertised: realised exceedance is 0.032-0.079 against a nominal 0.05 on every
-window. Over the controller's 16-hour window the probability of breaching
-somewhere is 0.39-0.82, median 0.57 - eight to sixteen times the level the
-constraint appears to promise - and not a constant, since one meter returns
-0.39, 0.64 and 0.42 in three successive Junes while its per-step rate does not
-move. Neither textbook substitute recovers it: the independence calculation
-overstates realised risk by 1.7x at the median; the Boole union bound is 1 on
-every window. Fitting a Student-t copula over the horizon, a scenario MILP
-restores the violation level as a settable parameter, tracking requested
-epsilon at rank correlation 0.957 for Rs 3,339 on a billing month, with its
-exactness and its resolution floor reported.
+For the journal's abstract field: Applied Energy caps it (sources give 200 or
+250 words; this fits either). Plain text, no markup, so it survives a paste into
+a web form. It is the abstract of the Elsevier build
+(`docs/paper_elsevier/main.tex`); every number is one the study emits and
+`eval/paper_numbers.py` or the tables check. Rewritten 2026-10-02 to cover the
+campus closed loop, the matched-pair result and the retracted aggregation
+finding, none of which the 25 September version had.
 
 ---
 
-**200 words.**
+Indian commercial demand charges are set by the worst thirty-minute block in a
+month, so defending a demand ceiling is a risk problem. The usual response
+substitutes a high forecast quantile into the capacity constraint and calls it
+a 95% guarantee. We measure what it delivers on fourteen held-out windows from
+an American office and an Indian campus. Per step the bound holds, at
+0.032-0.079 against a nominal 0.05; over the controller's 16-hour window the
+probability of breaching somewhere is 0.39-0.82, median 0.57, eight to sixteen
+times the level promised. The independence correction overstates it and is not
+a bound; the valid union bound is 1 on every window. A Student-t copula
+predicts the realised value to a mean absolute error of 0.065, and a scenario
+MILP built on it makes the violation level an operator setting. On two plants
+the response is monotone and, on matched commitments, resolved within one
+billing month; it is close to exact only where the per-step layer beneath it
+is calibrated. Over thirty-seven supplies in eight countries,
+distribution-free coverage does not degrade with aggregation, a reading this
+study first made, then traced to the adaptive conformal step being stated in
+the series' units.
+
+---
+
+**199 words.**

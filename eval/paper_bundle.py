@@ -21,6 +21,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "docs/paper"
 DEFAULT_DEST = ROOT.parent / "paper"
+ELSEVIER = ROOT / "docs/paper_elsevier"
 
 UPLOAD_README = """# Upload this folder to Overleaf
 
@@ -149,12 +150,95 @@ def build(dest: Path, make_zip: bool = True) -> None:
         print("        upload this to Overleaf: New Project -> Upload Project")
 
 
+ELSEVIER_README = """# Applied Energy submission -- upload this folder to Overleaf
+
+The Elsevier build of the paper, made self-contained: `main.tex` here reads
+`sections/`, `tables/` and `figures/` beside it rather than the report's
+directory, so **paper_elsevier.zip** uploads as-is (*New Project -> Upload
+Project*). Compiler **pdfLaTeX**, main document **main.tex**; `elsarticle` and
+`elsarticle-num-names.bst` are in Overleaf's TeX Live.
+
+It builds clean here: {pages} pages in Elsevier's preprint layout, which is
+what Applied Energy asks for at submission.
+
+## Before submitting
+
+Search the PDF for **TODO(author)** -- printed in red so none can go out blank:
+author block, repository URL, CRediT roles, competing interests, the
+generative-AI declaration, funding. Each is a statement only the author can
+make.
+
+## Regenerating
+
+This folder is a build artefact; the source is `demand-control/docs/paper_elsevier/`
+(front matter) and `demand-control/docs/paper/sections/` (the body, shared with
+the other builds). Edit there, then:
+
+```bash
+cd demand-control
+python eval/paper_tables.py --fit --out docs/paper_elsevier/tables
+python eval/paper_bundle.py --build elsevier
+```
+"""
+
+
+def build_elsevier(dest: Path, make_zip: bool = True) -> None:
+    """The Elsevier build as an upload: its main.tex reaches into ../paper for
+    the shared body, figures and bibliography, which Overleaf cannot follow, so
+    those come along and the paths are rewritten to point beside it."""
+    import re
+    import subprocess
+    if dest.exists():
+        shutil.rmtree(dest)
+    dest.mkdir(parents=True)
+
+    tex = (ELSEVIER / "main.tex").read_text()
+    tex = (tex.replace("\\input{../paper/sections/", "\\input{sections/")
+              .replace("\\graphicspath{{../paper/figures/}}", "\\graphicspath{{figures/}}")
+              .replace("\\bibliography{../paper/refs}", "\\bibliography{refs}"))
+    left = re.findall(r"\.\./paper/", "\n".join(
+        l for l in tex.splitlines() if not l.lstrip().startswith("%")))
+    if left:
+        raise SystemExit(f"main.tex still reaches outside the bundle: {len(left)} path(s)")
+    (dest / "main.tex").write_text(tex)
+    shutil.copy2(SRC / "refs.bib", dest / "refs.bib")
+    shutil.copytree(SRC / "sections", dest / "sections")
+    shutil.copytree(SRC / "figures", dest / "figures")
+    shutil.copytree(ELSEVIER / "tables", dest / "tables")
+    if (ELSEVIER / "main.pdf").exists():
+        shutil.copy2(ELSEVIER / "main.pdf", dest / "main.pdf")
+
+    pages = "?"
+    try:
+        info = subprocess.run(["pdfinfo", str(ELSEVIER / "main.pdf")],
+                              capture_output=True, text=True).stdout
+        pages = next(l.split()[-1] for l in info.splitlines() if l.startswith("Pages:"))
+    except Exception:
+        pass
+    (dest / "README.md").write_text(ELSEVIER_README.format(pages=pages))
+
+    files = sorted(p for p in dest.rglob("*") if p.is_file())
+    print(f"bundle -> {dest}  ({len(files)} files)")
+    if make_zip:
+        zpath = dest / "paper_elsevier.zip"
+        with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
+            for p in files:
+                if p.name != "README.md":
+                    z.write(p, p.relative_to(dest))
+        print(f"zip    -> {zpath}  ({zpath.stat().st_size:,} B)")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dest", type=Path, default=DEFAULT_DEST)
+    ap.add_argument("--build", choices=["report", "elsevier"], default="report")
+    ap.add_argument("--dest", type=Path, default=None,
+                    help="default: ../paper for the report, ../paper_elsevier for Elsevier")
     ap.add_argument("--no-zip", action="store_true")
     args = ap.parse_args()
-    build(args.dest, make_zip=not args.no_zip)
+    if args.build == "elsevier":
+        build_elsevier(args.dest or ROOT.parent / "paper_elsevier", make_zip=not args.no_zip)
+    else:
+        build(args.dest or DEFAULT_DEST, make_zip=not args.no_zip)
 
 
 if __name__ == "__main__":
