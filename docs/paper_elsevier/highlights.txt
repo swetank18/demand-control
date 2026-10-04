@@ -1,0 +1,7 @@
+Highlights
+
+• A marginal 95% demand ceiling breaches in a 16-h window on 39–82% of origins.
+• Measured on 14 held-out windows in two countries, with day-block intervals.
+• The independence correction is not a bound; the valid union bound is vacuous.
+• A t-copula scenario MILP turns the violation level into a dial an operator sets.
+• Conformal coverage does not degrade with aggregation; an earlier claim is retracted.

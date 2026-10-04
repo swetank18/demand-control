@@ -3,9 +3,9 @@
 %
 % Same body as the technical report and the IEEE build: all three
 % \input ../paper/sections/*.tex, so the prose has one source. What
-% this file owns is the class, Elsevier's front matter (highlights,
-% keywords, structured author block) and single-column figure
-% placement.
+% this file owns is the class, Elsevier's front matter (abstract,
+% keywords, structured author block, declarations) and single-column
+% figure placement. Highlights are a separate file: highlights.txt.
 %
 % Tables: eval/paper_tables.py --out docs/paper_elsevier/tables
 % =====================================================================
@@ -73,14 +73,10 @@ coverage does not degrade with aggregation, a reading this study first made,
 then traced to the adaptive conformal step being stated in the series' units.
 \end{abstract}
 
-\begin{highlights}
-% Elsevier: 3--5 highlights, each at most 85 characters including spaces.
-\item A marginal 95\% demand ceiling breaches in a 16-h window on 39--82\% of origins.
-\item Measured on 14 held-out windows in two countries, with day-block intervals.
-\item The independence correction is not a bound; the valid union bound is vacuous.
-\item A t-copula scenario MILP turns the violation level into a dial an operator sets.
-\item Conformal coverage does not degrade with aggregation; an earlier claim is retracted.
-\end{highlights}
+% Highlights are not in the manuscript: elsarticle prints them on a page of
+% their own *before* the title page, and Elsevier takes them as a separate
+% file in the submission system. They live in highlights.txt (3-5 bullets,
+% at most 85 characters each; tests/test_submission.py holds them to it).
 
 \begin{keyword}
 demand charge \sep chance constraint \sep conformal prediction \sep

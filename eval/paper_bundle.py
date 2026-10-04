@@ -159,7 +159,11 @@ Project*). Compiler **pdfLaTeX**, main document **main.tex**; `elsarticle` and
 `elsarticle-num-names.bst` are in Overleaf's TeX Live.
 
 It builds clean here: {pages} pages in Elsevier's preprint layout, which is
-what Applied Energy asks for at submission.
+what Applied Energy asks for at submission. Page 1 is the title page.
+
+**highlights.txt** is not part of the LaTeX project: Elsevier takes highlights
+as a separate file in the submission system (file type *Highlights*), so upload
+it there. It is kept out of the zip for that reason.
 
 ## Before submitting
 
@@ -205,6 +209,8 @@ def build_elsevier(dest: Path, make_zip: bool = True) -> None:
     shutil.copytree(SRC / "sections", dest / "sections")
     shutil.copytree(SRC / "figures", dest / "figures")
     shutil.copytree(ELSEVIER / "tables", dest / "tables")
+    # uploaded as its own file in the submission system, not compiled
+    shutil.copy2(ELSEVIER / "highlights.txt", dest / "highlights.txt")
     if (ELSEVIER / "main.pdf").exists():
         shutil.copy2(ELSEVIER / "main.pdf", dest / "main.pdf")
 
@@ -223,7 +229,7 @@ def build_elsevier(dest: Path, make_zip: bool = True) -> None:
         zpath = dest / "paper_elsevier.zip"
         with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
             for p in files:
-                if p.name != "README.md":
+                if p.name not in ("README.md", "highlights.txt"):
                     z.write(p, p.relative_to(dest))
         print(f"zip    -> {zpath}  ({zpath.stat().st_size:,} B)")
 

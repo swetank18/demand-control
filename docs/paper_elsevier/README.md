@@ -15,8 +15,10 @@ placement.
     cd docs/paper_elsevier && pdflatex main && bibtex main && pdflatex main && pdflatex main
     ../../.venv/bin/python eval/paper_bundle.py --build elsevier   # -> ~/hackit/paper_elsevier/, Overleaf zip
 
-Applied Energy's front-matter rules this file is held to: 3–5 highlights of at
-most 85 characters each; an abstract within the journal's word limit; 4–6
+Applied Energy's front-matter rules this build is held to (`tests/test_submission.py`):
+3–5 highlights of at most 85 characters each, in `highlights.txt` — a separate
+upload, not in the manuscript, because `elsarticle` prints a highlights
+environment on its own page *before* the title page; an abstract within the journal's word limit; 4–6
 keywords; and the data-availability, CRediT, competing-interest, generative-AI
 and funding statements after the body. The statements only the author can make
 print as red **TODO(author)** so none can be submitted blank.
